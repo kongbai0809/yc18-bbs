@@ -1312,10 +1312,12 @@ const DEFAULT_USERS=[
    avatar:'',cover:'',regDate:Date.now()-86400000*100}
 ];
 
-/* 初始化数据 */
-if(!DB.get('users'))DB.set('users',DEFAULT_USERS);
-if(!DB.get('posts'))DB.set('posts',DEFAULT_POSTS);
-if(!DB.get('comments'))DB.set('comments',DEFAULT_COMMENTS);
+/* 初始化数据（延迟到cloudLoad后，避免默认数据覆盖云端） */
+function initDefaultData(){
+  if(!DB.get('users')||DB.get('users',[]).length===0)DB.set('users',DEFAULT_USERS);
+  if(!DB.get('posts')||DB.get('posts',[]).length===0)DB.set('posts',DEFAULT_POSTS);
+  if(!DB.get('comments')||DB.get('comments',[]).length===0)DB.set('comments',DEFAULT_COMMENTS);
+}
 if(!DB.get('settings'))DB.set('settings',{siteName:'银川十八中贴吧',announcement:'欢迎来到银川十八中贴吧！请遵守社区规范，文明发言。'});
 
 /* 当前用户 */
@@ -3145,6 +3147,8 @@ function checkBanStatus(){
 async function init(){
   /* 先从云端加载最新数据 */
   await cloudLoad();
+  /* 云端无数据时用默认数据填充（避免空站） */
+  initDefaultData();
   /* 重新读取当前用户（云端数据可能更新了） */
   currentUser=DB.get('currentUser',null);
   /* 绑定图片上传（label原生触发，兼容手机端） */

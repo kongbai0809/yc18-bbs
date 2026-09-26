@@ -1354,8 +1354,7 @@ function renderLoginForm(){
     '<div class="form-group"><label>密码 <span class="req">*</span></label>'+
     '<input type="password" id="loginPassword" placeholder="请输入密码" onkeydown="if(event.key===\'Enter\')doLogin()"></div>'+
     '<button class="btn btn-primary" style="width:100%;padding:12px;font-size:14px;margin-top:8px;" onclick="doLogin()">登 录</button>'+
-    '<div class="auth-switch">还没有账号？<a onclick="renderRegisterForm()">立即注册</a></div>'+
-    '<div class="auth-tip" style="margin-top:16px;">💡 测试账号：admin / admin123（站长）</div>';
+    '<div class="auth-switch">还没有账号？<a onclick="renderRegisterForm()">立即注册</a></div>';
 }
 function renderRegisterForm(){
   $('authRight').innerHTML=

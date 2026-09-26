@@ -1208,7 +1208,9 @@ const SB_KEY='sb_publishable_S2gBborHHh0XT-8Z6KPDYg_5J5g3P6i';
 const SB_HEADERS={'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json'};
 let _syncTimer=null;
 let _syncing=false;
+let _cloudSyncEnabled=false; /* 初始化阶段禁止同步，防止默认数据覆盖云端 */
 function scheduleCloudSync(){
+  if(!_cloudSyncEnabled)return; /* 初始化阶段不触发 */
   clearTimeout(_syncTimer);
   _syncTimer=setTimeout(()=>cloudSave(),1500);
 }
@@ -1320,7 +1322,8 @@ function initDefaultData(){
   if(!lsGet('posts')||lsGet('posts').length===0)lsSet('posts',DEFAULT_POSTS);
   if(!lsGet('comments')||lsGet('comments').length===0)lsSet('comments',DEFAULT_COMMENTS);
 }
-if(!DB.get('settings'))DB.set('settings',{siteName:'银川十八中贴吧',announcement:'欢迎来到银川十八中贴吧！请遵守社区规范，文明发言。'});
+/* settings初始化也直接写localStorage，避免触发云端同步 */
+if(!localStorage.getItem('yc18_settings'))localStorage.setItem('yc18_settings',JSON.stringify({siteName:'银川十八中贴吧',announcement:'欢迎来到银川十八中贴吧！请遵守社区规范，文明发言。'}));
 
 /* 当前用户 */
 let currentUser=DB.get('currentUser',null);
@@ -3180,6 +3183,8 @@ async function init(){
       document.querySelectorAll('.modal-overlay.show').forEach(m=>m.classList.remove('show'));
     }
   });
+  /* 初始化完成，启用云端同步 */
+  _cloudSyncEnabled=true;
   console.log('🏫 银川十八中贴吧已加载（云端同步已开启）');
 }
 init();

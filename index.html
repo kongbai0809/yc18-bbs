@@ -1204,10 +1204,20 @@ const DB={
 };
 
 /* ===== Supabase 云端同步 ===== */
-const _sb = supabase.createClient(
-  'https://qyczdojgzwwndqgalemq.supabase.co',
-  'sb_publishable_S2gBborHHh0XT-8Z6KPDYg_5J5g3P6i'
-);
+let _sb = null;
+try {
+  if (typeof supabase !== 'undefined' && supabase.createClient) {
+    _sb = supabase.createClient(
+      'https://qyczdojgzwwndqgalemq.supabase.co',
+      'sb_publishable_S2gBborHHh0XT-8Z6KPDYg_5J5g3P6i'
+    );
+    console.log('✅ Supabase 客户端初始化成功');
+  } else {
+    console.warn('⚠️ Supabase SDK 未加载，云端同步已禁用');
+  }
+} catch(e) {
+  console.warn('⚠️ Supabase 初始化失败:', e.message);
+}
 let _syncTimer=null;
 let _syncing=false;
 function scheduleCloudSync(){
@@ -1215,7 +1225,7 @@ function scheduleCloudSync(){
   _syncTimer=setTimeout(()=>cloudSave(),1500);
 }
 async function cloudSave(){
-  if(_syncing)return;
+  if(!_sb||_syncing)return;
   _syncing=true;
   try{
     const data={
@@ -1239,6 +1249,7 @@ async function cloudSave(){
   _syncing=false;
 }
 async function cloudLoad(){
+  if(!_sb){console.warn('⚠️ 云端同步未启用，使用本地数据');return;}
   try{
     const {data,error}=await _sb.from('app_state').select('*').eq('id','main').single();
     if(error)throw error;

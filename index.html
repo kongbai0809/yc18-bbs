@@ -703,6 +703,106 @@ main{max-width:1200px;margin:0 auto;padding:20px;}
 #toast.ok{background:var(--primary);}
 #toast.err{background:#e74c3c;}
 
+/* ===== 发帖媒体上传 ===== */
+.post-media-area{display:flex;flex-wrap:wrap;gap:8px;align-items:flex-start;}
+.image-preview-grid{display:flex;flex-wrap:wrap;gap:8px;}
+.preview-img-item{
+  position:relative;width:72px;height:72px;border-radius:8px;overflow:hidden;
+  border:1px solid var(--border);background:var(--bg-lighter);
+}
+.preview-img-item img{width:100%;height:100%;object-fit:cover;}
+.preview-img-item .remove-img{
+  position:absolute;top:2px;right:2px;width:20px;height:20px;border-radius:50%;
+  background:rgba(0,0,0,.6);color:#fff;font-size:14px;display:flex;align-items:center;
+  justify-content:center;cursor:pointer;line-height:1;
+}
+.add-image-btn{
+  width:72px;height:72px;border-radius:8px;border:1.5px dashed var(--primary-lighter);
+  background:var(--bg-lighter);color:var(--primary);display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:2px;cursor:pointer;transition:.15s;
+  flex-shrink:0;-webkit-tap-highlight-color:transparent;touch-action:manipulation;
+}
+.add-image-btn:hover{background:var(--bg-primary);border-color:var(--primary);}
+.add-image-btn:active{transform:scale(.95);}
+.audio-input-row{display:flex;gap:8px;align-items:center;}
+.audio-item{
+  display:flex;align-items:center;gap:8px;background:var(--bg-lighter);
+  border:1px solid var(--border);border-radius:8px;padding:8px 12px;margin-bottom:6px;
+  font-size:12.5px;
+}
+.audio-item .audio-icon{font-size:18px;flex-shrink:0;}
+.audio-item .audio-url{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text-light);font-size:11.5px;}
+.audio-item .audio-remove{color:#e74c3c;cursor:pointer;font-size:16px;padding:2px 6px;flex-shrink:0;}
+
+/* ===== 帖子内容中的媒体 ===== */
+.pd-images{
+  display:grid;gap:6px;margin:16px 0;border-radius:10px;overflow:hidden;
+}
+.pd-images.count-1{grid-template-columns:1fr;max-width:100%;}
+.pd-images.count-2{grid-template-columns:1fr 1fr;}
+.pd-images.count-3,.pd-images.count-4{grid-template-columns:1fr 1fr;}
+.pd-images.count-5,.pd-images.count-6{grid-template-columns:1fr 1fr 1fr;}
+.pd-images.count-7,.pd-images.count-8,.pd-images.count-9{grid-template-columns:1fr 1fr 1fr;}
+.pd-images .pd-img{
+  width:100%;border-radius:8px;overflow:hidden;cursor:pointer;position:relative;
+  background:var(--bg-lighter);aspect-ratio:1/1;
+}
+.pd-images.count-1 .pd-img{aspect-ratio:auto;max-height:500px;}
+.pd-images .pd-img img{width:100%;height:100%;object-fit:cover;display:block;transition:.2s;}
+.pd-images .pd-img:hover img{transform:scale(1.03);}
+.pd-images .pd-img .more-mask{
+  position:absolute;inset:0;background:rgba(0,0,0,.55);color:#fff;
+  display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:700;
+}
+.pd-audio{
+  margin:16px 0;background:var(--bg-lighter);border:1px solid var(--border);
+  border-radius:12px;padding:14px 16px;
+}
+.pd-audio .audio-head{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.pd-audio .audio-head .icon{font-size:22px;}
+.pd-audio .audio-head .title{font-size:13px;font-weight:600;color:var(--text);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.pd-audio audio{width:100%;height:36px;border-radius:6px;}
+
+/* ===== 帖子列表中的媒体缩略图 ===== */
+.post-media-thumbs{
+  display:grid;gap:4px;margin-top:10px;border-radius:8px;overflow:hidden;
+}
+.post-media-thumbs.count-1{grid-template-columns:1fr;max-width:280px;}
+.post-media-thumbs.count-2{grid-template-columns:1fr 1fr;max-width:360px;}
+.post-media-thumbs.count-3{grid-template-columns:1fr 1fr 1fr;max-width:420px;}
+.post-media-thumbs .thumb{
+  aspect-ratio:1/1;border-radius:6px;overflow:hidden;background:var(--bg-lighter);
+  position:relative;cursor:pointer;
+}
+.post-media-thumbs.count-1 .thumb{aspect-ratio:16/10;}
+.post-media-thumbs .thumb img{width:100%;height:100%;object-fit:cover;display:block;}
+.post-media-thumbs .thumb .more{
+  position:absolute;inset:0;background:rgba(0,0,0,.5);color:#fff;
+  display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;
+}
+.post-audio-tag{
+  display:inline-flex;align-items:center;gap:5px;background:var(--bg-primary);
+  color:var(--primary);border-radius:14px;padding:4px 10px;font-size:11.5px;
+  font-weight:600;margin-top:8px;
+}
+
+/* ===== 图片查看器 Lightbox ===== */
+.image-lightbox{
+  position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.92);
+  display:none;align-items:center;justify-content:center;cursor:zoom-out;
+  padding:20px;
+}
+.image-lightbox.show{display:flex;}
+.image-lightbox img{
+  max-width:100%;max-height:90vh;object-fit:contain;border-radius:8px;
+  box-shadow:0 0 40px rgba(0,0,0,.5);
+}
+.image-lightbox .lightbox-close{
+  position:absolute;top:16px;right:20px;font-size:36px;color:#fff;
+  cursor:pointer;line-height:1;opacity:.8;transition:.2s;z-index:10000;
+}
+.image-lightbox .lightbox-close:hover{opacity:1;transform:rotate(90deg);}
+
 </style>
 </head>
 <body>
@@ -777,7 +877,7 @@ main{max-width:1200px;margin:0 auto;padding:20px;}
 
 <!-- 发帖弹窗 -->
 <div class="modal-overlay" id="postModal">
-  <div class="modal-box">
+  <div class="modal-box" style="max-width:560px;">
     <span class="close-x" onclick="closeModal('postModal')">×</span>
     <h3>✏ 发布新帖</h3>
     <div class="form-group">
@@ -790,13 +890,42 @@ main{max-width:1200px;margin:0 auto;padding:20px;}
     </div>
     <div class="form-group">
       <label>帖子内容 <span class="req">*</span></label>
-      <textarea id="postContent" placeholder="说点什么吧..." style="min-height:140px;"></textarea>
+      <textarea id="postContent" placeholder="说点什么吧..." style="min-height:120px;"></textarea>
+    </div>
+    <!-- 图片上传 -->
+    <div class="form-group">
+      <label>📷 插入图片（选填，最多9张）</label>
+      <div class="post-media-area">
+        <div id="postImagePreview" class="image-preview-grid"></div>
+        <label for="postImageInput" class="add-image-btn" id="addImageBtn">
+          <span style="font-size:24px;">＋</span>
+          <span style="font-size:11px;">添加图片</span>
+        </label>
+      </div>
+    </div>
+    <!-- 音频链接 -->
+    <div class="form-group">
+      <label>🎵 插入音频链接（选填，支持 mp3/wav/ogg 直链）</label>
+      <div class="audio-input-row">
+        <input id="postAudioInput" placeholder="粘贴音频直链 URL，例如 https://.../song.mp3" style="flex:1;">
+        <button class="btn btn-primary btn-sm" onclick="addPostAudio()" style="flex-shrink:0;">添加</button>
+      </div>
+      <div id="postAudioList" style="margin-top:8px;"></div>
     </div>
     <div class="modal-actions">
       <button class="btn btn-ghost" onclick="closeModal('postModal')">取消</button>
       <button class="btn btn-primary" onclick="submitPost()">发布</button>
     </div>
   </div>
+</div>
+
+<!-- 帖子图片上传隐藏input -->
+<input type="file" id="postImageInput" accept="image/*" multiple style="display:none;">
+
+<!-- 图片查看器 -->
+<div class="image-lightbox" id="imageLightbox" onclick="closeLightbox()">
+  <span class="lightbox-close">×</span>
+  <img id="lightboxImg" src="" alt="">
 </div>
 
 <!-- 编辑资料弹窗 -->
@@ -1351,6 +1480,8 @@ function postCardHTML(p){
     '</div>'+
     '<h3>'+esc(p.title)+'</h3>'+
     '<div class="pc-content">'+esc(p.content).replace(/\n/g,'<br>')+'</div>'+
+    '<div onclick="event.stopPropagation()">'+renderPostImages(p.images,false)+'</div>'+
+    renderPostAudioTag(p.audios)+
     '<div class="pc-actions">'+
       '<button class="'+(liked?'liked':'')+'" onclick="event.stopPropagation();togglePostLike(\''+p.id+'\')">👍 '+(p.likes||0)+'</button>'+
       '<button onclick="event.stopPropagation();viewPost(\''+p.id+'\')">💬 '+comments+'</button>'+
@@ -1392,6 +1523,8 @@ function renderPostDetail(){
         '<span class="pc-zone">'+(zone?zone.icon+' '+zone.name:'')+'</span>'+
       '</div>'+
       '<div class="pd-content">'+esc(p.content).replace(/\n/g,'<br>')+'</div>'+
+      renderPostImages(p.images, true)+
+      renderPostAudio(p.audios)+
       '<div class="pd-actions">'+
         '<button class="'+(liked?'liked':'')+'" onclick="togglePostLike(\''+p.id+'\')">👍 点赞 ('+(p.likes||0)+')</button>'+
         '<button onclick="sharePost(\''+p.id+'\')">🔗 分享</button>'+
@@ -1428,6 +1561,105 @@ function commentItemHTML(c){
     '</div></div>';
 }
 
+/* ===== 发帖媒体（图片/音频） ===== */
+let postImages = [];
+let postAudios = [];
+function initPostMediaUpload(){
+  $('postImageInput').addEventListener('change',function(e){
+    const files=e.target.files;
+    if(!files||files.length===0)return;
+    const remaining=9-postImages.length;
+    if(remaining<=0){toast('最多只能上传9张图片','err');return;}
+    const toProcess=Array.from(files).slice(0,remaining);
+    let processed=0;
+    toProcess.forEach(file=>{
+      if(file.size>5*1024*1024){toast('图片不能超过5MB','err');processed++;return;}
+      const reader=new FileReader();
+      reader.onload=function(ev){
+        const img=new Image();
+        img.onload=function(){
+          const canvas=document.createElement('canvas');
+          const maxW=1280;
+          let w=img.width,h=img.height;
+          if(w>maxW){h=Math.round(h*maxW/w);w=maxW;}
+          canvas.width=w;canvas.height=h;
+          canvas.getContext('2d').drawImage(img,0,0,w,h);
+          postImages.push(canvas.toDataURL('image/jpeg',0.85));
+          processed++;
+          if(processed>=toProcess.length){renderPostImagePreview();updateAddImageBtn();}
+        };
+        img.onerror=function(){processed++;};
+        img.src=ev.target.result;
+      };
+      reader.onerror=function(){processed++;};
+      reader.readAsDataURL(file);
+    });
+    e.target.value='';
+  });
+}
+function renderPostImagePreview(){
+  const el=$('postImagePreview');if(!el)return;
+  el.innerHTML=postImages.map((src,i)=>
+    '<div class="preview-img-item"><img src="'+src+'" alt="图片'+(i+1)+'">'+
+    '<span class="remove-img" onclick="removePostImage('+i+')">×</span></div>'
+  ).join('');
+}
+function removePostImage(index){postImages.splice(index,1);renderPostImagePreview();updateAddImageBtn();}
+function updateAddImageBtn(){
+  const btn=$('addImageBtn');if(!btn)return;
+  btn.style.display=postImages.length>=9?'none':'flex';
+}
+function addPostAudio(){
+  const input=$('postAudioInput');
+  const url=input.value.trim();
+  if(!url){toast('请输入音频链接','err');return;}
+  if(!/^https?:\/\//i.test(url)){toast('请输入有效的 http/https 链接','err');return;}
+  if(postAudios.length>=3){toast('最多只能添加3个音频','err');return;}
+  postAudios.push(url);input.value='';renderPostAudioList();
+}
+function removePostAudio(index){postAudios.splice(index,1);renderPostAudioList();}
+function renderPostAudioList(){
+  const el=$('postAudioList');if(!el)return;
+  el.innerHTML=postAudios.map((url,i)=>
+    '<div class="audio-item"><span class="audio-icon">🎵</span>'+
+    '<span class="audio-url">'+esc(url)+'</span>'+
+    '<span class="audio-remove" onclick="removePostAudio('+i+')">×</span></div>'
+  ).join('');
+}
+/* ===== 图片查看器 ===== */
+function openLightbox(src){$('lightboxImg').src=src;$('imageLightbox').classList.add('show');}
+function closeLightbox(){$('imageLightbox').classList.remove('show');}
+/* ===== 帖子媒体渲染 ===== */
+function renderPostImages(images,isDetail){
+  if(!images||images.length===0)return '';
+  const count=images.length;
+  const cls=isDetail?'pd-images':'post-media-thumbs';
+  let html='<div class="'+cls+' count-'+Math.min(count,9)+'">';
+  const maxShow=isDetail?count:Math.min(count,3);
+  for(let i=0;i<maxShow;i++){
+    html+='<div class="'+(isDetail?'pd-img':'thumb')+'" onclick="openLightbox(\''+images[i]+'\')">';
+    html+='<img src="'+images[i]+'" alt="图片'+(i+1)+'">';
+    if(!isDetail&&i===2&&count>3)html+='<div class="more">+'+(count-3)+'</div>';
+    html+='</div>';
+  }
+  html+='</div>';return html;
+}
+function renderPostAudio(audios){
+  if(!audios||audios.length===0)return '';
+  let html='';
+  audios.forEach((url,i)=>{
+    const fileName=url.split('/').pop().split('?')[0]||'音频'+(i+1);
+    html+='<div class="pd-audio"><div class="audio-head"><span class="icon">🎵</span>'+
+      '<span class="title">'+esc(fileName)+'</span></div>'+
+      '<audio controls preload="none" src="'+esc(url)+'">您的浏览器不支持音频播放</audio></div>';
+  });
+  return html;
+}
+function renderPostAudioTag(audios){
+  if(!audios||audios.length===0)return '';
+  return '<div class="post-audio-tag">🎵 含'+audios.length+'个音频</div>';
+}
+
 /* ===== 发帖 ===== */
 function openPostModal(){
   if(!currentUser){toast('请先登录','err');return;}
@@ -1437,6 +1669,8 @@ function openPostModal(){
   ).join('');
   $('postTitle').value='';
   $('postContent').value='';
+  postImages=[];postAudios=[];
+  renderPostImagePreview();renderPostAudioList();updateAddImageBtn();
   showModal('postModal');
 }
 function submitPost(){
@@ -1452,6 +1686,8 @@ function submitPost(){
   const posts=DB.get('posts',[]);
   posts.unshift({
     id:uid(),zone,title,content,
+    images:postImages.length>0?[...postImages]:[],
+    audios:postAudios.length>0?[...postAudios]:[],
     authorId:currentUser.id,authorName:currentUser.nickname,
     authorRole:currentUser.role,authorAvatar:currentUser.avatar||'',
     date:Date.now(),views:0,likes:0,comments:0
@@ -2464,6 +2700,8 @@ function init(){
   $('coverInput').addEventListener('change',function(e){
     handleImageUpload(e,1200,0.85,function(d){updateCover(d);});
   });
+  /* 初始化发帖图片上传 */
+  initPostMediaUpload();
 
   if(currentUser){
     /* 检查封号状态 */

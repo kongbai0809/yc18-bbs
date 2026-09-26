@@ -446,7 +446,8 @@ main{max-width:1200px;margin:0 auto;padding:20px;}
   .layout{grid-template-columns:1fr;}
   .sidebar-left{display:none;}
   .sidebar-right{display:none;}
-  .auth-box{grid-template-columns:1fr;}
+  .auth-box{grid-template-columns:1fr;max-height:none;margin:10px 0;}
+  .auth-page{align-items:flex-start;overflow-y:auto;padding:10px;}
   .auth-left{display:none;}
   .profile-stats{gap:20px;}
   /* 移动端分区横滑栏 */
@@ -1224,13 +1225,19 @@ async function cloudSave(){
       posts:DB.get('posts',[]),
       comments:DB.get('comments',[]),
       friends:DB.get('friends',[]),
-      messages:DB.get('messages',[]),
+      friendRequests:DB.get('friendRequests',[]),
+      chatMessages:DB.get('chatMessages',[]),
+      inboxMessages:DB.get('inboxMessages',[]),
+      bans:DB.get('bans',[]),
       reports:DB.get('reports',[]),
       notifications:DB.get('notifications',[]),
       post_likes:DB.get('post_likes',[]),
+      postLikes:DB.get('postLikes',{}),
       comment_likes:DB.get('comment_likes',[]),
+      commentLikes:DB.get('commentLikes',{}),
       diaries:DB.get('diaries',[]),
       diary_comments:DB.get('diary_comments',[]),
+      diaryLikes:DB.get('diaryLikes',{}),
       settings:DB.get('settings',{}),
       updated_at:new Date().toISOString()
     };
@@ -1257,15 +1264,21 @@ async function cloudLoad(){
       if(data.posts&&data.posts.length>0)DB.set('posts',data.posts);
       if(data.comments&&data.comments.length>0)DB.set('comments',data.comments);
       if(data.friends)DB.set('friends',data.friends);
-      if(data.messages)DB.set('messages',data.messages);
+      if(data.friendRequests)DB.set('friendRequests',data.friendRequests);
+      if(data.chatMessages)DB.set('chatMessages',data.chatMessages);
+      if(data.inboxMessages)DB.set('inboxMessages',data.inboxMessages);
+      if(data.bans)DB.set('bans',data.bans);
       if(data.reports)DB.set('reports',data.reports);
       if(data.notifications)DB.set('notifications',data.notifications);
       if(data.post_likes)DB.set('post_likes',data.post_likes);
+      if(data.postLikes)DB.set('postLikes',data.postLikes);
       if(data.comment_likes)DB.set('comment_likes',data.comment_likes);
+      if(data.commentLikes)DB.set('commentLikes',data.commentLikes);
       if(data.diaries)DB.set('diaries',data.diaries);
       if(data.diary_comments)DB.set('diary_comments',data.diary_comments);
+      if(data.diaryLikes)DB.set('diaryLikes',data.diaryLikes);
       if(data.settings)DB.set('settings',data.settings);
-      console.log('✅ 云端数据加载成功，用户:'+(data.users||[]).length+' 帖子:'+(data.posts||[]).length);
+      console.log('✅ 云端数据加载成功，用户:'+(data.users||[]).length+' 帖子:'+(data.posts||[]).length+' 私聊:'+(data.chatMessages||[]).length);
     }
   }catch(e){
     console.warn('⚠️ 云端数据加载失败，使用本地数据:',e.message);
@@ -2768,6 +2781,7 @@ function switchFriendTab(tab,el){
 }
 function renderFriendTab(){
   const list=$('friendsList');
+  if(!currentUser){list.innerHTML='<div class="fp-empty"><div class="icon">🔒</div><p>请先登录</p></div>';return;}
   if(currentFriendTab==='friends'){
     const friends=getMyFriends();
     if(friends.length===0){

@@ -2784,7 +2784,13 @@ function submitPost(){
     closeModal('postModal');
     editingPostId=null;
     toast('帖子已更新','ok');
+    /* 跳转到帖子详情查看编辑结果 */
+    currentPostId=p.id;
+    commentsPage=1;
+    $('profilePage').style.display='none';
+    $('mainContent').style.display='block';
     renderPostDetail();
+    window.scrollTo({top:0,behavior:'smooth'});
     return;
   }
   /* 发帖模式 */

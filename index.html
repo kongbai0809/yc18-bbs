@@ -357,14 +357,14 @@ main{max-width:1200px;margin:0 auto;padding:20px;}
   max-width:900px;margin:0 auto;padding:0 20px;position:relative;
 }
 .profile-avatar-wrap{
-  display:flex;align-items:flex-end;gap:20px;flex-wrap:wrap;
+  margin-top:-60px;display:flex;align-items:flex-end;gap:20px;flex-wrap:wrap;
+  position:relative;z-index:2;
 }
 .profile-avatar{
   width:120px;height:120px;border-radius:50%;border:4px solid var(--bg-white);
   background:var(--bg-primary);box-shadow:var(--shadow-lg);position:relative;
   display:flex;align-items:center;justify-content:center;font-size:48px;object-fit:cover;
   cursor:pointer;overflow:hidden;touch-action:manipulation;-webkit-tap-highlight-color:transparent;
-  margin-top:-60px; /* 头像上半部分压住背景（120px 的一半） */
 }
 .profile-avatar img{width:100%;height:100%;object-fit:cover;}
 .profile-avatar .avatar-edit{
@@ -452,7 +452,7 @@ main{max-width:1200px;margin:0 auto;padding:20px;}
   .auth-page{align-items:flex-start;overflow-y:auto;padding:10px;}
   .auth-left{display:none;}
   .profile-stats{gap:20px;}
-  .profile-avatar-wrap{flex-wrap:nowrap;align-items:center;}
+  .profile-avatar-wrap{flex-wrap:nowrap;align-items:center;margin-top:-60px;}
   .profile-name-area{min-width:0;}
   .profile-actions{flex-wrap:wrap;}
   /* 移动端分区横滑栏 */
@@ -481,8 +481,8 @@ main{max-width:1200px;margin:0 auto;padding:20px;}
   main{padding:10px;padding-bottom:70px;}
   .form-row,.form-row-3{grid-template-columns:1fr;}
   /* 个人主页移动端精调：头像+信息并排，与参考图一致 */
-  .profile-avatar{width:84px;height:84px;font-size:34px;border-width:3px;flex-shrink:0;margin-top:-42px;} /* 84px 的一半，头像上半压住背景 */
-  .profile-avatar-wrap{gap:14px;align-items:flex-end;flex-wrap:nowrap;}
+  .profile-avatar{width:84px;height:84px;font-size:34px;border-width:3px;flex-shrink:0;}
+  .profile-avatar-wrap{margin-top:-42px;gap:14px;align-items:flex-end;flex-wrap:nowrap;} /* 84px 的一半，头像上半压住背景 */
   .profile-name-area{min-width:0;flex:1;padding-bottom:0;}
   .profile-name-area h2{font-size:19px;line-height:1.35;}
   .profile-name-area .username{font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}

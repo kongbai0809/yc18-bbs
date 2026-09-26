@@ -28,6 +28,30 @@
   --font:"PingFang SC","Hiragino Sans GB","Microsoft YaHei","Noto Sans SC",sans-serif;
 }
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+/* 仿宋 GB2312 字体 */
+body[data-font="fangsong"]{
+  --font:"FangSong","仿宋","FangSong_GB2312","STFangsong","华文仿宋","SimSun",serif;
+}
+/* 液态玻璃效果 */
+body[data-glass="on"] header{
+  background:rgba(255,255,255,.72);backdrop-filter:blur(18px) saturate(160%);-webkit-backdrop-filter:blur(18px) saturate(160%);
+}
+body[data-glass="on"] .post-card,
+body[data-glass="on"] .sidebar,
+body[data-glass="on"] .user-dropdown,
+body[data-glass="on"] .modal-box,
+body[data-glass="on"] .chat-panel,
+body[data-glass="on"] .friends-panel,
+body[data-glass="on"] .inbox-panel,
+body[data-glass="on"] .profile-blockbox{
+  background:rgba(255,255,255,.68);backdrop-filter:blur(16px) saturate(150%);-webkit-backdrop-filter:blur(16px) saturate(150%);
+}
+body[data-glass="on"][data-theme="dark"] .post-card,
+body[data-glass="on"][data-theme="dark"] .user-dropdown,
+body[data-glass="on"][data-theme="dark"] .modal-box,
+body[data-glass="on"][data-theme="dark"] .profile-blockbox{
+  background:rgba(26,31,26,.6);backdrop-filter:blur(16px) saturate(150%);-webkit-backdrop-filter:blur(16px) saturate(150%);
+}
 /* ===== 暗黑模式 ===== */
 body[data-theme="dark"]{
   --bg-white:#1a1f1a !important;
@@ -629,11 +653,11 @@ main{max-width:1200px;margin:0 auto;padding:20px;}
   main{padding:10px;padding-bottom:70px;}
   .form-row,.form-row-3{grid-template-columns:1fr;}
   /* 个人主页移动端精调：头像+信息并排，与参考图一致 */
-  .profile-avatar{width:84px;height:84px;font-size:34px;border-width:3px;flex-shrink:0;}
-  .profile-avatar-wrap{margin-top:-42px;gap:14px;align-items:flex-end;flex-wrap:nowrap;} /* 84px 的一半，头像上半压住背景 */
-  .profile-name-area{min-width:0;flex:1;padding-bottom:0;}
-  .profile-name-area h2{font-size:19px;line-height:1.35;}
-  .profile-name-area .username{font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .profile-avatar{width:76px;height:76px;font-size:30px;border-width:3px;flex-shrink:0;}
+  .profile-avatar-wrap{margin-top:-38px;gap:12px;align-items:flex-start;flex-wrap:nowrap;} /* 76px 的一半，头像上半压住背景 */
+  .profile-name-area{min-width:0;flex:1;padding-bottom:0;padding-top:2px;}
+  .profile-name-area h2{font-size:18px;line-height:1.35;}
+  .profile-name-area .username{font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .profile-badges{flex-wrap:wrap;gap:5px;margin-top:6px;}
   .profile-badge{padding:2px 9px;font-size:10px;white-space:nowrap;}
   .profile-signature{font-size:12.5px;margin-top:8px;line-height:1.55;word-break:break-all;}
@@ -646,7 +670,7 @@ main{max-width:1200px;margin:0 auto;padding:20px;}
   .profile-tabs a{padding:9px 14px;font-size:13px;}
   .profile-content{padding:14px 0;}
   .post-detail{padding:18px 16px;}
-  .profile-cover{height:150px;}
+  .profile-cover{height:160px;}
   .profile-info{padding:0 14px;}
   .profile-page{margin:-10px;}
   .modal-box{margin:10px;max-width:calc(100vw - 20px)!important;max-height:88vh;overflow-y:auto;}
@@ -2204,6 +2228,54 @@ function initTheme(){
   const s=DB.get('settings',{});
   if(s.theme)applyTheme(s.theme);
 }
+/* 应用外观设置（仿宋字体/液态玻璃） */
+function applyAppearance(){
+  const s=DB.get('settings',{});
+  document.body.setAttribute('data-font',s.fangSong?'fangsong':'sans');
+  document.body.setAttribute('data-glass',s.liquidGlass?'on':'off');
+}
+function initAppearance(){applyAppearance();}
+function toggleSetting(key,label){
+  if(!currentUser){toast('请先登录','err');return;}
+  const s=DB.get('settings',{});
+  s[key]=!s[key];
+  DB.set('settings',s);
+  applyAppearance();
+  toast((s[key]?'已开启':'已关闭')+label,'ok');
+  openSettings(); /* 刷新设置面板 */
+}
+/* 设置面板 */
+function openSettings(){
+  let m=$('settingsModal');
+  if(!m){
+    m=document.createElement('div');m.id='settingsModal';m.className='modal-overlay';
+    m.innerHTML='<div class="modal-box" style="max-width:420px;"><span class="close-x" onclick="closeModal(\'settingsModal\')">×</span>'+
+      '<h3>⚙ 设置</h3><div id="settingsBody"></div></div>';
+    document.body.appendChild(m);
+    m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('show');});
+  }
+  const s=DB.get('settings',{});
+  $('settingsBody').innerHTML=
+    settingRow('🌙 暗黑模式',s.theme==='dark',"toggleTheme();toggleUserMenu();")+
+    settingRow('🪟 液态玻璃效果',!!s.liquidGlass,"toggleSetting('liquidGlass','液态玻璃')")+
+    settingRow('🔤 仿宋 GB2312 字体',!!s.fangSong,"toggleSetting('fangSong','仿宋字体')")+
+    settingRow('🔕 免打扰（静音通知）',!!s.muteAll,"toggleSetting('muteAll','免打扰')")+
+    '<div style="margin-top:18px;padding-top:14px;border-top:1px solid var(--border-light);display:flex;flex-direction:column;gap:8px;">'+
+      '<button class="btn btn-outline" onclick="logoutAllOtherDevices();closeModal(\'settingsModal\')">💻 退出其他设备</button>'+
+      '<button class="btn btn-outline" onclick="closeModal(\'settingsModal\')">✏ 编辑资料</button>'+
+      '<button class="btn btn-danger" onclick="closeModal(\'settingsModal\');doLogout()">🚪 退出登录</button>'+
+    '</div>';
+  m.classList.add('show');
+}
+function settingRow(label,on,action){
+  return '<div style="display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border-light);">'+
+    '<span style="font-size:14px;">'+label+'</span>'+
+    '<label style="position:relative;display:inline-block;width:46px;height:26px;flex-shrink:0;">'+
+      '<input type="checkbox" '+(on?'checked':'')+' onchange="'+action+'" style="opacity:0;width:0;height:0;">'+
+      '<span style="position:absolute;inset:0;background:'+(on?'var(--primary)':'#ccc')+';border-radius:26px;transition:.2s;cursor:pointer;"></span>'+
+      '<span style="position:absolute;top:3px;left:'+(on?'23px':'3px')+';width:20px;height:20px;background:#fff;border-radius:50%;transition:.2s;box-shadow:0 1px 3px rgba(0,0,0,.2);"></span>'+
+    '</label></div>';
+}
 
 /* ---------- 前台排行榜 ---------- */
 function renderLeaderboard(){
@@ -2377,9 +2449,14 @@ function approveSchoolAdjust(userId){
   }
   u.pendingAdjust=null;
   DB.set('users',users);
+  /* 若审批的是当前登录用户，同步更新缓存 */
+  if(currentUser&&currentUser.id===u.id){
+    currentUser.role=u.role;currentUser.status=u.status;
+    DB.set('currentUser',currentUser);
+  }
   toast('已批准学籍调整','ok');
   logAdminAction(currentUser.nickname,'批准学籍调整',u.nickname+' → 入学'+req.newYear+'年');
-  sendInboxMessage(u.id,'✅ 学籍调整已通过','你的学籍调整申请已通过，当前入学年份：'+req.newYear+'年','system',{});
+  sendInboxMessage(u.id,'✅ 学籍调整已通过','你的学籍调整申请已通过，当前入学年份：'+req.newYear+'年，身份：'+(u.status==='毕业'?'毕业生':'在读学生')+'。刷新个人主页即可看到更新','system',{});
   renderAdminContent('school');
 }
 /* 审核：拒绝学籍调整 */
@@ -2790,6 +2867,38 @@ function logoutAllOtherDevices(){
   DB.set('sessions',DB.get('sessions',[]).filter(s=>s.userId!==currentUser.id||s.id===mySid));
   toast('已退出其他设备（本设备保持登录）','ok');
 }
+/* 每 60 秒轻量拉取云端 users/settings，同步本地缓存（学籍审批、禁言、角色变更等跨设备生效） */
+async function startCloudRefresh(){
+  setInterval(async ()=>{
+    if(_syncing||document.hidden)return;
+    try{
+      const res=await fetch(SB_URL+'/rest/v1/app_state?id=eq.main&select=users,settings,sessions',{
+        headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}
+      });
+      if(!res.ok)return;
+      const rows=await res.json();
+      if(rows&&rows.length>0){
+        const d=rows[0];
+        if(d.users&&d.users.length>0){
+          DB.set('users',d.users);
+          if(d.settings)DB.set('settings',d.settings);
+          if(d.sessions)DB.set('sessions',d.sessions);
+          /* 同步当前用户关键字段 */
+          if(currentUser){
+            const cu=d.users.find(x=>x.id===currentUser.id);
+            if(cu){
+              currentUser.role=cu.role;currentUser.status=cu.status;
+              currentUser.nickname=cu.nickname;currentUser.avatar=cu.avatar;
+              currentUser.signature=cu.signature;currentUser.location=cu.location;
+              DB.set('currentUser',currentUser);
+            }
+          }
+          applyAppearance();
+        }
+      }
+    }catch(e){}
+  },60000);
+}
 /* 每 30 秒检查本会话是否被踢 */
 function startSessionPolling(){
   setInterval(()=>{
@@ -2879,16 +2988,11 @@ function renderNavRight(){
     '<div class="user-dropdown" id="userDropdown">'+
       '<div class="ud-head"><b>'+esc(currentUser.nickname)+' '+roleBadge+'</b><span>@'+esc(currentUser.username)+'</span></div>'+
       '<a onclick="viewProfile(currentUser.id);toggleUserMenu();">👤 个人主页</a>'+
+      '<a onclick="openChatList();toggleUserMenu();">💬 消息'+(getUnreadMsgCount()>0?' <span style="background:#e74c3c;color:#fff;border-radius:10px;padding:0 6px;font-size:11px;">!</span>':'')+'</a>'+
       '<a onclick="openFriendsPanel();toggleUserMenu();">👥 好友</a>'+
-      '<a onclick="openChatList();toggleUserMenu();">💬 私聊消息</a>'+
       '<a onclick="openInbox();toggleUserMenu();">📬 站内信</a>'+
-      '<a onclick="openEditProfile();toggleUserMenu();">⚙ 编辑资料</a>'+
-      '<a onclick="viewMyPosts();toggleUserMenu();">📝 我的帖子</a>'+
-      '<a onclick="renderMyFavorites();toggleUserMenu();">⭐ 我的收藏</a>'+
-      '<a onclick="renderLeaderboard();toggleUserMenu();">🏆 排行榜</a>'+
-      '<a onclick="doCheckin();toggleUserMenu();">📅 每日签到</a>'+
-      '<a onclick="renderRules();toggleUserMenu();">📜 版规</a>'+
-      '<a onclick="toggleTheme();toggleUserMenu();">🌙 暗黑模式</a>'+
+      '<a onclick="doCheckin();toggleUserMenu();">📅 签到</a>'+
+      '<a onclick="openSettings();toggleUserMenu();">⚙ 设置</a>'+
       (currentUser.role==='owner'||currentUser.role==='admin'?'<a onclick="openAdminPanel();toggleUserMenu();">🛡 后台管理</a>':'')+
       '<button onclick="doLogout()">🚪 退出登录</button>'+
     '</div></div>';
@@ -5141,6 +5245,8 @@ async function init(){
   processAutoGraduation();
   /* 恢复暗黑模式主题 */
   initTheme();
+  /* 恢复仿宋字体/液态玻璃外观 */
+  initAppearance();
   /* 渲染公告组件 */
   renderAnnouncementWidget();
   /* 清理到期禁言 */
@@ -5186,6 +5292,8 @@ async function init(){
   startChatPolling();
   /* 启动会话校验轮询（30秒一次，支持被踢下线/退出其他设备） */
   startSessionPolling();
+  /* 启动轻量云端刷新（60秒一次，拉取最新users/settings，让学籍审批等跨设备实时生效） */
+  startCloudRefresh();
   console.log('🏫 银川十八中贴吧已加载（云端同步已开启）');
 }
 init();

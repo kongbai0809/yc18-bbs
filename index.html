@@ -1789,7 +1789,8 @@ function isBlockedBy(meId,otherId){
 function isDnd(){
   if(!currentUser)return false;
   const u=DB.get('users',[]).find(x=>x.id===currentUser.id);
-  return !!(u&&u.dnd);
+  const s=DB.get('settings',{});
+  return !!(u&&u.dnd)||!!s.muteAll;
 }
 function toggleDnd(){
   if(!currentUser){toast('请先登录','err');return;}
@@ -3504,6 +3505,8 @@ function submitDiary(){
   const content=$('diaryContent').value.trim();
   const visibility=$('diaryVisibility').value;
   if(!content&&diaryImages.length===0){toast('日记内容或图片不能都为空','err');return;}
+  const chk=checkContent(content);
+  if(chk.blocked)return;
   const diaries=DB.get('diaries',[]);
   diaries.unshift({
     id:uid(),
@@ -3684,6 +3687,7 @@ function submitDiaryComment(diaryId){
   if(isUserBanned(currentUser.id)){toast('你的账号已被封禁，无法评论','err');return;}
   const content=$('diaryCommentInput').value.trim();
   if(!content){toast('评论内容不能为空','err');return;}
+  if(findHitWord(content,SENSITIVE_WORDS)){toast('评论包含敏感词，请修改后再发送','err');return;}
   const comments=DB.get('diary_comments',[]);
   comments.push({
     id:uid(),diaryId,
@@ -5016,6 +5020,59 @@ function markChatAsRead(userId){
     if(m.from===userId&&m.to===currentUser.id&&!m.read){m.read=true;m.readAt=Date.now();changed=true;}
   });
   if(changed)DB.set('chatMessages',msgs);
+}
+/* 未读私聊消息数 */
+function getUnreadMsgCount(){
+  if(!currentUser)return 0;
+  return DB.get('chatMessages',[]).filter(m=>m.to===currentUser.id&&!m.read).length;
+}
+/* 更新移动端底部导航消息角标 */
+function updateMsgBadge(){
+  const n=getUnreadMsgCount();
+  const el=$('mobileMsgBadge');
+  if(el){el.textContent=n;el.style.display=n>0?'inline-block':'none';}
+}
+/* 打开会话列表 */
+function openChatList(){
+  if(!currentUser){toast('请先登录','err');return;}
+  /* 收集所有和当前用户有过对话的人 */
+  const msgs=DB.get('chatMessages',[]);
+  const myId=currentUser.id;
+  const partnerMap={};
+  msgs.forEach(m=>{
+    if(m.from===myId||m.to===myId){
+      const pid=m.from===myId?m.to:m.from;
+      if(!partnerMap[pid]||m.date>partnerMap[pid].lastDate){
+        partnerMap[pid]={lastDate:m.date,lastMsg:m.content,unread:0};
+      }
+      if(m.to===myId&&!m.read)partnerMap[pid].unread++;
+    }
+  });
+  const partners=Object.entries(partnerMap).sort((a,b)=>b[1].lastDate-a[1].lastDate);
+  const users=DB.get('users',[]);
+  let old=$('chatListModal');
+  if(old)old.remove();
+  const box=document.createElement('div');
+  box.id='chatListModal';box.className='modal-overlay show';
+  let html='<div class="modal-box" style="max-width:420px;"><span class="close-x" onclick="closeModal(\'chatListModal\')">×</span><h3>💬 消息列表</h3>';
+  if(!partners.length){
+    html+='<div class="empty-state"><div class="icon">💬</div><p>还没有私聊消息，去好友列表找同学聊聊吧</p></div>';
+  }else{
+    partners.forEach(([pid,info])=>{
+      const u=users.find(x=>x.id===pid);
+      const name=u?u.nickname:'未知用户';
+      html+='<div style="display:flex;align-items:center;gap:12px;padding:12px;border-bottom:1px solid var(--border-light);cursor:pointer;" onclick="closeModal(\'chatListModal\');openChat(\''+pid+'\')">'+
+        '<div class="pb-avatar" style="width:44px;height:44px;font-size:18px;flex-shrink:0;">'+(u&&u.avatar?'<img src="'+u.avatar+'" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">':name[0])+'</div>'+
+        '<div style="flex:1;min-width:0;"><b style="font-size:14px;">'+esc(name)+'</b>'+
+        '<div style="font-size:12px;color:var(--text-lighter);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+esc((info.lastMsg||'').slice(0,30))+'</div></div>'+
+        (info.unread?'<span style="background:#e74c3c;color:#fff;border-radius:10px;padding:2px 8px;font-size:11px;">'+info.unread+'</span>':'')+
+      '</div>';
+    });
+  }
+  html+='</div>';
+  box.innerHTML=html;
+  document.body.appendChild(box);
+  box.addEventListener('click',e=>{if(e.target===box)box.remove();});
 }
 function showChatMenu(){
   if(!currentChatUserId)return;

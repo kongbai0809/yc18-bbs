@@ -4,7 +4,6 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>银川十八中贴吧 · 校园社区</title>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 /* ===== 变量 ===== */
 :root{
@@ -1203,21 +1202,10 @@ const DB={
   }
 };
 
-/* ===== Supabase 云端同步 ===== */
-let _sb = null;
-try {
-  if (typeof supabase !== 'undefined' && supabase.createClient) {
-    _sb = supabase.createClient(
-      'https://qyczdojgzwwndqgalemq.supabase.co',
-      'sb_publishable_S2gBborHHh0XT-8Z6KPDYg_5J5g3P6i'
-    );
-    console.log('✅ Supabase 客户端初始化成功');
-  } else {
-    console.warn('⚠️ Supabase SDK 未加载，云端同步已禁用');
-  }
-} catch(e) {
-  console.warn('⚠️ Supabase 初始化失败:', e.message);
-}
+/* ===== Supabase 云端同步（原生 fetch，无外部依赖） ===== */
+const SB_URL='https://qyczdojgzwwndqgalemq.supabase.co';
+const SB_KEY='sb_publishable_S2gBborHHh0XT-8Z6KPDYg_5J5g3P6i';
+const SB_HEADERS={'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json'};
 let _syncTimer=null;
 let _syncing=false;
 function scheduleCloudSync(){
@@ -1225,7 +1213,7 @@ function scheduleCloudSync(){
   _syncTimer=setTimeout(()=>cloudSave(),1500);
 }
 async function cloudSave(){
-  if(!_sb||_syncing)return;
+  if(_syncing)return;
   _syncing=true;
   try{
     const data={
@@ -1244,16 +1232,25 @@ async function cloudSave(){
       settings:DB.get('settings',{}),
       updated_at:new Date().toISOString()
     };
-    await _sb.from('app_state').upsert(data);
-  }catch(e){console.warn('云端同步失败:',e.message);}
+    const res=await fetch(SB_URL+'/rest/v1/app_state',{
+      method:'POST',
+      headers:{...SB_HEADERS,'Prefer':'resolution=merge-duplicates'},
+      body:JSON.stringify(data)
+    });
+    if(!res.ok)throw new Error('HTTP '+res.status);
+    console.log('✅ 云端数据已同步');
+  }catch(e){console.warn('⚠️ 云端同步失败:',e.message);}
   _syncing=false;
 }
 async function cloudLoad(){
-  if(!_sb){console.warn('⚠️ 云端同步未启用，使用本地数据');return;}
   try{
-    const {data,error}=await _sb.from('app_state').select('*').eq('id','main').single();
-    if(error)throw error;
-    if(data){
+    const res=await fetch(SB_URL+'/rest/v1/app_state?id=eq.main&select=*',{
+      headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}
+    });
+    if(!res.ok)throw new Error('HTTP '+res.status);
+    const rows=await res.json();
+    if(rows&&rows.length>0){
+      const data=rows[0];
       if(data.users&&data.users.length>0)DB.set('users',data.users);
       if(data.posts&&data.posts.length>0)DB.set('posts',data.posts);
       if(data.comments&&data.comments.length>0)DB.set('comments',data.comments);
@@ -1266,10 +1263,10 @@ async function cloudLoad(){
       if(data.diaries)DB.set('diaries',data.diaries);
       if(data.diary_comments)DB.set('diary_comments',data.diary_comments);
       if(data.settings)DB.set('settings',data.settings);
-      console.log('✅ 云端数据加载成功');
+      console.log('✅ 云端数据加载成功，用户:'+(data.users||[]).length+' 帖子:'+(data.posts||[]).length);
     }
   }catch(e){
-    console.warn('云端数据加载失败，使用本地数据:',e.message);
+    console.warn('⚠️ 云端数据加载失败，使用本地数据:',e.message);
   }
 }
 

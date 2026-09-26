@@ -1312,11 +1312,13 @@ const DEFAULT_USERS=[
    avatar:'',cover:'',regDate:Date.now()-86400000*100}
 ];
 
-/* 初始化数据（延迟到cloudLoad后，避免默认数据覆盖云端） */
+/* 初始化数据（直接写localStorage，不触发云端同步，避免默认数据覆盖云端） */
 function initDefaultData(){
-  if(!DB.get('users')||DB.get('users',[]).length===0)DB.set('users',DEFAULT_USERS);
-  if(!DB.get('posts')||DB.get('posts',[]).length===0)DB.set('posts',DEFAULT_POSTS);
-  if(!DB.get('comments')||DB.get('comments',[]).length===0)DB.set('comments',DEFAULT_COMMENTS);
+  const lsGet=k=>{try{return JSON.parse(localStorage.getItem('yc18_'+k))}catch(e){return null}};
+  const lsSet=(k,v)=>localStorage.setItem('yc18_'+k,JSON.stringify(v));
+  if(!lsGet('users')||lsGet('users').length===0)lsSet('users',DEFAULT_USERS);
+  if(!lsGet('posts')||lsGet('posts').length===0)lsSet('posts',DEFAULT_POSTS);
+  if(!lsGet('comments')||lsGet('comments').length===0)lsSet('comments',DEFAULT_COMMENTS);
 }
 if(!DB.get('settings'))DB.set('settings',{siteName:'银川十八中贴吧',announcement:'欢迎来到银川十八中贴吧！请遵守社区规范，文明发言。'});
 

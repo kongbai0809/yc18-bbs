@@ -1,0 +1,1535 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>银川十八中贴吧 · 校园社区</title>
+<style>
+/* ===== 变量 ===== */
+:root{
+  --primary:#0d6b3d;
+  --primary-light:#2d8b5e;
+  --primary-lighter:#5aad82;
+  --bg-primary:#e8f5ee;
+  --bg-lighter:#f0faf4;
+  --bg-white:#ffffff;
+  --text:#2c3e34;
+  --text-light:#6b7c72;
+  --text-lighter:#9aa8a0;
+  --border:#e2e8e4;
+  --border-light:#eef2ef;
+  --shadow:0 2px 12px rgba(13,107,61,.08);
+  --shadow-lg:0 8px 32px rgba(13,107,61,.12);
+  --radius:12px;
+  --radius-sm:8px;
+  --font:"PingFang SC","Hiragino Sans GB","Microsoft YaHei","Noto Sans SC",sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{width:100%;min-height:100%;}
+body{
+  font-family:var(--font);color:var(--text);background:var(--bg-lighter);
+  font-size:14px;line-height:1.6;
+}
+a{color:var(--primary);text-decoration:none;transition:.2s;}
+a:hover{color:var(--primary-light);}
+button{font-family:var(--font);cursor:pointer;border:none;outline:none;}
+input,textarea,select{font-family:var(--font);outline:none;}
+::-webkit-scrollbar{width:8px;height:8px;}
+::-webkit-scrollbar-track{background:var(--bg-lighter);}
+::-webkit-scrollbar-thumb{background:var(--primary-lighter);border-radius:4px;}
+::-webkit-scrollbar-thumb:hover{background:var(--primary);}
+
+/* ===== 顶部导航 ===== */
+header{
+  position:sticky;top:0;z-index:100;
+  background:var(--bg-white);border-bottom:1px solid var(--border);
+  box-shadow:var(--shadow);
+}
+.nav-inner{
+  max-width:1200px;margin:0 auto;padding:0 20px;
+  display:flex;align-items:center;height:60px;gap:20px;
+}
+.logo{
+  display:flex;align-items:center;gap:10px;cursor:pointer;flex-shrink:0;
+}
+.logo img{width:38px;height:38px;border-radius:50%;border:2px solid var(--primary);}
+.logo h1{font-size:17px;color:var(--primary);font-weight:700;letter-spacing:1px;}
+.logo h1 small{display:block;font-size:9px;color:var(--text-lighter);font-weight:400;letter-spacing:2px;}
+nav{display:flex;gap:4px;flex:1;}
+nav a{
+  padding:8px 16px;border-radius:var(--radius-sm);font-size:13.5px;color:var(--text-light);
+  font-weight:500;transition:.15s;
+}
+nav a:hover{background:var(--bg-primary);color:var(--primary);}
+nav a.active{background:var(--primary);color:#fff;}
+.nav-right{display:flex;align-items:center;gap:10px;flex-shrink:0;}
+.btn{
+  padding:8px 18px;border-radius:var(--radius-sm);font-size:13px;font-weight:600;
+  transition:.15s;display:inline-flex;align-items:center;gap:5px;
+}
+.btn-primary{background:var(--primary);color:#fff;}
+.btn-primary:hover{background:var(--primary-light);transform:translateY(-1px);}
+.btn-outline{background:transparent;color:var(--primary);border:1px solid var(--primary);}
+.btn-outline:hover{background:var(--bg-primary);}
+.btn-ghost{background:var(--bg-primary);color:var(--primary);}
+.btn-ghost:hover{background:var(--primary-lighter);color:#fff;}
+.btn-sm{padding:5px 12px;font-size:12px;}
+.btn-danger{background:#e74c3c;color:#fff;}
+.btn-danger:hover{background:#c0392b;}
+
+/* 用户菜单 */
+.user-menu{position:relative;}
+.user-avatar{
+  width:36px;height:36px;border-radius:50%;border:2px solid var(--primary);
+  cursor:pointer;object-fit:cover;background:var(--bg-primary);
+  display:flex;align-items:center;justify-content:center;font-size:16px;
+}
+.user-dropdown{
+  position:absolute;top:46px;right:0;width:200px;background:var(--bg-white);
+  border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow-lg);
+  padding:8px 0;display:none;z-index:200;
+}
+.user-dropdown.show{display:block;}
+.user-dropdown .ud-head{padding:12px 16px;border-bottom:1px solid var(--border-light);}
+.user-dropdown .ud-head b{display:block;font-size:14px;color:var(--text);}
+.user-dropdown .ud-head span{font-size:11px;color:var(--text-lighter);}
+.user-dropdown a{
+  display:block;padding:9px 16px;font-size:13px;color:var(--text-light);transition:.15s;
+}
+.user-dropdown a:hover{background:var(--bg-primary);color:var(--primary);}
+.user-dropdown button{
+  display:block;width:100%;text-align:left;padding:9px 16px;font-size:13px;
+  color:#e74c3c;background:transparent;transition:.15s;
+}
+.user-dropdown button:hover{background:#fef0f0;}
+
+/* 头衔标签 */
+.role-badge{
+  display:inline-block;padding:1px 7px;border-radius:4px;font-size:10px;font-weight:700;
+  letter-spacing:.5px;vertical-align:middle;
+}
+.role-owner{background:linear-gradient(135deg,#f1c40f,#e67e22);color:#fff;}
+.role-admin{background:linear-gradient(135deg,#3498db,#2980b9);color:#fff;}
+.role-student{background:var(--bg-primary);color:var(--primary);}
+.role-graduate{background:#f0e6d6;color:#8b7355;}
+
+/* ===== 主内容 ===== */
+main{max-width:1200px;margin:0 auto;padding:20px;}
+.layout{display:grid;grid-template-columns:220px 1fr 260px;gap:20px;}
+
+/* 左侧分区 */
+.sidebar-left{
+  background:var(--bg-white);border:1px solid var(--border);border-radius:var(--radius);
+  padding:16px 12px;box-shadow:var(--shadow);height:fit-content;position:sticky;top:80px;
+}
+.sidebar-left h4{
+  font-size:12px;color:var(--text-lighter);letter-spacing:2px;padding:0 8px 10px;
+  text-transform:uppercase;border-bottom:1px solid var(--border-light);margin-bottom:8px;
+}
+.zone-item{
+  display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:var(--radius-sm);
+  font-size:13.5px;color:var(--text-light);cursor:pointer;transition:.15s;margin-bottom:2px;
+}
+.zone-item:hover{background:var(--bg-primary);color:var(--primary);}
+.zone-item.active{background:var(--primary);color:#fff;}
+.zone-item .zi-icon{font-size:16px;width:20px;text-align:center;}
+.zone-item .zi-count{margin-left:auto;font-size:11px;background:rgba(0,0,0,.06);padding:1px 7px;border-radius:10px;}
+.zone-item.active .zi-count{background:rgba(255,255,255,.2);}
+
+/* 中间内容区 */
+.content-area{min-width:0;}
+
+/* 发帖按钮区 */
+.post-bar{
+  background:var(--bg-white);border:1px solid var(--border);border-radius:var(--radius);
+  padding:14px 18px;margin-bottom:16px;box-shadow:var(--shadow);
+  display:flex;align-items:center;gap:12px;
+}
+.post-bar .pb-avatar{
+  width:40px;height:40px;border-radius:50%;background:var(--bg-primary);
+  display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;
+  border:2px solid var(--primary);object-fit:cover;
+}
+.post-bar input{
+  flex:1;padding:10px 16px;border:1px solid var(--border);border-radius:20px;
+  font-size:13.5px;background:var(--bg-lighter);transition:.2s;
+}
+.post-bar input:focus{border-color:var(--primary);background:var(--bg-white);}
+
+/* 帖子卡片 */
+.post-card{
+  background:var(--bg-white);border:1px solid var(--border);border-radius:var(--radius);
+  padding:18px 20px;margin-bottom:14px;box-shadow:var(--shadow);transition:.2s;cursor:pointer;
+}
+.post-card:hover{border-color:var(--primary-lighter);box-shadow:var(--shadow-lg);transform:translateY(-1px);}
+.post-card .pc-head{display:flex;align-items:center;gap:10px;margin-bottom:12px;}
+.post-card .pc-avatar{
+  width:40px;height:40px;border-radius:50%;background:var(--bg-primary);
+  display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;
+  border:2px solid var(--border);object-fit:cover;
+}
+.post-card .pc-meta{flex:1;min-width:0;}
+.post-card .pc-meta .name{font-size:14px;font-weight:600;color:var(--text);display:flex;align-items:center;gap:6px;}
+.post-card .pc-meta .time{font-size:11px;color:var(--text-lighter);}
+.post-card .pc-zone{
+  font-size:11px;padding:2px 8px;border-radius:4px;background:var(--bg-primary);
+  color:var(--primary);font-weight:600;flex-shrink:0;
+}
+.post-card h3{font-size:16px;color:var(--text);margin-bottom:8px;line-height:1.4;}
+.post-card .pc-content{
+  font-size:13.5px;color:var(--text-light);line-height:1.7;margin-bottom:12px;
+  display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;
+}
+.post-card .pc-actions{display:flex;gap:20px;padding-top:10px;border-top:1px solid var(--border-light);}
+.post-card .pc-actions button{
+  background:transparent;color:var(--text-lighter);font-size:12.5px;
+  display:flex;align-items:center;gap:5px;transition:.15s;padding:4px 8px;border-radius:4px;
+}
+.post-card .pc-actions button:hover{color:var(--primary);background:var(--bg-primary);}
+.post-card .pc-actions button.liked{color:#e74c3c;}
+
+/* 右侧边栏 */
+.sidebar-right{display:flex;flex-direction:column;gap:16px;}
+.widget{
+  background:var(--bg-white);border:1px solid var(--border);border-radius:var(--radius);
+  padding:16px;box-shadow:var(--shadow);
+}
+.widget h4{
+  font-size:13px;color:var(--primary);font-weight:700;margin-bottom:12px;
+  padding-bottom:8px;border-bottom:1px solid var(--border-light);
+  display:flex;align-items:center;gap:6px;
+}
+.hot-list{display:flex;flex-direction:column;gap:10px;}
+.hot-item{
+  display:flex;gap:10px;align-items:flex-start;cursor:pointer;padding:6px;border-radius:var(--radius-sm);transition:.15s;
+}
+.hot-item:hover{background:var(--bg-primary);}
+.hot-item .rank{
+  width:20px;height:20px;border-radius:4px;background:var(--border-light);color:var(--text-lighter);
+  display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;
+}
+.hot-item:nth-child(1) .rank{background:#e74c3c;color:#fff;}
+.hot-item:nth-child(2) .rank{background:#e67e22;color:#fff;}
+.hot-item:nth-child(3) .rank{background:#f1c40f;color:#fff;}
+.hot-item .hi-title{font-size:12.5px;color:var(--text);line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+
+/* 统计 widget */
+.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.stat-item{text-align:center;padding:10px;background:var(--bg-lighter);border-radius:var(--radius-sm);}
+.stat-item .num{font-size:20px;font-weight:700;color:var(--primary);}
+.stat-item .label{font-size:11px;color:var(--text-lighter);margin-top:2px;}
+
+/* ===== 注册/登录页 ===== */
+.auth-page{
+  position:fixed;inset:0;z-index:500;background:var(--bg-lighter);
+  display:flex;align-items:center;justify-content:center;padding:20px;
+}
+.auth-box{
+  display:grid;grid-template-columns:1fr 1fr;max-width:900px;width:100%;
+  background:var(--bg-white);border-radius:16px;overflow:hidden;box-shadow:var(--shadow-lg);
+  max-height:92vh;
+}
+.auth-left{
+  position:relative;min-height:500px;
+  background:linear-gradient(135deg,rgba(13,107,61,.85),rgba(45,139,94,.75));
+  display:flex;align-items:center;justify-content:center;overflow:hidden;
+}
+.auth-left img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.35;}
+.auth-left .al-content{position:relative;z-index:2;text-align:center;color:#fff;padding:30px;}
+.auth-left .al-content .school-logo{
+  width:80px;height:80px;border-radius:50%;border:3px solid rgba(255,255,255,.6);
+  margin:0 auto 16px;background:#fff;padding:4px;
+}
+.auth-left .al-content h2{font-size:24px;margin-bottom:8px;letter-spacing:2px;}
+.auth-left .al-content p{font-size:13px;opacity:.85;line-height:1.8;}
+.auth-right{padding:30px 36px;overflow-y:auto;}
+.auth-right h3{font-size:20px;color:var(--primary);margin-bottom:4px;}
+.auth-right .sub{font-size:12px;color:var(--text-lighter);margin-bottom:20px;}
+.form-group{margin-bottom:14px;}
+.form-group label{display:block;font-size:12px;color:var(--text-light);margin-bottom:5px;font-weight:500;}
+.form-group label .req{color:#e74c3c;}
+.form-group label .opt{color:var(--text-lighter);font-weight:400;}
+.form-group input,.form-group select,.form-group textarea{
+  width:100%;padding:9px 14px;border:1px solid var(--border);border-radius:var(--radius-sm);
+  font-size:13px;background:var(--bg-lighter);transition:.2s;
+}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{
+  border-color:var(--primary);background:var(--bg-white);box-shadow:0 0 0 3px rgba(13,107,61,.1);
+}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.form-row-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;}
+.auth-switch{text-align:center;margin-top:16px;font-size:12.5px;color:var(--text-lighter);}
+.auth-switch a{color:var(--primary);font-weight:600;cursor:pointer;}
+.auth-tip{
+  background:var(--bg-primary);border:1px solid var(--primary-lighter);border-radius:var(--radius-sm);
+  padding:10px 14px;font-size:11.5px;color:var(--primary);margin-bottom:16px;line-height:1.6;
+}
+
+/* ===== 帖子详情 ===== */
+.post-detail{
+  background:var(--bg-white);border:1px solid var(--border);border-radius:var(--radius);
+  padding:24px 28px;box-shadow:var(--shadow);
+}
+.post-detail .back-btn{
+  display:inline-flex;align-items:center;gap:5px;color:var(--text-lighter);font-size:13px;
+  cursor:pointer;margin-bottom:16px;transition:.15s;
+}
+.post-detail .back-btn:hover{color:var(--primary);}
+.post-detail h2{font-size:22px;color:var(--text);margin-bottom:14px;line-height:1.4;}
+.post-detail .pd-meta{
+  display:flex;align-items:center;gap:12px;padding-bottom:16px;border-bottom:1px solid var(--border-light);
+  margin-bottom:20px;flex-wrap:wrap;
+}
+.post-detail .pd-meta .avatar{
+  width:42px;height:42px;border-radius:50%;background:var(--bg-primary);
+  display:flex;align-items:center;justify-content:center;font-size:20px;border:2px solid var(--primary);
+  object-fit:cover;
+}
+.post-detail .pd-meta .info{flex:1;}
+.post-detail .pd-meta .info .name{font-size:14px;font-weight:600;display:flex;align-items:center;gap:6px;}
+.post-detail .pd-meta .info .time{font-size:11px;color:var(--text-lighter);}
+.post-detail .pd-content{font-size:14.5px;line-height:1.9;color:var(--text);margin-bottom:24px;}
+.post-detail .pd-content p{margin-bottom:14px;}
+.post-detail .pd-actions{
+  display:flex;gap:16px;padding:14px 0;border-top:1px solid var(--border-light);
+  border-bottom:1px solid var(--border-light);margin-bottom:20px;
+}
+.post-detail .pd-actions button{
+  background:var(--bg-lighter);color:var(--text-light);padding:8px 20px;border-radius:20px;
+  font-size:13px;display:flex;align-items:center;gap:6px;transition:.15s;
+}
+.post-detail .pd-actions button:hover{background:var(--bg-primary);color:var(--primary);}
+.post-detail .pd-actions button.liked{background:#fef0f0;color:#e74c3c;}
+
+/* 评论区 */
+.comments h3{font-size:16px;color:var(--text);margin-bottom:16px;}
+.comment-form{display:flex;gap:12px;margin-bottom:20px;}
+.comment-form .cf-avatar{
+  width:38px;height:38px;border-radius:50%;background:var(--bg-primary);
+  display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;
+  border:2px solid var(--primary);
+}
+.comment-form .cf-body{flex:1;}
+.comment-form textarea{
+  width:100%;padding:10px 14px;border:1px solid var(--border);border-radius:var(--radius-sm);
+  font-size:13px;resize:vertical;min-height:60px;background:var(--bg-lighter);transition:.2s;
+}
+.comment-form textarea:focus{border-color:var(--primary);background:var(--bg-white);}
+.comment-form .cf-submit{text-align:right;margin-top:8px;}
+.comment-item{
+  display:flex;gap:12px;padding:14px 0;border-bottom:1px solid var(--border-light);
+}
+.comment-item .ci-avatar{
+  width:36px;height:36px;border-radius:50%;background:var(--bg-primary);
+  display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;
+  border:2px solid var(--border);object-fit:cover;
+}
+.comment-item .ci-body{flex:1;min-width:0;}
+.comment-item .ci-head{display:flex;align-items:center;gap:8px;margin-bottom:4px;}
+.comment-item .ci-head .name{font-size:13px;font-weight:600;color:var(--text);display:flex;align-items:center;gap:5px;}
+.comment-item .ci-head .time{font-size:11px;color:var(--text-lighter);}
+.comment-item .ci-content{font-size:13.5px;color:var(--text-light);line-height:1.7;margin-bottom:6px;}
+.comment-item .ci-actions{display:flex;gap:14px;}
+.comment-item .ci-actions button{
+  background:transparent;color:var(--text-lighter);font-size:12px;transition:.15s;
+  display:flex;align-items:center;gap:4px;
+}
+.comment-item .ci-actions button:hover{color:var(--primary);}
+.comment-item .ci-actions button.liked{color:#e74c3c;}
+
+/* ===== 个人主页 ===== */
+.profile-page{margin:-20px;}
+.profile-cover{
+  height:220px;background:linear-gradient(135deg,var(--primary),var(--primary-light));
+  position:relative;overflow:hidden;
+}
+.profile-cover img{width:100%;height:100%;object-fit:cover;}
+.profile-cover .cover-edit{
+  position:absolute;bottom:14px;right:14px;background:rgba(0,0,0,.5);color:#fff;
+  padding:6px 14px;border-radius:20px;font-size:12px;cursor:pointer;backdrop-filter:blur(4px);
+  display:flex;align-items:center;gap:5px;transition:.2s;
+}
+.profile-cover .cover-edit:hover{background:rgba(0,0,0,.7);}
+.profile-info{
+  max-width:900px;margin:0 auto;padding:0 20px;position:relative;
+}
+.profile-avatar-wrap{
+  margin-top:-60px;display:flex;align-items:flex-end;gap:20px;flex-wrap:wrap;
+}
+.profile-avatar{
+  width:120px;height:120px;border-radius:50%;border:4px solid var(--bg-white);
+  background:var(--bg-primary);box-shadow:var(--shadow-lg);position:relative;
+  display:flex;align-items:center;justify-content:center;font-size:48px;object-fit:cover;
+  cursor:pointer;overflow:hidden;
+}
+.profile-avatar img{width:100%;height:100%;object-fit:cover;}
+.profile-avatar .avatar-edit{
+  position:absolute;inset:0;background:rgba(0,0,0,.5);color:#fff;display:flex;
+  align-items:center;justify-content:center;font-size:12px;opacity:0;transition:.2s;
+  border-radius:50%;
+}
+.profile-avatar:hover .avatar-edit{opacity:1;}
+.profile-name-area{flex:1;padding-bottom:10px;min-width:200px;}
+.profile-name-area h2{font-size:24px;color:var(--text);display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.profile-name-area .username{font-size:14px;color:var(--text-lighter);margin-top:2px;}
+.profile-badges{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;}
+.profile-badge{
+  padding:3px 12px;border-radius:14px;font-size:11px;font-weight:600;
+  background:var(--bg-primary);color:var(--primary);border:1px solid var(--primary-lighter);
+  display:flex;align-items:center;gap:4px;
+}
+.profile-signature{
+  font-size:14px;color:var(--text-light);font-style:italic;margin-top:10px;
+  padding:0 4px;
+}
+.profile-location{font-size:12.5px;color:var(--text-lighter);margin-top:6px;display:flex;align-items:center;gap:4px;}
+.profile-actions{display:flex;gap:10px;padding-bottom:10px;}
+.profile-stats{
+  display:flex;gap:30px;padding:16px 0;margin-top:16px;border-top:1px solid var(--border-light);
+  border-bottom:1px solid var(--border-light);
+}
+.profile-stats .ps-item{text-align:center;cursor:pointer;}
+.profile-stats .ps-item .num{font-size:20px;font-weight:700;color:var(--primary);}
+.profile-stats .ps-item .label{font-size:11.5px;color:var(--text-lighter);}
+.profile-tabs{display:flex;gap:4px;margin-top:16px;border-bottom:2px solid var(--border-light);}
+.profile-tabs a{
+  padding:10px 20px;font-size:13.5px;color:var(--text-light);font-weight:500;
+  border-bottom:2px solid transparent;margin-bottom:-2px;transition:.15s;cursor:pointer;
+}
+.profile-tabs a.active{color:var(--primary);border-bottom-color:var(--primary);}
+.profile-content{padding:20px 0;}
+
+/* 编辑资料弹窗 */
+.edit-profile-form .form-group{margin-bottom:12px;}
+
+/* ===== 发帖弹窗 ===== */
+.modal-overlay{
+  position:fixed;inset:0;z-index:400;background:rgba(0,0,0,.5);
+  display:none;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(2px);
+}
+.modal-overlay.show{display:flex;}
+.modal-box{
+  background:var(--bg-white);border-radius:var(--radius);width:100%;max-width:560px;
+  max-height:85vh;overflow-y:auto;padding:24px 28px;box-shadow:var(--shadow-lg);
+  position:relative;
+}
+.modal-box h3{font-size:18px;color:var(--primary);margin-bottom:18px;padding-bottom:12px;border-bottom:1px solid var(--border-light);}
+.modal-box .close-x{
+  position:absolute;top:16px;right:20px;font-size:22px;color:var(--text-lighter);
+  cursor:pointer;width:30px;height:30px;display:flex;align-items:center;justify-content:center;
+  border-radius:50%;transition:.15s;
+}
+.modal-box .close-x:hover{background:var(--bg-lighter);color:var(--text);}
+.modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:18px;}
+
+/* ===== Toast ===== */
+#toast{
+  position:fixed;top:80px;left:50%;transform:translateX(-50%) translateY(-20px);
+  background:var(--text);color:#fff;padding:10px 24px;border-radius:24px;
+  font-size:13px;z-index:9999;opacity:0;transition:.3s;box-shadow:var(--shadow-lg);
+  pointer-events:none;max-width:80vw;text-align:center;
+}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+#toast.err{background:#e74c3c;}
+#toast.ok{background:var(--primary);}
+
+/* ===== 空状态 ===== */
+.empty-state{text-align:center;padding:50px 20px;color:var(--text-lighter);}
+.empty-state .icon{font-size:48px;margin-bottom:12px;opacity:.5;}
+.empty-state p{font-size:14px;}
+
+/* ===== 响应式 ===== */
+@media(max-width:960px){
+  .layout{grid-template-columns:1fr;}
+  .sidebar-left,.sidebar-right{display:none;}
+  .auth-box{grid-template-columns:1fr;}
+  .auth-left{display:none;}
+  .profile-stats{gap:20px;}
+}
+@media(max-width:600px){
+  .nav-inner{padding:0 12px;gap:10px;}
+  .logo h1{font-size:14px;}
+  .logo h1 small{display:none;}
+  nav{display:none;}
+  main{padding:12px;}
+  .form-row,.form-row-3{grid-template-columns:1fr;}
+  .profile-avatar{width:90px;height:90px;font-size:36px;}
+  .profile-name-area h2{font-size:20px;}
+  .post-detail{padding:18px 16px;}
+}
+</style>
+</head>
+<body>
+
+<!-- 注册/登录页 -->
+<div class="auth-page" id="authPage">
+  <div class="auth-box">
+    <div class="auth-left">
+      <img src="school-gate.jpg" alt="银川十八中">
+      <div class="al-content">
+        <img src="logo.png" class="school-logo" alt="校徽">
+        <h2>银川市第十八中学</h2>
+        <p>YINCHUAN NO.18 MIDDLE SCHOOL<br>校园社区 · 贴吧<br>青春不散场 · 梦想正起航</p>
+      </div>
+    </div>
+    <div class="auth-right" id="authRight">
+      <!-- 动态渲染登录/注册表单 -->
+    </div>
+  </div>
+</div>
+
+<!-- 顶部导航 -->
+<header id="mainHeader" style="display:none;">
+  <div class="nav-inner">
+    <div class="logo" onclick="goHome()">
+      <img src="logo.png" alt="校徽">
+      <h1>银川十八中贴吧<small>YC18 BBS</small></h1>
+    </div>
+    <nav id="mainNav">
+      <a class="active" onclick="goHome()">🏠 首页</a>
+      <a onclick="navigateZone('all')">📋 全部帖子</a>
+    </nav>
+    <div class="nav-right" id="navRight"></div>
+  </div>
+</header>
+
+<!-- 主内容 -->
+<main id="mainContent" style="display:none;">
+  <div class="layout">
+    <!-- 左侧分区 -->
+    <div class="sidebar-left">
+      <h4>📂 分区</h4>
+      <div id="zoneList"></div>
+    </div>
+    <!-- 中间内容 -->
+    <div class="content-area" id="contentArea"></div>
+    <!-- 右侧边栏 -->
+    <div class="sidebar-right">
+      <div class="widget">
+        <h4>📊 社区统计</h4>
+        <div class="stats-grid" id="statsGrid"></div>
+      </div>
+      <div class="widget">
+        <h4>🔥 热门帖子</h4>
+        <div class="hot-list" id="hotList"></div>
+      </div>
+      <div class="widget">
+        <h4>📢 社区公告</h4>
+        <div style="font-size:12.5px;color:var(--text-light);line-height:1.8;" id="announceWidget">
+          欢迎来到银川十八中贴吧！请遵守社区规范，文明发言。
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- 个人主页 -->
+<div id="profilePage" style="display:none;"></div>
+
+<!-- 发帖弹窗 -->
+<div class="modal-overlay" id="postModal">
+  <div class="modal-box">
+    <span class="close-x" onclick="closeModal('postModal')">×</span>
+    <h3>✏ 发布新帖</h3>
+    <div class="form-group">
+      <label>选择分区 <span class="req">*</span></label>
+      <select id="postZone"></select>
+    </div>
+    <div class="form-group">
+      <label>帖子标题 <span class="req">*</span></label>
+      <input id="postTitle" placeholder="请输入帖子标题（5-50字）" maxlength="50">
+    </div>
+    <div class="form-group">
+      <label>帖子内容 <span class="req">*</span></label>
+      <textarea id="postContent" placeholder="说点什么吧..." style="min-height:140px;"></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('postModal')">取消</button>
+      <button class="btn btn-primary" onclick="submitPost()">发布</button>
+    </div>
+  </div>
+</div>
+
+<!-- 编辑资料弹窗 -->
+<div class="modal-overlay" id="editProfileModal">
+  <div class="modal-box edit-profile-form">
+    <span class="close-x" onclick="closeModal('editProfileModal')">×</span>
+    <h3>⚙ 编辑个人资料</h3>
+    <div class="form-group">
+      <label>昵称</label>
+      <input id="epNickname" placeholder="请输入昵称">
+    </div>
+    <div class="form-group">
+      <label>个人签名</label>
+      <input id="epSignature" placeholder="一句话介绍自己" maxlength="50">
+    </div>
+    <div class="form-group">
+      <label>所在地</label>
+      <input id="epLocation" placeholder="例如：宁夏银川">
+    </div>
+    <div class="form-group">
+      <label>手机号 <span class="opt">（选填）</span></label>
+      <input id="epPhone" placeholder="手机号">
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>QQ <span class="opt">（选填）</span></label><input id="epQQ" placeholder="QQ号"></div>
+      <div class="form-group"><label>微信 <span class="opt">（选填）</span></label><input id="epWechat" placeholder="微信号"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>邮箱 <span class="opt">（选填）</span></label><input id="epEmail" placeholder="邮箱地址"></div>
+      <div class="form-group"><label>抖音 <span class="opt">（选填）</span></label><input id="epDouyin" placeholder="抖音号"></div>
+    </div>
+    <div class="form-group">
+      <label>快手 <span class="opt">（选填）</span></label>
+      <input id="epKuaishou" placeholder="快手号">
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('editProfileModal')">取消</button>
+      <button class="btn btn-primary" onclick="saveProfileEdit()">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- 后台管理弹窗 -->
+<div class="modal-overlay" id="adminModal">
+  <div class="modal-box" style="max-width:700px;">
+    <span class="close-x" onclick="closeModal('adminModal')">×</span>
+    <h3>🛡 后台管理</h3>
+    <div id="adminContent"></div>
+  </div>
+</div>
+
+<!-- 隐藏文件输入 -->
+<input type="file" id="avatarInput" accept="image/*" style="display:none;">
+<input type="file" id="coverInput" accept="image/*" style="display:none;">
+
+<!-- Toast -->
+<div id="toast"></div>
+
+<script>
+"use strict";
+/* ===== 工具函数 ===== */
+const $=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,8);
+const timeAgo=t=>{
+  const d=Date.now()-t;
+  if(d<60000)return '刚刚';
+  if(d<3600000)return Math.floor(d/60000)+'分钟前';
+  if(d<86400000)return Math.floor(d/3600000)+'小时前';
+  if(d<2592000000)return Math.floor(d/86400000)+'天前';
+  return new Date(t).toLocaleDateString('zh-CN');
+};
+let toastTimer=null;
+function toast(msg,type){
+  const t=$('toast');t.textContent=msg;t.className='show '+(type||'');
+  clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.className='',2600);
+}
+function showModal(id){$(id).classList.add('show');}
+function closeModal(id){$(id).classList.remove('show');}
+document.querySelectorAll('.modal-overlay').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('show');}));
+
+/* ===== 简单加密（Base64+偏移，用于敏感信息本地存储） ===== */
+function encrypt(str){
+  if(!str)return '';
+  try{
+    const shifted=str.split('').map(c=>String.fromCharCode(c.charCodeAt(0)+3)).join('');
+    return btoa(unescape(encodeURIComponent(shifted)));
+  }catch(e){return btoa(str);}
+}
+function decrypt(str){
+  if(!str)return '';
+  try{
+    const shifted=decodeURIComponent(escape(atob(str)));
+    return shifted.split('').map(c=>String.fromCharCode(c.charCodeAt(0)-3)).join('');
+  }catch(e){return atob(str);}
+}
+
+/* ===== 数据层 ===== */
+const DB={
+  get(k,d){try{const v=localStorage.getItem('yc18_'+k);return v?JSON.parse(v):d;}catch(e){return d;}},
+  set(k,v){try{localStorage.setItem('yc18_'+k,JSON.stringify(v));}catch(e){}}
+};
+
+/* ===== 分区定义 ===== */
+const ZONES=[
+  {id:'all',name:'全部帖子',icon:'📋',desc:'所有分区的帖子'},
+  {id:'general',name:'综合讨论区',icon:'💬',desc:'畅所欲言，分享生活'},
+  {id:'campus',name:'校园墙',icon:'🏫',desc:'校园趣事、表白、吐槽（毕业用户只读）',graduateReadonly:true},
+  {id:'study',name:'学习交流区',icon:'📚',desc:'学习方法、作业讨论、资料分享'},
+  {id:'hobby',name:'兴趣爱好区',icon:'🎮',desc:'游戏、音乐、运动、动漫等'},
+  {id:'graduate',name:'毕业纪念区',icon:'🎓',desc:'毕业生专属，回忆青春岁月'}
+];
+
+/* ===== 默认数据 ===== */
+const DEFAULT_POSTS=[
+  {id:uid(),zone:'general',title:'欢迎来到银川十八中贴吧！',content:'大家好！这里是银川十八中校园社区贴吧。\n\n在这里你可以：\n• 分享校园生活趣事\n• 交流学习经验\n• 认识更多同学\n• 留下青春回忆\n\n请大家文明发言，遵守社区规范，共同营造良好的社区氛围！',authorId:'admin',authorName:'站长',authorRole:'owner',authorAvatar:'👑',date:Date.now()-86400000*7,views:356,likes:28,comments:15},
+  {id:uid(),zone:'campus',title:'今天食堂的红烧肉太好吃了！',content:'强烈推荐今天食堂二楼的红烧肉，肥而不腻，入口即化！配上米饭简直绝了，我直接干了两碗饭。\n\n有没有同学也吃了？来举个手！',authorId:'u_student1',authorName:'追风少年',authorRole:'student',authorAvatar:'😎',date:Date.now()-86400000*2,views:189,likes:42,comments:23},
+  {id:uid(),zone:'study',title:'初三数学复习资料分享（持续更新）',content:'整理了一些初三数学的复习资料，包括：\n\n1. 二次函数知识点总结\n2. 圆的证明题技巧\n3. 概率与统计易错题\n4. 历年真题分类汇编\n\n有需要的同学可以在评论区留言，我会一一回复。祝大家中考顺利！',authorId:'u_student2',authorName:'学霸养成记',authorRole:'student',authorAvatar:'📖',date:Date.now()-86400000*5,views:567,likes:89,comments:34},
+  {id:uid(),zone:'hobby',title:'有没有一起打羽毛球的？',content:'每周六下午两点，学校体育馆羽毛球场地，有没有同学一起打的？\n\n水平不限，主打一个锻炼身体、交朋结友。有兴趣的评论区扣1！',authorId:'u_student3',authorName:'运动达人',authorRole:'student',authorAvatar:'🏸',date:Date.now()-86400000*1,views:98,likes:15,comments:12},
+  {id:uid(),zone:'graduate',title:'毕业十年，回想起十八中的日子',content:'转眼毕业十年了，今天路过学校门口，看到熟悉的教学楼，想起了很多往事。\n\n那时候的操场、那时候的食堂、那时候的同桌...\n\n祝学弟学妹们珍惜在校时光，青春一去不复返！',authorId:'u_grad1',authorName:'老学长',authorRole:'graduate',authorAvatar:'🎓',date:Date.now()-86400000*10,views:423,likes:67,comments:28}
+];
+
+const DEFAULT_COMMENTS=[
+  {id:uid(),postId:DEFAULT_POSTS[1].id,authorId:'u_student4',authorName:'干饭人',authorRole:'student',authorAvatar:'🍚',content:'举手！我也吃了，真的绝了！',date:Date.now()-86400000,likes:5},
+  {id:uid(),postId:DEFAULT_POSTS[1].id,authorId:'u_student5',authorName:'美食家',authorRole:'student',authorAvatar:'🤤',content:'二楼哪个窗口啊？明天我也去试试',date:Date.now()-86400000*0.5,likes:3}
+];
+
+const DEFAULT_USERS=[
+  {id:'admin',username:'admin',nickname:'站长',password:'admin123',role:'owner',
+   status:'在读',className:'教师',realName:encrypt('管理员'),studentId:encrypt('00000000'),
+   gender:'男',phone:'',qq:'',wechat:'',email:'',douyin:'',kuaishou:'',
+   signature:'银川十八中贴吧站长，有问题随时联系~',location:'宁夏银川',
+   avatar:'',cover:'',regDate:Date.now()-86400000*30},
+  {id:'u_student1',username:'zhuifeng',nickname:'追风少年',password:'123456',role:'student',
+   status:'在读',className:'初三(2)班',realName:encrypt('张三'),studentId:encrypt('20220015'),
+   gender:'男',phone:'',qq:'123456',wechat:'',email:'',douyin:'',kuaishou:'',
+   signature:'追风少年，不负韶华',location:'宁夏银川',
+   avatar:'',cover:'',regDate:Date.now()-86400000*20},
+  {id:'u_grad1',username:'laoxuezhang',nickname:'老学长',password:'123456',role:'graduate',
+   status:'毕业',className:'2014届(3)班',realName:encrypt('李四'),studentId:encrypt('20110008'),
+   gender:'男',phone:'',qq:'',wechat:'',email:'',douyin:'',kuaishou:'',
+   signature:'毕业十年，青春不散',location:'北京',
+   avatar:'',cover:'',regDate:Date.now()-86400000*100}
+];
+
+/* 初始化数据 */
+if(!DB.get('users'))DB.set('users',DEFAULT_USERS);
+if(!DB.get('posts'))DB.set('posts',DEFAULT_POSTS);
+if(!DB.get('comments'))DB.set('comments',DEFAULT_COMMENTS);
+if(!DB.get('settings'))DB.set('settings',{siteName:'银川十八中贴吧',announcement:'欢迎来到银川十八中贴吧！请遵守社区规范，文明发言。'});
+
+/* 当前用户 */
+let currentUser=DB.get('currentUser',null);
+let currentZone='all';
+let currentPostId=null;
+let currentProfileId=null;
+
+/* ===== 登录/注册表单渲染 ===== */
+function renderLoginForm(){
+  $('authRight').innerHTML=
+    '<h3>🌿 欢迎回来</h3>'+
+    '<p class="sub">登录银川十八中贴吧，开启校园社区之旅</p>'+
+    '<div class="form-group"><label>用户名 <span class="req">*</span></label>'+
+    '<input id="loginUsername" placeholder="请输入用户名"></div>'+
+    '<div class="form-group"><label>密码 <span class="req">*</span></label>'+
+    '<input type="password" id="loginPassword" placeholder="请输入密码" onkeydown="if(event.key===\'Enter\')doLogin()"></div>'+
+    '<button class="btn btn-primary" style="width:100%;padding:12px;font-size:14px;margin-top:8px;" onclick="doLogin()">登 录</button>'+
+    '<div class="auth-switch">还没有账号？<a onclick="renderRegisterForm()">立即注册</a></div>'+
+    '<div class="auth-tip" style="margin-top:16px;">💡 测试账号：admin / admin123（站长）</div>';
+}
+function renderRegisterForm(){
+  $('authRight').innerHTML=
+    '<h3>🌱 加入社区</h3>'+
+    '<p class="sub">注册银川十八中贴吧账号</p>'+
+    '<div class="auth-tip">📌 真实姓名和学号将加密存储，仅用于身份验证，不会公开显示</div>'+
+    '<div class="form-group"><label>昵称 <span class="req">*</span></label>'+
+    '<input id="regNickname" placeholder="社区内显示的名字"></div>'+
+    '<div class="form-group"><label>用户名 <span class="req">*</span></label>'+
+    '<input id="regUsername" placeholder="登录用的用户名（英文/数字）"></div>'+
+    '<div class="form-group"><label>密码 <span class="req">*</span></label>'+
+    '<input type="password" id="regPassword" placeholder="至少6位密码"></div>'+
+    '<div class="form-row">'+
+      '<div class="form-group"><label>身份 <span class="req">*</span></label>'+
+      '<select id="regStatus"><option value="在读">在读学生</option><option value="毕业">毕业生</option></select></div>'+
+      '<div class="form-group"><label>性别 <span class="req">*</span></label>'+
+      '<select id="regGender"><option value="男">男</option><option value="女">女</option></select></div>'+
+    '</div>'+
+    '<div class="form-row">'+
+      '<div class="form-group"><label>班级 <span class="req">*</span></label>'+
+      '<input id="regClass" placeholder="例如：初三(2)班"></div>'+
+      '<div class="form-group"><label>入学年份 <span class="req">*</span></label>'+
+      '<input id="regYear" type="number" placeholder="如：2024" min="2000" max="2030"></div>'+
+    '</div>'+
+    '<div class="form-row">'+
+      '<div class="form-group"><label>真实姓名 <span class="req">*</span></label>'+
+      '<input id="regRealName" placeholder="加密存储，不公开"></div>'+
+      '<div class="form-group"><label>学号编号 <span class="req">*</span></label>'+
+      '<input id="regStudentNum" type="number" placeholder="如：0001" min="1" max="9999"></div>'+
+    '</div>'+
+    '<div class="form-group"><label>手机号 <span class="opt">（选填）</span></label>'+
+    '<input id="regPhone" placeholder="手机号"></div>'+
+    '<div class="form-row-3">'+
+      '<div class="form-group"><label>QQ <span class="opt">（选填）</span></label><input id="regQQ" placeholder="QQ"></div>'+
+      '<div class="form-group"><label>微信 <span class="opt">（选填）</span></label><input id="regWechat" placeholder="微信"></div>'+
+      '<div class="form-group"><label>邮箱 <span class="opt">（选填）</span></label><input id="regEmail" placeholder="邮箱"></div>'+
+    '</div>'+
+    '<div class="form-row">'+
+      '<div class="form-group"><label>抖音 <span class="opt">（选填）</span></label><input id="regDouyin" placeholder="抖音号"></div>'+
+      '<div class="form-group"><label>快手 <span class="opt">（选填）</span></label><input id="regKuaishou" placeholder="快手号"></div>'+
+    '</div>'+
+    '<button class="btn btn-primary" style="width:100%;padding:12px;font-size:14px;margin-top:8px;" onclick="doRegister()">注 册</button>'+
+    '<div class="auth-switch">已有账号？<a onclick="renderLoginForm()">去登录</a></div>';
+}
+
+/* ===== 注册逻辑 ===== */
+function doRegister(){
+  const nickname=$('regNickname').value.trim();
+  const username=$('regUsername').value.trim();
+  const password=$('regPassword').value;
+  const status=$('regStatus').value;
+  const gender=$('regGender').value;
+  const className=$('regClass').value.trim();
+  const year=$('regYear').value;
+  const realName=$('regRealName').value.trim();
+  const studentNum=$('regStudentNum').value;
+
+  if(!nickname||!username||!password||!className||!year||!realName||!studentNum){
+    toast('请填写所有必填项','err');return;
+  }
+  if(!/^[a-zA-Z0-9_]{3,20}$/.test(username)){toast('用户名需3-20位英文/数字/下划线','err');return;}
+  if(password.length<6){toast('密码至少6位','err');return;}
+  if(!/^\d{4}$/.test(year)){toast('入学年份格式不正确','err');return;}
+  if(!/^\d{1,4}$/.test(studentNum)){toast('学号编号格式不正确','err');return;}
+
+  const users=DB.get('users',[]);
+  if(users.find(u=>u.username===username)){toast('该用户名已被注册','err');return;}
+
+  const studentId=year+String(studentNum).padStart(4,'0');
+  const newUser={
+    id:uid(),username,nickname,password,
+    role:status==='毕业'?'graduate':'student',
+    status,className,
+    realName:encrypt(realName),
+    studentId:encrypt(studentId),
+    gender,
+    phone:$('regPhone').value.trim(),
+    qq:$('regQQ').value.trim(),
+    wechat:$('regWechat').value.trim(),
+    email:$('regEmail').value.trim(),
+    douyin:$('regDouyin').value.trim(),
+    kuaishou:$('regKuaishou').value.trim(),
+    signature:'',location:'宁夏银川',
+    avatar:'',cover:'',
+    regDate:Date.now()
+  };
+  users.push(newUser);
+  DB.set('users',users);
+  toast('注册成功！请登录','ok');
+  setTimeout(renderLoginForm,800);
+}
+
+/* ===== 登录逻辑 ===== */
+function doLogin(){
+  const username=$('loginUsername').value.trim();
+  const password=$('loginPassword').value;
+  if(!username||!password){toast('请输入用户名和密码','err');return;}
+  const users=DB.get('users',[]);
+  const u=users.find(x=>x.username===username&&x.password===password);
+  if(!u){toast('用户名或密码错误','err');return;}
+  currentUser={id:u.id,username:u.username,nickname:u.nickname,role:u.role,
+    status:u.status,className:u.className,gender:u.gender,
+    signature:u.signature,location:u.location,avatar:u.avatar,cover:u.cover};
+  DB.set('currentUser',currentUser);
+  toast('欢迎回来，'+u.nickname+'！','ok');
+  enterApp();
+}
+function doLogout(){
+  if(!confirm('确定退出登录吗？'))return;
+  currentUser=null;
+  DB.set('currentUser',null);
+  $('mainHeader').style.display='none';
+  $('mainContent').style.display='none';
+  $('profilePage').style.display='none';
+  $('authPage').style.display='flex';
+  renderLoginForm();
+  toast('已退出登录');
+}
+
+/* ===== 进入应用 ===== */
+function enterApp(){
+  $('authPage').style.display='none';
+  $('mainHeader').style.display='block';
+  $('mainContent').style.display='block';
+  $('profilePage').style.display='none';
+  renderNavRight();
+  renderZones();
+  renderStats();
+  renderHotPosts();
+  goHome();
+}
+
+/* ===== 导航右侧用户菜单 ===== */
+function renderNavRight(){
+  const el=$('navRight');
+  if(!currentUser){
+    el.innerHTML='<button class="btn btn-outline btn-sm" onclick="renderLoginForm();$(\'authPage\').style.display=\'flex\';$(\'mainHeader\').style.display=\'none\';$(\'mainContent\').style.display=\'none\';">登录</button>'+
+      '<button class="btn btn-primary btn-sm" onclick="renderRegisterForm();$(\'authPage\').style.display=\'flex\';$(\'mainHeader\').style.display=\'none\';$(\'mainContent\').style.display=\'none\';">注册</button>';
+    return;
+  }
+  const roleBadge=getRoleBadge(currentUser.role);
+  const avatarHtml=currentUser.avatar?
+    '<img src="'+currentUser.avatar+'" class="user-avatar" onclick="toggleUserMenu()">':
+    '<div class="user-avatar" onclick="toggleUserMenu()">'+(currentUser.nickname[0]||'👤')+'</div>';
+  el.innerHTML=
+    '<button class="btn btn-primary btn-sm" onclick="openPostModal()">✏ 发帖</button>'+
+    '<div class="user-menu">'+avatarHtml+
+    '<div class="user-dropdown" id="userDropdown">'+
+      '<div class="ud-head"><b>'+esc(currentUser.nickname)+' '+roleBadge+'</b><span>@'+esc(currentUser.username)+'</span></div>'+
+      '<a onclick="viewProfile(currentUser.id)">👤 个人主页</a>'+
+      '<a onclick="openEditProfile()">⚙ 编辑资料</a>'+
+      '<a onclick="viewMyPosts()">📝 我的帖子</a>'+
+      (currentUser.role==='owner'||currentUser.role==='admin'?'<a onclick="openAdminPanel()">🛡 后台管理</a>':'')+
+      '<button onclick="doLogout()">🚪 退出登录</button>'+
+    '</div></div>';
+}
+function toggleUserMenu(){$('userDropdown').classList.toggle('show');}
+document.addEventListener('click',e=>{
+  const dd=$('userDropdown');
+  if(dd&&!e.target.closest('.user-menu'))dd.classList.remove('show');
+});
+function getRoleBadge(role){
+  const map={owner:'<span class="role-badge role-owner">👑 站长</span>',
+    admin:'<span class="role-badge role-admin">🛡 管理员</span>',
+    student:'<span class="role-badge role-student">🎓 在读</span>',
+    graduate:'<span class="role-badge role-graduate">🎓 校友</span>'};
+  return map[role]||'';
+}
+
+/* ===== 分区渲染 ===== */
+function renderZones(){
+  $('zoneList').innerHTML=ZONES.map(z=>
+    '<div class="zone-item '+(currentZone===z.id?'active':'')+'" onclick="navigateZone(\''+z.id+'\')">'+
+      '<span class="zi-icon">'+z.icon+'</span>'+z.name+
+      '<span class="zi-count">'+getZonePostCount(z.id)+'</span>'+
+    '</div>'
+  ).join('');
+}
+function getZonePostCount(zoneId){
+  if(zoneId==='all')return DB.get('posts',[]).length;
+  return DB.get('posts',[]).filter(p=>p.zone===zoneId).length;
+}
+function navigateZone(zoneId){
+  currentZone=zoneId;
+  currentPostId=null;
+  $('profilePage').style.display='none';
+  $('mainContent').style.display='block';
+  renderZones();
+  renderPostList();
+  document.querySelectorAll('#mainNav a').forEach(a=>a.classList.remove('active'));
+}
+
+/* ===== 社区统计 ===== */
+function renderStats(){
+  const posts=DB.get('posts',[]);
+  const comments=DB.get('comments',[]);
+  const users=DB.get('users',[]);
+  const todayPosts=posts.filter(p=>Date.now()-p.date<86400000).length;
+  $('statsGrid').innerHTML=
+    '<div class="stat-item"><div class="num">'+posts.length+'</div><div class="label">帖子总数</div></div>'+
+    '<div class="stat-item"><div class="num">'+comments.length+'</div><div class="label">评论总数</div></div>'+
+    '<div class="stat-item"><div class="num">'+users.length+'</div><div class="label">注册用户</div></div>'+
+    '<div class="stat-item"><div class="num">'+todayPosts+'</div><div class="label">今日新帖</div></div>';
+}
+
+/* ===== 热门帖子 ===== */
+function renderHotPosts(){
+  const posts=DB.get('posts',[]).sort((a,b)=>(b.likes+b.comments*2)-(a.likes+a.comments*2)).slice(0,5);
+  $('hotList').innerHTML=posts.map((p,i)=>
+    '<div class="hot-item" onclick="viewPost(\''+p.id+'\')">'+
+      '<span class="rank">'+(i+1)+'</span>'+
+      '<span class="hi-title">'+esc(p.title)+'</span>'+
+    '</div>'
+  ).join('');
+}
+
+/* ===== 帖子列表 ===== */
+function goHome(){
+  currentZone='all';
+  currentPostId=null;
+  $('profilePage').style.display='none';
+  $('mainContent').style.display='block';
+  renderZones();
+  renderPostList();
+  document.querySelectorAll('#mainNav a').forEach((a,i)=>a.classList.toggle('active',i===0));
+}
+function renderPostList(){
+  const posts=DB.get('posts',[]);
+  let filtered=currentZone==='all'?posts:posts.filter(p=>p.zone===currentZone);
+  filtered=filtered.sort((a,b)=>b.date-a.date);
+  const zoneInfo=ZONES.find(z=>z.id===currentZone);
+  const readonly=zoneInfo&&zoneInfo.graduateReadonly&&currentUser&&currentUser.role==='graduate';
+  let html='';
+  if(readonly){
+    html+='<div class="auth-tip" style="margin-bottom:14px;">🔒 您是毕业生身份，校园墙专区仅支持浏览，不能发帖和评论</div>';
+  }
+  html+='<div class="post-bar" onclick="'+(readonly?'':'openPostModal()')+'" style="cursor:'+(readonly?'not-allowed':'pointer')+';">'+
+    '<div class="pb-avatar">'+(currentUser&&currentUser.avatar?'<img src="'+currentUser.avatar+'" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">':(currentUser?currentUser.nickname[0]:'👤'))+'</div>'+
+    '<input placeholder="'+(readonly?'毕业生在校园墙仅可浏览':'说点什么吧...')+'" readonly>'+
+    '<button class="btn btn-primary btn-sm" '+(readonly?'disabled style="opacity:.5;"':'')+'>✏ 发帖</button>'+
+    '</div>';
+  if(filtered.length===0){
+    html+='<div class="empty-state"><div class="icon">📭</div><p>暂无帖子，快来发布第一条吧！</p></div>';
+  }else{
+    html+=filtered.map(postCardHTML).join('');
+  }
+  $('contentArea').innerHTML=html;
+}
+function postCardHTML(p){
+  const zone=ZONES.find(z=>z.id===p.zone);
+  const comments=DB.get('comments',[]).filter(c=>c.postId===p.id).length;
+  const liked=currentUser&&isPostLiked(p.id);
+  return '<div class="post-card" onclick="viewPost(\''+p.id+'\')">'+
+    '<div class="pc-head">'+
+      '<div class="pc-avatar">'+(p.authorAvatar?'<img src="'+p.authorAvatar+'" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">':(p.authorAvatar||'👤'))+'</div>'+
+      '<div class="pc-meta">'+
+        '<div class="name">'+esc(p.authorName)+' '+getRoleBadge(p.authorRole)+'</div>'+
+        '<div class="time">'+timeAgo(p.date)+'</div>'+
+      '</div>'+
+      '<span class="pc-zone">'+(zone?zone.icon+' '+zone.name:'')+'</span>'+
+    '</div>'+
+    '<h3>'+esc(p.title)+'</h3>'+
+    '<div class="pc-content">'+esc(p.content).replace(/\n/g,'<br>')+'</div>'+
+    '<div class="pc-actions">'+
+      '<button class="'+(liked?'liked':'')+'" onclick="event.stopPropagation();togglePostLike(\''+p.id+'\')">👍 '+(p.likes||0)+'</button>'+
+      '<button onclick="event.stopPropagation();viewPost(\''+p.id+'\')">💬 '+comments+'</button>'+
+      '<button style="margin-left:auto;">👁 '+(p.views||0)+'</button>'+
+    '</div>'+
+  '</div>';
+}
+
+/* ===== 帖子详情 ===== */
+function viewPost(postId){
+  currentPostId=postId;
+  const posts=DB.get('posts',[]);
+  const p=posts.find(x=>x.id===postId);
+  if(!p)return;
+  p.views=(p.views||0)+1;
+  DB.set('posts',posts);
+  $('profilePage').style.display='none';
+  $('mainContent').style.display='block';
+  renderPostDetail();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function renderPostDetail(){
+  const posts=DB.get('posts',[]);
+  const p=posts.find(x=>x.id===currentPostId);
+  if(!p){$('contentArea').innerHTML='<div class="empty-state"><div class="icon">❌</div><p>帖子不存在</p></div>';return;}
+  const zone=ZONES.find(z=>z.id===p.zone);
+  const readonly=zone&&zone.graduateReadonly&&currentUser&&currentUser.role==='graduate';
+  const comments=DB.get('comments',[]).filter(c=>c.postId===p.id).sort((a,b)=>b.date-a.date);
+  const liked=currentUser&&isPostLiked(p.id);
+  const canDelete=currentUser&&(currentUser.role==='owner'||currentUser.role==='admin'||currentUser.id===p.authorId);
+  $('contentArea').innerHTML=
+    '<div class="post-detail">'+
+      '<div class="back-btn" onclick="goHome()">← 返回列表</div>'+
+      '<h2>'+esc(p.title)+'</h2>'+
+      '<div class="pd-meta">'+
+        '<div class="avatar">'+(p.authorAvatar?'<img src="'+p.authorAvatar+'" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">':(p.authorAvatar||'👤'))+'</div>'+
+        '<div class="info"><div class="name">'+esc(p.authorName)+' '+getRoleBadge(p.authorRole)+'</div>'+
+        '<div class="time">'+new Date(p.date).toLocaleString('zh-CN')+' · 👁 '+(p.views||0)+' 次浏览</div></div>'+
+        '<span class="pc-zone">'+(zone?zone.icon+' '+zone.name:'')+'</span>'+
+      '</div>'+
+      '<div class="pd-content">'+esc(p.content).replace(/\n/g,'<br>')+'</div>'+
+      '<div class="pd-actions">'+
+        '<button class="'+(liked?'liked':'')+'" onclick="togglePostLike(\''+p.id+'\')">👍 点赞 ('+(p.likes||0)+')</button>'+
+        '<button onclick="sharePost(\''+p.id+'\')">🔗 分享</button>'+
+        (canDelete?'<button style="margin-left:auto;color:#e74c3c;" onclick="deletePost(\''+p.id+'\')">🗑 删除</button>':'')+
+      '</div>'+
+      '<div class="comments">'+
+        '<h3>💬 评论 ('+comments.length+')</h3>'+
+        (readonly?'<div class="auth-tip">🔒 毕业生在校园墙专区仅可浏览，不能评论</div>':
+        '<div class="comment-form">'+
+          '<div class="cf-avatar">'+(currentUser&&currentUser.avatar?'<img src="'+currentUser.avatar+'" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">':(currentUser?currentUser.nickname[0]:'👤'))+'</div>'+
+          '<div class="cf-body">'+
+            '<textarea id="commentInput" placeholder="'+(currentUser?'写下你的评论...':'请先登录后评论')+'" '+(currentUser?'':'disabled')+'></textarea>'+
+            '<div class="cf-submit"><button class="btn btn-primary btn-sm" onclick="submitComment(\''+p.id+'\')" '+(currentUser?'':'disabled')+'>发表评论</button></div>'+
+          '</div></div>')+
+        '<div style="margin-top:16px;">'+
+          (comments.length?comments.map(commentItemHTML).join(''):'<div class="empty-state" style="padding:30px;"><div class="icon">💬</div><p>暂无评论，来抢沙发吧~</p></div>')+
+        '</div>'+
+      '</div>'+
+    '</div>';
+}
+function commentItemHTML(c){
+  const canDelete=currentUser&&(currentUser.role==='owner'||currentUser.role==='admin'||currentUser.id===c.authorId);
+  const liked=currentUser&&isCommentLiked(c.id);
+  return '<div class="comment-item">'+
+    '<div class="ci-avatar">'+(c.authorAvatar?'<img src="'+c.authorAvatar+'" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">':(c.authorAvatar||'👤'))+'</div>'+
+    '<div class="ci-body">'+
+      '<div class="ci-head"><span class="name">'+esc(c.authorName)+' '+getRoleBadge(c.authorRole)+'</span>'+
+      '<span class="time">'+timeAgo(c.date)+'</span></div>'+
+      '<div class="ci-content">'+esc(c.content)+'</div>'+
+      '<div class="ci-actions">'+
+        '<button class="'+(liked?'liked':'')+'" onclick="toggleCommentLike(\''+c.id+'\')">👍 '+(c.likes||0)+'</button>'+
+        (canDelete?'<button onclick="deleteComment(\''+c.id+'\')">🗑 删除</button>':'')+
+      '</div>'+
+    '</div></div>';
+}
+
+/* ===== 发帖 ===== */
+function openPostModal(){
+  if(!currentUser){toast('请先登录','err');return;}
+  const zone=ZONES.find(z=>z.id===currentZone&&z.id!=='all');
+  $('postZone').innerHTML=ZONES.filter(z=>z.id!=='all').map(z=>
+    '<option value="'+z.id+'" '+(zone&&zone.id===z.id?'selected':'')+'>'+z.icon+' '+z.name+(z.graduateReadonly?'（毕业只读）':'')+'</option>'
+  ).join('');
+  $('postTitle').value='';
+  $('postContent').value='';
+  showModal('postModal');
+}
+function submitPost(){
+  if(!currentUser){toast('请先登录','err');return;}
+  const zone=$('postZone').value;
+  const title=$('postTitle').value.trim();
+  const content=$('postContent').value.trim();
+  const zoneInfo=ZONES.find(z=>z.id===zone);
+  if(zoneInfo&&zoneInfo.graduateReadonly&&currentUser.role==='graduate'){toast('毕业生不能在校园墙发帖','err');return;}
+  if(!title||!content){toast('请填写标题和内容','err');return;}
+  if(title.length<5){toast('标题至少5个字','err');return;}
+  const posts=DB.get('posts',[]);
+  posts.unshift({
+    id:uid(),zone,title,content,
+    authorId:currentUser.id,authorName:currentUser.nickname,
+    authorRole:currentUser.role,authorAvatar:currentUser.avatar||'',
+    date:Date.now(),views:0,likes:0,comments:0
+  });
+  DB.set('posts',posts);
+  closeModal('postModal');
+  toast('发布成功！','ok');
+  renderStats();
+  renderHotPosts();
+  currentZone=zone;
+  renderZones();
+  renderPostList();
+}
+function deletePost(postId){
+  if(!confirm('确定删除这篇帖子吗？'))return;
+  let posts=DB.get('posts',[]);
+  posts=posts.filter(p=>p.id!==postId);
+  DB.set('posts',posts);
+  let comments=DB.get('comments',[]);
+  comments=comments.filter(c=>c.postId!==postId);
+  DB.set('comments',comments);
+  toast('帖子已删除');
+  renderStats();
+  renderHotPosts();
+  goHome();
+}
+
+/* ===== 评论 ===== */
+function submitComment(postId){
+  if(!currentUser){toast('请先登录','err');return;}
+  const content=$('commentInput').value.trim();
+  if(!content){toast('评论内容不能为空','err');return;}
+  const comments=DB.get('comments',[]);
+  comments.push({
+    id:uid(),postId,
+    authorId:currentUser.id,authorName:currentUser.nickname,
+    authorRole:currentUser.role,authorAvatar:currentUser.avatar||'',
+    content,date:Date.now(),likes:0
+  });
+  DB.set('comments',comments);
+  const posts=DB.get('posts',[]);
+  const p=posts.find(x=>x.id===postId);
+  if(p){p.comments=(p.comments||0)+1;DB.set('posts',posts);}
+  toast('评论成功','ok');
+  renderHotPosts();
+  renderPostDetail();
+}
+function deleteComment(commentId){
+  if(!confirm('确定删除这条评论吗？'))return;
+  let comments=DB.get('comments',[]);
+  const c=comments.find(x=>x.id===commentId);
+  comments=comments.filter(x=>x.id!==commentId);
+  DB.set('comments',comments);
+  if(c){
+    const posts=DB.get('posts',[]);
+    const p=posts.find(x=>x.id===c.postId);
+    if(p){p.comments=Math.max(0,(p.comments||0)-1);DB.set('posts',posts);}
+  }
+  toast('评论已删除');
+  renderPostDetail();
+}
+
+/* ===== 点赞 ===== */
+function isPostLiked(postId){
+  if(!currentUser)return false;
+  const liked=DB.get('postLikes',{});
+  return (liked[currentUser.id]||[]).includes(postId);
+}
+function togglePostLike(postId){
+  if(!currentUser){toast('请先登录','err');return;}
+  const liked=DB.get('postLikes',{});
+  const userLikes=liked[currentUser.id]||[];
+  const posts=DB.get('posts',[]);
+  const p=posts.find(x=>x.id===postId);
+  const idx=userLikes.indexOf(postId);
+  if(idx>=0){
+    userLikes.splice(idx,1);
+    if(p)p.likes=Math.max(0,(p.likes||0)-1);
+    toast('已取消点赞');
+  }else{
+    userLikes.push(postId);
+    if(p)p.likes=(p.likes||0)+1;
+    toast('点赞成功','ok');
+  }
+  liked[currentUser.id]=userLikes;
+  DB.set('postLikes',liked);
+  DB.set('posts',posts);
+  renderHotPosts();
+  if(currentPostId)renderPostDetail();
+  else renderPostList();
+}
+function isCommentLiked(commentId){
+  if(!currentUser)return false;
+  const liked=DB.get('commentLikes',{});
+  return (liked[currentUser.id]||[]).includes(commentId);
+}
+function toggleCommentLike(commentId){
+  if(!currentUser){toast('请先登录','err');return;}
+  const liked=DB.get('commentLikes',{});
+  const userLikes=liked[currentUser.id]||[];
+  const comments=DB.get('comments',[]);
+  const c=comments.find(x=>x.id===commentId);
+  const idx=userLikes.indexOf(commentId);
+  if(idx>=0){userLikes.splice(idx,1);if(c)c.likes=Math.max(0,(c.likes||0)-1);}
+  else{userLikes.push(commentId);if(c)c.likes=(c.likes||0)+1;}
+  liked[currentUser.id]=userLikes;
+  DB.set('commentLikes',liked);
+  DB.set('comments',comments);
+  renderPostDetail();
+}
+function sharePost(postId){
+  const url=window.location.href.split('#')[0]+'#post-'+postId;
+  if(navigator.clipboard){
+    navigator.clipboard.writeText(url).then(()=>toast('链接已复制','ok')).catch(()=>prompt('复制链接分享：',url));
+  }else{prompt('复制链接分享：',url);}
+}
+
+/* ===== 图片上传 ===== */
+function uploadAvatar(inputId,callback){
+  const input=$(inputId);
+  input.onchange=function(e){
+    const file=e.target.files[0];
+    if(!file)return;
+    if(file.size>2*1024*1024){toast('图片不能超过2MB','err');return;}
+    const reader=new FileReader();
+    reader.onload=function(ev){
+      /* 压缩图片 */
+      const img=new Image();
+      img.onload=function(){
+        const canvas=document.createElement('canvas');
+        const maxSize=400;
+        let w=img.width,h=img.height;
+        if(w>h){if(w>maxSize){h=h*maxSize/w;w=maxSize;}}
+        else{if(h>maxSize){w=w*maxSize/h;h=maxSize;}}
+        canvas.width=w;canvas.height=h;
+        canvas.getContext('2d').drawImage(img,0,0,w,h);
+        const dataUrl=canvas.toDataURL('image/jpeg',0.85);
+        callback(dataUrl);
+      };
+      img.src=ev.target.result;
+    };
+    reader.readAsDataURL(file);
+    input.value='';
+  };
+  input.click();
+}
+function uploadCover(inputId,callback){
+  const input=$(inputId);
+  input.onchange=function(e){
+    const file=e.target.files[0];
+    if(!file)return;
+    if(file.size>3*1024*1024){toast('图片不能超过3MB','err');return;}
+    const reader=new FileReader();
+    reader.onload=function(ev){
+      const img=new Image();
+      img.onload=function(){
+        const canvas=document.createElement('canvas');
+        const maxW=1200;
+        let w=img.width,h=img.height;
+        if(w>maxW){h=h*maxW/w;w=maxW;}
+        canvas.width=w;canvas.height=h;
+        canvas.getContext('2d').drawImage(img,0,0,w,h);
+        const dataUrl=canvas.toDataURL('image/jpeg',0.85);
+        callback(dataUrl);
+      };
+      img.src=ev.target.result;
+    };
+    reader.readAsDataURL(file);
+    input.value='';
+  };
+  input.click();
+}
+
+/* ===== 个人主页 ===== */
+function viewProfile(userId){
+  currentProfileId=userId;
+  const users=DB.get('users',[]);
+  const u=users.find(x=>x.id===userId);
+  if(!u){toast('用户不存在','err');return;}
+  $('mainHeader').style.display='block';
+  $('mainContent').style.display='none';
+  $('profilePage').style.display='block';
+  renderProfilePage(u);
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function renderProfilePage(u){
+  const isOwner=currentUser&&currentUser.id===u.id;
+  const posts=DB.get('posts',[]).filter(p=>p.authorId===u.id).sort((a,b)=>b.date-a.date);
+  const comments=DB.get('comments',[]).filter(c=>c.authorId===u.id);
+  const totalLikes=posts.reduce((s,p)=>s+(p.likes||0),0);
+  const coverStyle=u.cover?'background-image:url('+u.cover+');background-size:cover;background-position:center;':'';
+  $('profilePage').innerHTML=
+    '<div class="profile-page">'+
+      '<div class="profile-cover" style="'+coverStyle+'">'+
+        (isOwner?'<div class="cover-edit" onclick="uploadCover(\'coverInput\',function(d){updateCover(d)})">📷 更换背景</div>':'')+
+      '</div>'+
+      '<div class="profile-info">'+
+        '<div class="profile-avatar-wrap">'+
+          '<div class="profile-avatar" onclick="'+(isOwner?'uploadAvatar(\'avatarInput\',function(d){updateAvatar(d)})':'')+'">'+
+            (u.avatar?'<img src="'+u.avatar+'">':(u.nickname[0]||'👤'))+
+            (isOwner?'<div class="avatar-edit">📷 更换头像</div>':'')+
+          '</div>'+
+          '<div class="profile-name-area">'+
+            '<h2>'+esc(u.nickname)+' '+getRoleBadge(u.role)+'</h2>'+
+            '<div class="username">@'+esc(u.username)+' · '+esc(u.status||'')+' · '+esc(u.className||'')+'</div>'+
+            '<div class="profile-badges">'+
+              '<span class="profile-badge">📅 注册于 '+new Date(u.regDate).toLocaleDateString('zh-CN')+'</span>'+
+              '<span class="profile-badge">🎓 '+esc(u.status||'在读')+'</span>'+
+            '</div>'+
+            (u.signature?'<div class="profile-signature">「'+esc(u.signature)+'」</div>':'')+
+            (u.location?'<div class="profile-location">📍 '+esc(u.location)+'</div>':'')+
+          '</div>'+
+          '<div class="profile-actions">'+
+            (isOwner?'<button class="btn btn-primary btn-sm" onclick="openEditProfile()">⚙ 编辑资料</button>':
+              '<button class="btn btn-outline btn-sm" onclick="viewProfile(\''+u.id+'\')">💬 私信</button>')+
+          '</div>'+
+        '</div>'+
+        '<div class="profile-stats">'+
+          '<div class="ps-item" onclick="viewMyPosts()"><div class="num">'+posts.length+'</div><div class="label">帖子</div></div>'+
+          '<div class="ps-item"><div class="num">'+comments.length+'</div><div class="label">评论</div></div>'+
+          '<div class="ps-item"><div class="num">'+totalLikes+'</div><div class="label">获赞</div></div>'+
+        '</div>'+
+        '<div class="profile-tabs">'+
+          '<a class="active">📝 TA的帖子</a>'+
+        '</div>'+
+        '<div class="profile-content">'+
+          (posts.length?posts.map(postCardHTML).join(''):
+          '<div class="empty-state"><div class="icon">📭</div><p>TA还没有发布过帖子</p></div>')+
+        '</div>'+
+      '</div>'+
+    '</div>';
+}
+function updateAvatar(dataUrl){
+  if(!currentUser)return;
+  const users=DB.get('users',[]);
+  const u=users.find(x=>x.id===currentUser.id);
+  if(u){u.avatar=dataUrl;DB.set('users',users);}
+  currentUser.avatar=dataUrl;
+  DB.set('currentUser',currentUser);
+  renderNavRight();
+  renderProfilePage(u);
+  toast('头像已更新','ok');
+}
+function updateCover(dataUrl){
+  if(!currentUser)return;
+  const users=DB.get('users',[]);
+  const u=users.find(x=>x.id===currentUser.id);
+  if(u){u.cover=dataUrl;DB.set('users',users);}
+  currentUser.cover=dataUrl;
+  DB.set('currentUser',currentUser);
+  renderProfilePage(u);
+  toast('背景已更新','ok');
+}
+
+/* ===== 编辑资料 ===== */
+function openEditProfile(){
+  if(!currentUser)return;
+  const users=DB.get('users',[]);
+  const u=users.find(x=>x.id===currentUser.id);
+  if(!u)return;
+  $('epNickname').value=u.nickname||'';
+  $('epSignature').value=u.signature||'';
+  $('epLocation').value=u.location||'';
+  $('epPhone').value=u.phone||'';
+  $('epQQ').value=u.qq||'';
+  $('epWechat').value=u.wechat||'';
+  $('epEmail').value=u.email||'';
+  $('epDouyin').value=u.douyin||'';
+  $('epKuaishou').value=u.kuaishou||'';
+  showModal('editProfileModal');
+}
+function saveProfileEdit(){
+  if(!currentUser)return;
+  const nickname=$('epNickname').value.trim();
+  if(!nickname){toast('昵称不能为空','err');return;}
+  const users=DB.get('users',[]);
+  const u=users.find(x=>x.id===currentUser.id);
+  if(!u)return;
+  u.nickname=nickname;
+  u.signature=$('epSignature').value.trim();
+  u.location=$('epLocation').value.trim();
+  u.phone=$('epPhone').value.trim();
+  u.qq=$('epQQ').value.trim();
+  u.wechat=$('epWechat').value.trim();
+  u.email=$('epEmail').value.trim();
+  u.douyin=$('epDouyin').value.trim();
+  u.kuaishou=$('epKuaishou').value.trim();
+  DB.set('users',users);
+  currentUser.nickname=u.nickname;
+  currentUser.signature=u.signature;
+  currentUser.location=u.location;
+  DB.set('currentUser',currentUser);
+  renderNavRight();
+  closeModal('editProfileModal');
+  toast('资料已保存','ok');
+  if($('profilePage').style.display==='block')renderProfilePage(u);
+}
+
+/* ===== 我的帖子 ===== */
+function viewMyPosts(){
+  if(!currentUser){toast('请先登录','err');return;}
+  viewProfile(currentUser.id);
+}
+
+/* ===== 后台管理 ===== */
+function openAdminPanel(){
+  if(!currentUser||(currentUser.role!=='owner'&&currentUser.role!=='admin')){toast('权限不足','err');return;}
+  renderAdminContent();
+  showModal('adminModal');
+}
+function renderAdminContent(tab){
+  tab=tab||'users';
+  const users=DB.get('users',[]);
+  const posts=DB.get('posts',[]);
+  const comments=DB.get('comments',[]);
+  let html='<div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;">'+
+    '<button class="btn btn-sm '+(tab==='users'?'btn-primary':'btn-ghost')+'" onclick="renderAdminContent(\'users\')">👥 用户管理</button>'+
+    '<button class="btn btn-sm '+(tab==='posts'?'btn-primary':'btn-ghost')+'" onclick="renderAdminContent(\'posts\')">📝 帖子管理</button>'+
+    '<button class="btn btn-sm '+(tab==='comments'?'btn-primary':'btn-ghost')+'" onclick="renderAdminContent(\'comments\')">💬 评论管理</button>'+
+    '<button class="btn btn-sm '+(tab==='roles'?'btn-primary':'btn-ghost')+'" onclick="renderAdminContent(\'roles\')">🛡 权限管理</button>'+
+    '</div>';
+  if(tab==='users'){
+    html+='<table class="adminTable" style="width:100%;font-size:12.5px;border-collapse:collapse;">'+
+      '<thead><tr style="background:var(--bg-primary);"><th style="padding:8px;text-align:left;">用户</th><th style="padding:8px;text-align:left;">身份</th><th style="padding:8px;text-align:left;">班级</th><th style="padding:8px;text-align:left;">注册时间</th><th style="padding:8px;text-align:left;">操作</th></tr></thead><tbody>';
+    users.forEach(u=>{
+      html+='<tr style="border-bottom:1px solid var(--border-light);">'+
+        '<td style="padding:8px;"><b>'+esc(u.nickname)+'</b><br><span style="color:var(--text-lighter);font-size:11px;">@'+esc(u.username)+'</span></td>'+
+        '<td style="padding:8px;">'+getRoleBadge(u.role)+'</td>'+
+        '<td style="padding:8px;">'+esc(u.className||'-')+'</td>'+
+        '<td style="padding:8px;font-size:11px;color:var(--text-lighter);">'+new Date(u.regDate).toLocaleDateString('zh-CN')+'</td>'+
+        '<td style="padding:8px;">'+
+          (u.role!=='owner'?'<button class="btn btn-ghost btn-sm" onclick="toggleUserRole(\''+u.id+'\')">切换角色</button> ':
+          '<span style="color:var(--text-lighter);font-size:11px;">站长</span>')+
+          (u.role!=='owner'?'<button class="btn btn-danger btn-sm" onclick="deleteUser(\''+u.id+'\')" style="margin-left:4px;">删除</button>':'')+
+        '</td></tr>';
+    });
+    html+='</tbody></table>';
+  }else if(tab==='posts'){
+    html+='<table class="adminTable" style="width:100%;font-size:12.5px;border-collapse:collapse;">'+
+      '<thead><tr style="background:var(--bg-primary);"><th style="padding:8px;text-align:left;">标题</th><th style="padding:8px;text-align:left;">作者</th><th style="padding:8px;text-align:left;">分区</th><th style="padding:8px;text-align:left;">时间</th><th style="padding:8px;text-align:left;">操作</th></tr></thead><tbody>';
+    posts.sort((a,b)=>b.date-a.date).forEach(p=>{
+      const zone=ZONES.find(z=>z.id===p.zone);
+      html+='<tr style="border-bottom:1px solid var(--border-light);">'+
+        '<td style="padding:8px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+esc(p.title)+'</td>'+
+        '<td style="padding:8px;">'+esc(p.authorName)+'</td>'+
+        '<td style="padding:8px;">'+(zone?zone.name:'-')+'</td>'+
+        '<td style="padding:8px;font-size:11px;color:var(--text-lighter);">'+timeAgo(p.date)+'</td>'+
+        '<td style="padding:8px;"><button class="btn btn-danger btn-sm" onclick="adminDeletePost(\''+p.id+'\')">删除</button></td>'+
+        '</tr>';
+    });
+    html+='</tbody></table>';
+  }else if(tab==='comments'){
+    html+='<table class="adminTable" style="width:100%;font-size:12.5px;border-collapse:collapse;">'+
+      '<thead><tr style="background:var(--bg-primary);"><th style="padding:8px;text-align:left;">内容</th><th style="padding:8px;text-align:left;">作者</th><th style="padding:8px;text-align:left;">时间</th><th style="padding:8px;text-align:left;">操作</th></tr></thead><tbody>';
+    comments.sort((a,b)=>b.date-a.date).forEach(c=>{
+      html+='<tr style="border-bottom:1px solid var(--border-light);">'+
+        '<td style="padding:8px;max-width:250px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+esc(c.content)+'</td>'+
+        '<td style="padding:8px;">'+esc(c.authorName)+'</td>'+
+        '<td style="padding:8px;font-size:11px;color:var(--text-lighter);">'+timeAgo(c.date)+'</td>'+
+        '<td style="padding:8px;"><button class="btn btn-danger btn-sm" onclick="adminDeleteComment(\''+c.id+'\')">删除</button></td>'+
+        '</tr>';
+    });
+    html+='</tbody></table>';
+  }else if(tab==='roles'){
+    html+='<div style="background:var(--bg-primary);padding:14px;border-radius:8px;margin-bottom:14px;font-size:12.5px;line-height:1.8;">'+
+      '<b>👑 站长</b>：最高权限，可管理所有用户、帖子、评论，不可被删除或降级<br>'+
+      '<b>🛡 管理员</b>：可删除帖子和评论，可管理普通用户，可由站长设置<br>'+
+      '<b>🎓 在读学生</b>：正常发帖评论权限<br>'+
+      '<b>🎓 毕业生</b>：校园墙专区只读，其他分区正常<br>'+
+      '</div>'+
+      '<p style="font-size:12px;color:var(--text-lighter);">在「用户管理」中点击「切换角色」可在管理员/在读/毕业之间切换</p>';
+  }
+  $('adminContent').innerHTML=html;
+}
+function toggleUserRole(userId){
+  if(!currentUser||currentUser.role!=='owner'){toast('只有站长可以修改角色','err');return;}
+  const users=DB.get('users',[]);
+  const u=users.find(x=>x.id===userId);
+  if(!u||u.role==='owner')return;
+  const roles=['student','admin','graduate'];
+  const names={student:'在读学生',admin:'管理员',graduate:'毕业生'};
+  const idx=roles.indexOf(u.role);
+  u.role=roles[(idx+1)%roles.length];
+  u.status=u.role==='graduate'?'毕业':'在读';
+  DB.set('users',users);
+  toast('已将 '+u.nickname+' 设为 '+names[u.role],'ok');
+  renderAdminContent('users');
+}
+function deleteUser(userId){
+  if(!currentUser||currentUser.role!=='owner'){toast('只有站长可以删除用户','err');return;}
+  if(!confirm('确定删除该用户吗？其所有帖子和评论也将被删除！'))return;
+  let users=DB.get('users',[]);
+  users=users.filter(u=>u.id!==userId);
+  DB.set('users',users);
+  let posts=DB.get('posts',[]);
+  posts=posts.filter(p=>p.authorId!==userId);
+  DB.set('posts',posts);
+  let comments=DB.get('comments',[]);
+  comments=comments.filter(c=>c.authorId!==userId);
+  DB.set('comments',comments);
+  toast('用户已删除');
+  renderAdminContent('users');
+  renderStats();
+}
+function adminDeletePost(postId){
+  if(!confirm('确定删除这篇帖子吗？'))return;
+  let posts=DB.get('posts',[]);
+  posts=posts.filter(p=>p.id!==postId);
+  DB.set('posts',posts);
+  let comments=DB.get('comments',[]);
+  comments=comments.filter(c=>c.postId!==postId);
+  DB.set('comments',comments);
+  toast('帖子已删除');
+  renderAdminContent('posts');
+  renderStats();
+  renderHotPosts();
+}
+function adminDeleteComment(commentId){
+  if(!confirm('确定删除这条评论吗？'))return;
+  let comments=DB.get('comments',[]);
+  const c=comments.find(x=>x.id===commentId);
+  comments=comments.filter(x=>x.id!==commentId);
+  DB.set('comments',comments);
+  if(c){
+    const posts=DB.get('posts',[]);
+    const p=posts.find(x=>x.id===c.postId);
+    if(p)p.comments=Math.max(0,(p.comments||0)-1);
+    DB.set('posts',posts);
+  }
+  toast('评论已删除');
+  renderAdminContent('comments');
+  renderStats();
+}
+
+/* ===== 初始化 ===== */
+function init(){
+  if(currentUser){
+    enterApp();
+  }else{
+    renderLoginForm();
+  }
+  /* ESC 关闭弹窗 */
+  document.addEventListener('keydown',e=>{
+    if(e.key==='Escape'){
+      document.querySelectorAll('.modal-overlay.show').forEach(m=>m.classList.remove('show'));
+    }
+  });
+  console.log('🏫 银川十八中贴吧已加载');
+}
+init();
+</script>
+</body>
+</html>

@@ -804,6 +804,53 @@ main{max-width:1200px;margin:0 auto;padding:20px;}
 }
 .image-lightbox .lightbox-close:hover{opacity:1;transform:rotate(90deg);}
 
+/* ===== 日记（朋友圈风格） ===== */
+.diary-header{
+  display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;
+}
+.diary-header h2{font-size:20px;color:var(--primary);}
+.diary-card{
+  background:var(--bg-white);border-radius:var(--radius);padding:18px;margin-bottom:14px;
+  box-shadow:var(--shadow);transition:.2s;
+}
+.diary-card:hover{box-shadow:var(--shadow-lg);}
+.diary-head{display:flex;align-items:center;gap:12px;margin-bottom:12px;}
+.diary-avatar{
+  width:44px;height:44px;border-radius:50%;background:var(--bg-primary);
+  display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;
+  overflow:hidden;border:2px solid var(--bg-primary);
+}
+.diary-avatar img{width:100%;height:100%;object-fit:cover;border-radius:50%;}
+.diary-meta{flex:1;min-width:0;}
+.diary-name{font-size:14.5px;font-weight:600;color:var(--text);display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
+.diary-time{font-size:12px;color:var(--text-lighter);margin-top:2px;}
+.vis-badge{
+  font-size:11px;padding:2px 8px;border-radius:10px;font-weight:500;flex-shrink:0;
+}
+.vis-public{background:#e8f5ee;color:var(--primary);}
+.vis-friends{background:#fff3e0;color:#e67e22;}
+.vis-private{background:#fde8e8;color:#e74c3c;}
+.diary-content{
+  font-size:14.5px;line-height:1.8;color:var(--text);margin-bottom:12px;
+  white-space:pre-wrap;word-break:break-word;
+}
+.diary-actions{
+  display:flex;align-items:center;gap:16px;margin-top:12px;padding-top:12px;
+  border-top:1px solid var(--border-light);
+}
+.diary-actions button{
+  background:none;border:none;color:var(--text-light);font-size:13px;cursor:pointer;
+  display:flex;align-items:center;gap:4px;padding:4px 8px;border-radius:6px;transition:.15s;
+  font-family:var(--font);
+}
+.diary-actions button:hover{background:var(--bg-lighter);color:var(--primary);}
+.diary-actions button.liked{color:#e74c3c;}
+.diary-actions .del-btn{margin-left:auto;color:#e74c3c;}
+.diary-empty{
+  text-align:center;padding:60px 20px;color:var(--text-lighter);
+}
+.diary-empty .icon{font-size:48px;margin-bottom:12px;opacity:.5;}
+
 </style>
 </head>
 <body>
@@ -835,6 +882,7 @@ main{max-width:1200px;margin:0 auto;padding:20px;}
     <nav id="mainNav">
       <a class="active" onclick="goHome()">🏠 首页</a>
       <a onclick="navigateZone('all')">📋 全部帖子</a>
+      <a onclick="goDiary()">📖 日记</a>
     </nav>
     <div class="nav-right" id="navRight"></div>
   </div>
@@ -928,6 +976,41 @@ main{max-width:1200px;margin:0 auto;padding:20px;}
   <span class="lightbox-close">×</span>
   <img id="lightboxImg" src="" alt="">
 </div>
+
+<!-- 发布日记弹窗 -->
+<div class="modal-overlay" id="diaryModal">
+  <div class="modal-box" style="max-width:520px;">
+    <span class="close-x" onclick="closeModal('diaryModal')">×</span>
+    <h3>📖 写日记</h3>
+    <div class="form-group">
+      <label>日记内容 <span class="req">*</span></label>
+      <textarea id="diaryContent" placeholder="记录今天的心情和故事..." style="min-height:120px;"></textarea>
+    </div>
+    <div class="form-group">
+      <label>📷 插入图片（选填，最多9张）</label>
+      <div class="post-media-area">
+        <div id="diaryImagePreview" class="image-preview-grid"></div>
+        <label for="diaryImageInput" class="add-image-btn" id="addDiaryImageBtn">
+          <span style="font-size:24px;">＋</span>
+          <span style="font-size:11px;">添加图片</span>
+        </label>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>👁 可见范围</label>
+      <select id="diaryVisibility">
+        <option value="public">🌍 所有人可见</option>
+        <option value="friends">👥 仅朋友可见</option>
+        <option value="private">🔒 仅自己可见</option>
+      </select>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('diaryModal')">取消</button>
+      <button class="btn btn-primary" onclick="submitDiary()">发布</button>
+    </div>
+  </div>
+</div>
+<input type="file" id="diaryImageInput" accept="image/*" multiple style="display:none;">
 
 <!-- 编辑资料弹窗 -->
 <div class="modal-overlay" id="editProfileModal">
@@ -1146,6 +1229,8 @@ async function cloudSave(){
       notifications:DB.get('notifications',[]),
       post_likes:DB.get('post_likes',[]),
       comment_likes:DB.get('comment_likes',[]),
+      diaries:DB.get('diaries',[]),
+      diary_comments:DB.get('diary_comments',[]),
       settings:DB.get('settings',{}),
       updated_at:new Date().toISOString()
     };
@@ -1167,6 +1252,8 @@ async function cloudLoad(){
       if(data.notifications)DB.set('notifications',data.notifications);
       if(data.post_likes)DB.set('post_likes',data.post_likes);
       if(data.comment_likes)DB.set('comment_likes',data.comment_likes);
+      if(data.diaries)DB.set('diaries',data.diaries);
+      if(data.diary_comments)DB.set('diary_comments',data.diary_comments);
       if(data.settings)DB.set('settings',data.settings);
       console.log('✅ 云端数据加载成功');
     }
@@ -1309,10 +1396,11 @@ function doRegister(){
   const users=DB.get('users',[]);
   if(users.find(u=>u.username===username)){toast('该用户名已被注册','err');return;}
 
+  const isFirstUser = users.length === 0;
   const studentId=year+String(studentNum).padStart(4,'0');
   const newUser={
     id:uid(),username,nickname,password,
-    role:status==='毕业'?'graduate':'student',
+    role:isFirstUser?'owner':(status==='毕业'?'graduate':'student'),
     status,className,
     realName:encrypt(realName),
     studentId:encrypt(studentId),
@@ -1323,13 +1411,14 @@ function doRegister(){
     email:$('regEmail').value.trim(),
     douyin:$('regDouyin').value.trim(),
     kuaishou:$('regKuaishou').value.trim(),
-    signature:'',location:'宁夏银川',
+    signature:isFirstUser?'银川十八中贴吧站长，有问题随时联系~':'',
+    location:'宁夏银川',
     avatar:'',cover:'',
     regDate:Date.now()
   };
   users.push(newUser);
   DB.set('users',users);
-  toast('注册成功！请登录','ok');
+  toast(isFirstUser?'注册成功！你是第一位用户，已自动成为站长👑':'注册成功！请登录','ok');
   setTimeout(renderLoginForm,800);
 }
 
@@ -1494,6 +1583,7 @@ function renderHotPosts(){
 function goHome(){
   currentZone='all';
   currentPostId=null;
+  currentView='posts';
   $('profilePage').style.display='none';
   $('mainContent').style.display='block';
   renderZones();
@@ -1719,6 +1809,280 @@ function renderPostAudioTag(audios){
   return '<div class="post-audio-tag">🎵 含'+audios.length+'个音频</div>';
 }
 
+/* ===== 日记（朋友圈）功能 ===== */
+let diaryImages=[];
+let currentDiaryId=null;
+let currentView='posts'; // posts / diary / diaryDetail
+
+function initDiaryMediaUpload(){
+  $('diaryImageInput').addEventListener('change',function(e){
+    const files=e.target.files;
+    if(!files||files.length===0)return;
+    const remaining=9-diaryImages.length;
+    if(remaining<=0){toast('最多只能上传9张图片','err');return;}
+    const toProcess=Array.from(files).slice(0,remaining);
+    let processed=0;
+    toProcess.forEach(file=>{
+      if(file.size>5*1024*1024){toast('图片不能超过5MB','err');processed++;return;}
+      const reader=new FileReader();
+      reader.onload=function(ev){
+        const img=new Image();
+        img.onload=function(){
+          const canvas=document.createElement('canvas');
+          const maxW=1280;
+          let w=img.width,h=img.height;
+          if(w>maxW){h=Math.round(h*maxW/w);w=maxW;}
+          canvas.width=w;canvas.height=h;
+          canvas.getContext('2d').drawImage(img,0,0,w,h);
+          diaryImages.push(canvas.toDataURL('image/jpeg',0.85));
+          processed++;
+          if(processed>=toProcess.length){renderDiaryImagePreview();updateAddDiaryImageBtn();}
+        };
+        img.onerror=function(){processed++;};
+        img.src=ev.target.result;
+      };
+      reader.onerror=function(){processed++;};
+      reader.readAsDataURL(file);
+    });
+    e.target.value='';
+  });
+}
+function renderDiaryImagePreview(){
+  const el=$('diaryImagePreview');if(!el)return;
+  el.innerHTML=diaryImages.map((src,i)=>
+    '<div class="preview-img-item"><img src="'+src+'" alt="图片'+(i+1)+'">'+
+    '<span class="remove-img" onclick="removeDiaryImage('+i+')">×</span></div>'
+  ).join('');
+}
+function removeDiaryImage(index){diaryImages.splice(index,1);renderDiaryImagePreview();updateAddDiaryImageBtn();}
+function updateAddDiaryImageBtn(){
+  const btn=$('addDiaryImageBtn');if(!btn)return;
+  btn.style.display=diaryImages.length>=9?'none':'flex';
+}
+function openDiaryModal(){
+  if(!currentUser){toast('请先登录','err');return;}
+  if(isUserBanned(currentUser.id)){toast('你的账号已被封禁，无法发布','err');return;}
+  $('diaryContent').value='';
+  $('diaryVisibility').value='public';
+  diaryImages=[];
+  renderDiaryImagePreview();
+  updateAddDiaryImageBtn();
+  showModal('diaryModal');
+}
+function submitDiary(){
+  if(!currentUser){toast('请先登录','err');return;}
+  const content=$('diaryContent').value.trim();
+  const visibility=$('diaryVisibility').value;
+  if(!content&&diaryImages.length===0){toast('日记内容或图片不能都为空','err');return;}
+  const diaries=DB.get('diaries',[]);
+  diaries.unshift({
+    id:uid(),
+    authorId:currentUser.id,authorName:currentUser.nickname,
+    authorRole:currentUser.role,authorAvatar:currentUser.avatar||'',
+    content,images:diaryImages.length>0?[...diaryImages]:[],
+    visibility,date:Date.now(),likes:0,comments:0
+  });
+  DB.set('diaries',diaries);
+  closeModal('diaryModal');
+  toast('日记发布成功！','ok');
+  if(currentView==='diary')renderDiaryList();
+}
+function goDiary(){
+  if(!currentUser){toast('请先登录','err');return;}
+  currentView='diary';
+  currentDiaryId=null;
+  $('profilePage').style.display='none';
+  $('mainContent').style.display='block';
+  document.querySelectorAll('#mainNav a').forEach(a=>a.classList.remove('active'));
+  document.querySelectorAll('#mainNav a')[2].classList.add('active');
+  renderDiaryList();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function isFriend(userId1,userId2){
+  const friends=DB.get('friends',[]);
+  return friends.some(f=>
+    (f.userId===userId1&&f.friendId===userId2&&f.status==='accepted')||
+    (f.userId===userId2&&f.friendId===userId1&&f.status==='accepted')
+  );
+}
+function isDiaryVisible(diary){
+  if(!currentUser)return diary.visibility==='public';
+  if(diary.authorId===currentUser.id)return true;
+  if(diary.visibility==='public')return true;
+  if(diary.visibility==='friends')return isFriend(currentUser.id,diary.authorId);
+  return false; // private
+}
+function getVisBadge(vis){
+  const map={
+    public:'<span class="vis-badge vis-public">🌍 公开</span>',
+    friends:'<span class="vis-badge vis-friends">👥 朋友</span>',
+    private:'<span class="vis-badge vis-private">🔒 私密</span>'
+  };
+  return map[vis]||'';
+}
+function renderDiaryList(){
+  const diaries=DB.get('diaries',[]);
+  const visible=diaries.filter(d=>isDiaryVisible(d));
+  let html='<div class="diary-header">'+
+    '<h2>📖 朋友圈日记</h2>'+
+    '<button class="btn btn-primary btn-sm" onclick="openDiaryModal()">✏ 写日记</button>'+
+    '</div>';
+  if(visible.length===0){
+    html+='<div class="diary-empty"><div class="icon">📖</div><p>还没有日记，快来发布第一条吧！</p></div>';
+  }else{
+    html+=visible.map(diaryCardHTML).join('');
+  }
+  $('contentArea').innerHTML=html;
+}
+function diaryCardHTML(d){
+  const canDelete=currentUser&&(currentUser.role==='owner'||currentUser.id===d.authorId);
+  const liked=currentUser&&isDiaryLiked(d.id);
+  return '<div class="diary-card">'+
+    '<div class="diary-head">'+
+      '<div class="diary-avatar">'+(d.authorAvatar?'<img src="'+d.authorAvatar+'">':(d.authorName[0]||'👤'))+'</div>'+
+      '<div class="diary-meta">'+
+        '<div class="diary-name">'+esc(d.authorName)+' '+getRoleBadge(d.authorRole)+' '+getVisBadge(d.visibility)+'</div>'+
+        '<div class="diary-time">'+new Date(d.date).toLocaleString('zh-CN')+'</div>'+
+      '</div>'+
+    '</div>'+
+    (d.content?'<div class="diary-content">'+esc(d.content)+'</div>':'')+
+    renderPostImages(d.images,true)+
+    '<div class="diary-actions">'+
+      '<button class="'+(liked?'liked':'')+'" onclick="toggleDiaryLike(\''+d.id+'\')">❤️ '+(d.likes||0)+'</button>'+
+      '<button onclick="viewDiary(\''+d.id+'\')">💬 '+(d.comments||0)+'</button>'+
+      (canDelete?'<button class="del-btn" onclick="deleteDiary(\''+d.id+'\')">🗑 删除</button>':'')+
+    '</div>'+
+  '</div>';
+}
+function viewDiary(diaryId){
+  currentDiaryId=diaryId;
+  currentView='diaryDetail';
+  renderDiaryDetail();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function renderDiaryDetail(){
+  const diaries=DB.get('diaries',[]);
+  const d=diaries.find(x=>x.id===currentDiaryId);
+  if(!d){$('contentArea').innerHTML='<div class="empty-state"><div class="icon">❌</div><p>日记不存在</p></div>';return;}
+  if(!isDiaryVisible(d)){$('contentArea').innerHTML='<div class="empty-state"><div class="icon">🔒</div><p>该日记为私密内容</p></div>';return;}
+  const comments=DB.get('diary_comments',[]).filter(c=>c.diaryId===d.id).sort((a,b)=>b.date-a.date);
+  const liked=currentUser&&isDiaryLiked(d.id);
+  const canDelete=currentUser&&(currentUser.role==='owner'||currentUser.id===d.authorId);
+  $('contentArea').innerHTML=
+    '<div class="post-detail">'+
+      '<div class="back-btn" onclick="goDiary()">← 返回日记列表</div>'+
+      '<div class="diary-card" style="box-shadow:none;padding:0;margin-bottom:20px;">'+
+        '<div class="diary-head">'+
+          '<div class="diary-avatar">'+(d.authorAvatar?'<img src="'+d.authorAvatar+'">':(d.authorName[0]||'👤'))+'</div>'+
+          '<div class="diary-meta">'+
+            '<div class="diary-name">'+esc(d.authorName)+' '+getRoleBadge(d.authorRole)+' '+getVisBadge(d.visibility)+'</div>'+
+            '<div class="diary-time">'+new Date(d.date).toLocaleString('zh-CN')+'</div>'+
+          '</div>'+
+        '</div>'+
+        (d.content?'<div class="diary-content">'+esc(d.content)+'</div>':'')+
+        renderPostImages(d.images,true)+
+        '<div class="diary-actions">'+
+          '<button class="'+(liked?'liked':'')+'" onclick="toggleDiaryLike(\''+d.id+'\')">❤️ 点赞 ('+(d.likes||0)+')</button>'+
+          (canDelete?'<button class="del-btn" onclick="deleteDiary(\''+d.id+'\')">🗑 删除</button>':'')+
+        '</div>'+
+      '</div>'+
+      '<div class="comments">'+
+        '<h3>💬 评论 ('+comments.length+')</h3>'+
+        (currentUser?
+        '<div class="comment-form">'+
+          '<div class="cf-avatar">'+(currentUser.avatar?'<img src="'+currentUser.avatar+'" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">':(currentUser.nickname[0]||'👤'))+'</div>'+
+          '<div class="cf-body">'+
+            '<textarea id="diaryCommentInput" placeholder="写下你的评论..."></textarea>'+
+            '<div class="cf-submit"><button class="btn btn-primary btn-sm" onclick="submitDiaryComment(\''+d.id+'\')">发表评论</button></div>'+
+          '</div></div>':'<div class="auth-tip">请先登录后评论</div>')+
+        '<div style="margin-top:16px;">'+
+          (comments.length?comments.map(c=>{
+            const canDel=currentUser&&(currentUser.role==='owner'||currentUser.id===c.authorId);
+            return '<div class="comment-item">'+
+              '<div class="ci-avatar">'+(c.authorAvatar?'<img src="'+c.authorAvatar+'" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">':(c.authorName[0]||'👤'))+'</div>'+
+              '<div class="ci-body">'+
+                '<div class="ci-head"><span class="name">'+esc(c.authorName)+' '+getRoleBadge(c.authorRole)+'</span>'+
+                '<span class="time">'+timeAgo(c.date)+'</span></div>'+
+                '<div class="ci-content">'+esc(c.content)+'</div>'+
+                (canDel?'<div class="ci-actions"><button onclick="deleteDiaryComment(\''+c.id+'\')">🗑 删除</button></div>':'')+
+              '</div></div>';
+          }).join(''):'<div class="empty-state" style="padding:30px;"><div class="icon">💬</div><p>暂无评论，来抢沙发吧~</p></div>')+
+        '</div>'+
+      '</div>'+
+    '</div>';
+}
+function isDiaryLiked(diaryId){
+  if(!currentUser)return false;
+  const liked=DB.get('diaryLikes',{});
+  return (liked[currentUser.id]||[]).includes(diaryId);
+}
+function toggleDiaryLike(diaryId){
+  if(!currentUser){toast('请先登录','err');return;}
+  const diaries=DB.get('diaries',[]);
+  const d=diaries.find(x=>x.id===diaryId);
+  if(!d)return;
+  const liked=DB.get('diaryLikes',{});
+  const userLikes=liked[currentUser.id]||[];
+  if(userLikes.includes(diaryId)){
+    liked[currentUser.id]=userLikes.filter(x=>x!==diaryId);
+    d.likes=Math.max(0,(d.likes||0)-1);
+  }else{
+    liked[currentUser.id]=[...userLikes,diaryId];
+    d.likes=(d.likes||0)+1;
+  }
+  DB.set('diaryLikes',liked);
+  DB.set('diaries',diaries);
+  if(currentView==='diary')renderDiaryList();
+  else if(currentView==='diaryDetail')renderDiaryDetail();
+}
+function deleteDiary(diaryId){
+  if(!currentUser){toast('请先登录','err');return;}
+  const diaries=DB.get('diaries',[]);
+  const d=diaries.find(x=>x.id===diaryId);
+  if(!d)return;
+  if(currentUser.role!=='owner'&&d.authorId!==currentUser.id){toast('你只能删除自己的日记','err');return;}
+  if(!confirm('确定删除这篇日记吗？'))return;
+  DB.set('diaries',diaries.filter(x=>x.id!==diaryId));
+  let comments=DB.get('diary_comments',[]);
+  comments=comments.filter(c=>c.diaryId!==diaryId);
+  DB.set('diary_comments',comments);
+  toast('日记已删除');
+  goDiary();
+}
+function submitDiaryComment(diaryId){
+  if(!currentUser){toast('请先登录','err');return;}
+  if(isUserBanned(currentUser.id)){toast('你的账号已被封禁，无法评论','err');return;}
+  const content=$('diaryCommentInput').value.trim();
+  if(!content){toast('评论内容不能为空','err');return;}
+  const comments=DB.get('diary_comments',[]);
+  comments.push({
+    id:uid(),diaryId,
+    authorId:currentUser.id,authorName:currentUser.nickname,
+    authorRole:currentUser.role,authorAvatar:currentUser.avatar||'',
+    content,date:Date.now()
+  });
+  DB.set('diary_comments',comments);
+  const diaries=DB.get('diaries',[]);
+  const d=diaries.find(x=>x.id===diaryId);
+  if(d){d.comments=(d.comments||0)+1;DB.set('diaries',diaries);}
+  toast('评论成功','ok');
+  renderDiaryDetail();
+}
+function deleteDiaryComment(commentId){
+  if(!currentUser){toast('请先登录','err');return;}
+  const comments=DB.get('diary_comments',[]);
+  const c=comments.find(x=>x.id===commentId);
+  if(!c)return;
+  if(currentUser.role!=='owner'&&c.authorId!==currentUser.id){toast('你只能删除自己的评论','err');return;}
+  if(!confirm('确定删除这条评论吗？'))return;
+  DB.set('diary_comments',comments.filter(x=>x.id!==commentId));
+  const diaries=DB.get('diaries',[]);
+  const d=diaries.find(x=>x.id===c.diaryId);
+  if(d){d.comments=Math.max(0,(d.comments||0)-1);DB.set('diaries',diaries);}
+  toast('评论已删除');
+  renderDiaryDetail();
+}
+
 /* ===== 发帖 ===== */
 function openPostModal(){
   if(!currentUser){toast('请先登录','err');return;}
@@ -1761,10 +2125,21 @@ function submitPost(){
   renderPostList();
 }
 function deletePost(postId){
+  if(!currentUser){toast('请先登录','err');return;}
+  const posts=DB.get('posts',[]);
+  const post=posts.find(p=>p.id===postId);
+  if(!post){toast('帖子不存在','err');return;}
+  /* 权限检查：管理员不能删站长的帖子 */
+  if(currentUser.role==='admin'&&post.authorRole==='owner'){
+    toast('你没有权限删除站长的帖子','err');return;
+  }
+  /* 普通用户只能删自己的帖子 */
+  if(currentUser.role!=='owner'&&currentUser.role!=='admin'&&post.authorId!==currentUser.id){
+    toast('你只能删除自己的帖子','err');return;
+  }
   if(!confirm('确定删除这篇帖子吗？'))return;
-  let posts=DB.get('posts',[]);
-  posts=posts.filter(p=>p.id!==postId);
-  DB.set('posts',posts);
+  let newPosts=posts.filter(p=>p.id!==postId);
+  DB.set('posts',newPosts);
   let comments=DB.get('comments',[]);
   comments=comments.filter(c=>c.postId!==postId);
   DB.set('comments',comments);
@@ -1796,16 +2171,24 @@ function submitComment(postId){
   renderPostDetail();
 }
 function deleteComment(commentId){
-  if(!confirm('确定删除这条评论吗？'))return;
-  let comments=DB.get('comments',[]);
+  if(!currentUser){toast('请先登录','err');return;}
+  const comments=DB.get('comments',[]);
   const c=comments.find(x=>x.id===commentId);
-  comments=comments.filter(x=>x.id!==commentId);
-  DB.set('comments',comments);
-  if(c){
-    const posts=DB.get('posts',[]);
-    const p=posts.find(x=>x.id===c.postId);
-    if(p){p.comments=Math.max(0,(p.comments||0)-1);DB.set('posts',posts);}
+  if(!c){toast('评论不存在','err');return;}
+  /* 权限检查：管理员不能删站长的评论 */
+  if(currentUser.role==='admin'&&c.authorRole==='owner'){
+    toast('你没有权限删除站长的评论','err');return;
   }
+  /* 普通用户只能删自己的评论 */
+  if(currentUser.role!=='owner'&&currentUser.role!=='admin'&&c.authorId!==currentUser.id){
+    toast('你只能删除自己的评论','err');return;
+  }
+  if(!confirm('确定删除这条评论吗？'))return;
+  let newComments=comments.filter(x=>x.id!==commentId);
+  DB.set('comments',newComments);
+  const posts=DB.get('posts',[]);
+  const p=posts.find(x=>x.id===c.postId);
+  if(p){p.comments=Math.max(0,(p.comments||0)-1);DB.set('posts',posts);}
   toast('评论已删除');
   renderPostDetail();
 }
@@ -2765,6 +3148,8 @@ async function init(){
   });
   /* 初始化发帖图片上传 */
   initPostMediaUpload();
+  /* 初始化日记图片上传 */
+  initDiaryMediaUpload();
 
   if(currentUser){
     /* 检查封号状态 */

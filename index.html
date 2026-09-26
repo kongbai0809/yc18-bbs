@@ -347,9 +347,11 @@ main{max-width:1200px;margin:0 auto;padding:20px;}
 .profile-cover .cover-edit{
   position:absolute;bottom:14px;right:14px;background:rgba(0,0,0,.5);color:#fff;
   padding:6px 14px;border-radius:20px;font-size:12px;cursor:pointer;backdrop-filter:blur(4px);
-  display:flex;align-items:center;gap:5px;transition:.2s;
+  display:flex;align-items:center;gap:5px;transition:.2s;touch-action:manipulation;
+  -webkit-tap-highlight-color:transparent;z-index:10;
 }
 .profile-cover .cover-edit:hover{background:rgba(0,0,0,.7);}
+.profile-cover .cover-edit:active{transform:scale(.95);}
 .profile-info{
   max-width:900px;margin:0 auto;padding:0 20px;position:relative;
 }
@@ -360,15 +362,16 @@ main{max-width:1200px;margin:0 auto;padding:20px;}
   width:120px;height:120px;border-radius:50%;border:4px solid var(--bg-white);
   background:var(--bg-primary);box-shadow:var(--shadow-lg);position:relative;
   display:flex;align-items:center;justify-content:center;font-size:48px;object-fit:cover;
-  cursor:pointer;overflow:hidden;
+  cursor:pointer;overflow:hidden;touch-action:manipulation;-webkit-tap-highlight-color:transparent;
 }
 .profile-avatar img{width:100%;height:100%;object-fit:cover;}
 .profile-avatar .avatar-edit{
   position:absolute;inset:0;background:rgba(0,0,0,.5);color:#fff;display:flex;
   align-items:center;justify-content:center;font-size:12px;opacity:0;transition:.2s;
-  border-radius:50%;
+  border-radius:50%;pointer-events:none;
 }
 .profile-avatar:hover .avatar-edit{opacity:1;}
+.profile-avatar:active{transform:scale(.97);}
 .profile-name-area{flex:1;padding-bottom:10px;min-width:200px;}
 .profile-name-area h2{font-size:24px;color:var(--text);display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
 .profile-name-area .username{font-size:14px;color:var(--text-lighter);margin-top:2px;}
@@ -441,22 +444,257 @@ main{max-width:1200px;margin:0 auto;padding:20px;}
 /* ===== 响应式 ===== */
 @media(max-width:960px){
   .layout{grid-template-columns:1fr;}
-  .sidebar-left,.sidebar-right{display:none;}
+  .sidebar-left{display:none;}
+  .sidebar-right{display:none;}
   .auth-box{grid-template-columns:1fr;}
   .auth-left{display:none;}
   .profile-stats{gap:20px;}
+  /* 移动端分区横滑栏 */
+  .mobile-zones{
+    display:flex!important;gap:8px;padding:10px 12px;overflow-x:auto;
+    background:var(--bg-white);border-bottom:1px solid var(--border);
+    -webkit-overflow-scrolling:touch;scrollbar-width:none;
+  }
+  .mobile-zones::-webkit-scrollbar{display:none;}
+  .mobile-zones a{
+    flex-shrink:0;padding:6px 14px;border-radius:16px;font-size:12.5px;
+    background:var(--bg-primary);color:var(--primary);font-weight:500;white-space:nowrap;
+  }
+  .mobile-zones a.active{background:var(--primary);color:#fff;}
+  /* 移动端底部导航 */
+  .mobile-nav{display:flex!important;}
+  main{padding-bottom:70px!important;}
+  #profilePage{padding-bottom:70px;}
 }
 @media(max-width:600px){
-  .nav-inner{padding:0 12px;gap:10px;}
+  .nav-inner{padding:0 12px;gap:8px;}
   .logo h1{font-size:14px;}
   .logo h1 small{display:none;}
+  .logo img{width:32px;height:32px;}
   nav{display:none;}
-  main{padding:12px;}
+  main{padding:10px;padding-bottom:70px;}
   .form-row,.form-row-3{grid-template-columns:1fr;}
   .profile-avatar{width:90px;height:90px;font-size:36px;}
   .profile-name-area h2{font-size:20px;}
   .post-detail{padding:18px 16px;}
+  .profile-cover{height:160px;}
+  .profile-avatar-wrap{margin-top:-45px;gap:12px;}
+  .profile-info{padding:0 12px;}
+  .profile-page{margin:-10px;}
+  .modal-box{margin:10px;max-width:calc(100vw - 20px)!important;max-height:88vh;overflow-y:auto;}
+  .auth-right{padding:24px 20px;}
+  .auth-page{padding:10px;}
+  .post-card{padding:14px;}
+  .post-author{flex-wrap:wrap;gap:6px;}
+  .chat-panel{right:0!important;left:0!important;top:0!important;bottom:0!important;
+    width:100%!important;height:100%!important;border-radius:0!important;max-width:100%!important;}
+  .friends-panel{right:0!important;left:0!important;top:0!important;bottom:0!important;
+    width:100%!important;height:100%!important;border-radius:0!important;max-width:100%!important;}
 }
+/* 移动端分区横滑栏（默认隐藏，960px以下显示） */
+.mobile-zones{display:none;}
+/* 移动端底部导航 */
+.mobile-nav{
+  display:none;position:fixed;bottom:0;left:0;right:0;height:58px;z-index:99;
+  background:var(--bg-white);border-top:1px solid var(--border);
+  box-shadow:0 -2px 10px rgba(0,0,0,.06);
+  display:none;align-items:center;justify-content:space-around;
+}
+.mobile-nav a{
+  display:flex;flex-direction:column;align-items:center;gap:2px;
+  font-size:10px;color:var(--text-lighter);padding:6px 12px;position:relative;
+  -webkit-tap-highlight-color:transparent;touch-action:manipulation;
+}
+.mobile-nav a .icon{font-size:20px;}
+.mobile-nav a.active{color:var(--primary);font-weight:600;}
+.mobile-nav a .badge{
+  position:absolute;top:2px;right:6px;min-width:16px;height:16px;
+  background:#e74c3c;color:#fff;font-size:10px;border-radius:8px;
+  display:flex;align-items:center;justify-content:center;padding:0 4px;font-weight:700;
+}
+/* ===== 好友面板 ===== */
+.friends-panel{
+  position:fixed;top:0;right:-400px;width:380px;height:100vh;z-index:200;
+  background:var(--bg-white);box-shadow:-4px 0 20px rgba(0,0,0,.1);
+  transition:right .3s ease;display:flex;flex-direction:column;
+}
+.friends-panel.show{right:0;}
+.fp-header{
+  padding:16px 18px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;flex-shrink:0;
+}
+.fp-header h3{font-size:16px;color:var(--primary);display:flex;align-items:center;gap:8px;}
+.fp-close{font-size:22px;color:var(--text-lighter);cursor:pointer;padding:4px 8px;
+  -webkit-tap-highlight-color:transparent;touch-action:manipulation;}
+.fp-tabs{display:flex;border-bottom:1px solid var(--border);flex-shrink:0;}
+.fp-tabs a{
+  flex:1;text-align:center;padding:10px;font-size:13px;color:var(--text-light);
+  cursor:pointer;border-bottom:2px solid transparent;transition:.15s;
+}
+.fp-tabs a.active{color:var(--primary);border-bottom-color:var(--primary);font-weight:600;}
+.fp-search{padding:10px 14px;border-bottom:1px solid var(--border-light);flex-shrink:0;}
+.fp-search input{
+  width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:8px;
+  font-size:13px;background:var(--bg-lighter);
+}
+.fp-list{flex:1;overflow-y:auto;padding:8px;}
+.friend-item{
+  display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:10px;
+  cursor:pointer;transition:.15s;-webkit-tap-highlight-color:transparent;
+}
+.friend-item:hover{background:var(--bg-primary);}
+.friend-item .f-avatar{
+  width:44px;height:44px;border-radius:50%;background:var(--bg-primary);
+  display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;
+  border:2px solid var(--primary-lighter);object-fit:cover;overflow:hidden;
+}
+.friend-item .f-avatar img{width:100%;height:100%;object-fit:cover;}
+.friend-item .f-info{flex:1;min-width:0;}
+.friend-item .f-name{font-size:13.5px;font-weight:600;color:var(--text);display:flex;align-items:center;gap:6px;}
+.friend-item .f-status{font-size:11.5px;color:var(--text-lighter);margin-top:2px;}
+.friend-item .f-actions{display:flex;gap:6px;flex-shrink:0;}
+.friend-item .f-actions button{
+  padding:5px 10px;font-size:11.5px;border-radius:6px;font-weight:600;
+  -webkit-tap-highlight-color:transparent;touch-action:manipulation;
+}
+.fp-empty{text-align:center;padding:40px 20px;color:var(--text-lighter);font-size:13px;}
+.fp-empty .icon{font-size:40px;margin-bottom:10px;opacity:.5;}
+
+/* ===== 聊天窗口 ===== */
+.chat-panel{
+  position:fixed;top:0;right:-420px;width:400px;height:100vh;z-index:210;
+  background:var(--bg-white);box-shadow:-4px 0 24px rgba(0,0,0,.12);
+  transition:right .3s ease;display:flex;flex-direction:column;
+}
+.chat-panel.show{right:0;}
+.chat-header{
+  padding:14px 16px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:12px;flex-shrink:0;background:var(--bg-white);
+}
+.chat-header .c-back{
+  font-size:20px;color:var(--text-lighter);cursor:pointer;padding:4px;
+  -webkit-tap-highlight-color:transparent;
+}
+.chat-header .c-avatar{
+  width:40px;height:40px;border-radius:50%;background:var(--bg-primary);
+  display:flex;align-items:center;justify-content:center;font-size:16px;
+  border:2px solid var(--primary-lighter);object-fit:cover;overflow:hidden;
+}
+.chat-header .c-avatar img{width:100%;height:100%;object-fit:cover;}
+.chat-header .c-info{flex:1;min-width:0;}
+.chat-header .c-name{font-size:14px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:6px;}
+.chat-header .c-status{font-size:11px;color:var(--text-lighter);}
+.chat-header .c-more{font-size:18px;color:var(--text-lighter);cursor:pointer;padding:6px;
+  -webkit-tap-highlight-color:transparent;position:relative;}
+.chat-messages{
+  flex:1;overflow-y:auto;padding:16px;background:var(--bg-lighter);
+  display:flex;flex-direction:column;gap:12px;
+}
+.msg-row{display:flex;gap:8px;max-width:85%;}
+.msg-row.mine{align-self:flex-end;flex-direction:row-reverse;}
+.msg-avatar{
+  width:32px;height:32px;border-radius:50%;background:var(--bg-primary);
+  display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;
+  border:1px solid var(--primary-lighter);object-fit:cover;overflow:hidden;
+}
+.msg-avatar img{width:100%;height:100%;object-fit:cover;}
+.msg-bubble{
+  padding:9px 13px;border-radius:14px;font-size:13.5px;line-height:1.5;
+  background:var(--bg-white);color:var(--text);box-shadow:0 1px 4px rgba(0,0,0,.06);
+  word-break:break-word;position:relative;
+}
+.msg-row.mine .msg-bubble{background:var(--primary);color:#fff;}
+.msg-time{font-size:10px;color:var(--text-lighter);text-align:center;margin:4px 0;}
+.msg-row.mine .msg-time{text-align:right;}
+.chat-input-area{
+  padding:10px 12px;border-top:1px solid var(--border);display:flex;gap:8px;
+  align-items:flex-end;flex-shrink:0;background:var(--bg-white);
+}
+.chat-input-area textarea{
+  flex:1;border:1px solid var(--border);border-radius:10px;padding:8px 12px;
+  font-size:13px;resize:none;max-height:80px;min-height:38px;line-height:1.4;
+  background:var(--bg-lighter);
+}
+.chat-input-area textarea:focus{border-color:var(--primary);background:#fff;}
+.chat-send{
+  padding:9px 16px;border-radius:10px;background:var(--primary);color:#fff;
+  font-size:13px;font-weight:600;flex-shrink:0;cursor:pointer;
+  -webkit-tap-highlight-color:transparent;touch-action:manipulation;
+}
+.chat-send:active{transform:scale(.95);}
+.chat-send:disabled{background:var(--text-lighter);cursor:not-allowed;}
+
+/* ===== 举报弹窗 ===== */
+.report-types{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0;}
+.report-type{
+  padding:10px;border:1.5px solid var(--border);border-radius:8px;cursor:pointer;
+  font-size:12.5px;text-align:center;transition:.15s;color:var(--text-light);
+  -webkit-tap-highlight-color:transparent;touch-action:manipulation;
+}
+.report-type:hover{border-color:var(--primary-lighter);background:var(--bg-primary);}
+.report-type.selected{border-color:var(--primary);background:var(--bg-primary);color:var(--primary);font-weight:600;}
+.report-detail{
+  width:100%;min-height:80px;border:1px solid var(--border);border-radius:8px;
+  padding:10px;font-size:13px;resize:vertical;margin-top:8px;background:var(--bg-lighter);
+}
+
+/* ===== 站内信 ===== */
+.inbox-panel{
+  position:fixed;top:0;right:-400px;width:380px;height:100vh;z-index:205;
+  background:var(--bg-white);box-shadow:-4px 0 20px rgba(0,0,0,.1);
+  transition:right .3s ease;display:flex;flex-direction:column;
+}
+.inbox-panel.show{right:0;}
+.inbox-item{
+  padding:12px 14px;border-bottom:1px solid var(--border-light);cursor:pointer;
+  transition:.15s;display:flex;gap:10px;-webkit-tap-highlight-color:transparent;
+}
+.inbox-item:hover{background:var(--bg-primary);}
+.inbox-item.unread{background:var(--bg-lighter);border-left:3px solid var(--primary);}
+.inbox-item .ib-icon{font-size:22px;flex-shrink:0;}
+.inbox-item .ib-content{flex:1;min-width:0;}
+.inbox-item .ib-title{font-size:13px;font-weight:600;color:var(--text);margin-bottom:3px;}
+.inbox-item .ib-desc{font-size:11.5px;color:var(--text-light);line-height:1.4;}
+.inbox-item .ib-time{font-size:10px;color:var(--text-lighter);flex-shrink:0;}
+
+/* ===== 封号状态 ===== */
+.banned-overlay{
+  position:fixed;inset:0;z-index:500;background:rgba(0,0,0,.85);
+  display:flex;align-items:center;justify-content:center;padding:20px;
+}
+.banned-box{
+  background:var(--bg-white);border-radius:16px;padding:32px;max-width:420px;
+  text-align:center;box-shadow:var(--shadow-lg);
+}
+.banned-box .icon{font-size:56px;margin-bottom:16px;}
+.banned-box h2{font-size:20px;color:#e74c3c;margin-bottom:10px;}
+.banned-box p{font-size:13.5px;color:var(--text-light);line-height:1.8;margin-bottom:8px;}
+.banned-box .ban-reason{
+  background:var(--bg-lighter);border-radius:8px;padding:12px;margin:14px 0;
+  font-size:12.5px;color:var(--text);text-align:left;line-height:1.6;
+}
+
+/* ===== 角色徽章 ===== */
+.role-badge{
+  display:inline-flex;align-items:center;gap:3px;padding:2px 8px;border-radius:10px;
+  font-size:10.5px;font-weight:700;white-space:nowrap;
+}
+.role-owner{background:linear-gradient(135deg,#f1c40f,#e67e22);color:#fff;}
+.role-admin{background:linear-gradient(135deg,#3498db,#2980b9);color:#fff;}
+.role-student{background:var(--bg-primary);color:var(--primary);border:1px solid var(--primary-lighter);}
+.role-graduate{background:#fef3e2;color:#b87333;border:1px solid #f0d9a8;}
+
+/* ===== Toast 增强 ===== */
+#toast{
+  position:fixed;top:20px;left:50%;transform:translateX(-50%) translateY(-20px);
+  background:var(--text);color:#fff;padding:10px 22px;border-radius:10px;
+  font-size:13px;z-index:999;opacity:0;transition:.25s;box-shadow:var(--shadow-lg);
+  max-width:90vw;text-align:center;
+}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+#toast.ok{background:var(--primary);}
+#toast.err{background:#e74c3c;}
+
 </style>
 </head>
 <body>
@@ -492,6 +730,9 @@ main{max-width:1200px;margin:0 auto;padding:20px;}
     <div class="nav-right" id="navRight"></div>
   </div>
 </header>
+
+<!-- 移动端分区横滑栏 -->
+<div class="mobile-zones" id="mobileZones" style="display:none;"></div>
 
 <!-- 主内容 -->
 <main id="mainContent" style="display:none;">
@@ -602,6 +843,93 @@ main{max-width:1200px;margin:0 auto;padding:20px;}
 <!-- 隐藏文件输入 -->
 <input type="file" id="avatarInput" accept="image/*" style="display:none;">
 <input type="file" id="coverInput" accept="image/*" style="display:none;">
+
+<!-- 移动端底部导航 -->
+<nav class="mobile-nav" id="mobileNav" style="display:none;">
+  <a class="active" onclick="goHome()"><span class="icon">🏠</span>首页</a>
+  <a onclick="openFriendsPanel()"><span class="icon">👥</span>好友</a>
+  <a onclick="openChatList()"><span class="icon">💬</span>消息<span class="badge" id="mobileMsgBadge" style="display:none;">0</span></a>
+  <a onclick="viewMyProfile()"><span class="icon">👤</span>我的</a>
+</nav>
+
+<!-- 好友面板 -->
+<div class="friends-panel" id="friendsPanel">
+  <div class="fp-header">
+    <h3>👥 好友</h3>
+    <span class="fp-close" onclick="closeFriendsPanel()">×</span>
+  </div>
+  <div class="fp-tabs">
+    <a class="active" onclick="switchFriendTab('friends',this)">我的好友</a>
+    <a onclick="switchFriendTab('requests',this)">好友请求<span id="reqBadge" style="display:none;background:#e74c3c;color:#fff;border-radius:8px;padding:1px 6px;font-size:10px;margin-left:4px;">0</span></a>
+    <a onclick="switchFriendTab('add',this)">添加好友</a>
+  </div>
+  <div class="fp-search" id="fpSearch" style="display:none;">
+    <input id="searchUserInput" placeholder="输入用户名或昵称搜索..." oninput="searchUsers()">
+  </div>
+  <div class="fp-list" id="friendsList"></div>
+</div>
+
+<!-- 聊天窗口 -->
+<div class="chat-panel" id="chatPanel">
+  <div class="chat-header">
+    <span class="c-back" onclick="closeChat()">←</span>
+    <div class="c-avatar" id="chatAvatar">?</div>
+    <div class="c-info">
+      <div class="c-name" id="chatName">用户</div>
+      <div class="c-status" id="chatStatus">在线</div>
+    </div>
+    <span class="c-more" onclick="showChatMenu()">⋯</span>
+  </div>
+  <div class="chat-messages" id="chatMessages"></div>
+  <div class="chat-input-area">
+    <textarea id="chatInput" placeholder="输入消息..." rows="1" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChatMessage();}"></textarea>
+    <button class="chat-send" onclick="sendChatMessage()">发送</button>
+  </div>
+</div>
+
+<!-- 举报弹窗 -->
+<div class="modal-overlay" id="reportModal">
+  <div class="modal-box" style="max-width:420px;">
+    <span class="close-x" onclick="closeModal('reportModal')">×</span>
+    <h3>🚨 举报</h3>
+    <p style="font-size:12.5px;color:var(--text-light);margin-bottom:8px;" id="reportTargetInfo"></p>
+    <label style="font-size:13px;font-weight:600;">举报类型 <span class="req">*</span></label>
+    <div class="report-types" id="reportTypes">
+      <div class="report-type" onclick="selectReportType(this,'垃圾广告')">垃圾广告</div>
+      <div class="report-type" onclick="selectReportType(this,'辱骂攻击')">辱骂攻击</div>
+      <div class="report-type" onclick="selectReportType(this,'色情低俗')">色情低俗</div>
+      <div class="report-type" onclick="selectReportType(this,'虚假信息')">虚假信息</div>
+      <div class="report-type" onclick="selectReportType(this,'侵犯隐私')">侵犯隐私</div>
+      <div class="report-type" onclick="selectReportType(this,'其他违规')">其他违规</div>
+    </div>
+    <label style="font-size:13px;font-weight:600;">详细说明（选填）</label>
+    <textarea class="report-detail" id="reportDetail" placeholder="请描述具体情况，帮助我们更快处理..." maxlength="200"></textarea>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('reportModal')">取消</button>
+      <button class="btn btn-danger" onclick="submitReport()">提交举报</button>
+    </div>
+  </div>
+</div>
+
+<!-- 站内信面板 -->
+<div class="inbox-panel" id="inboxPanel">
+  <div class="fp-header">
+    <h3>📬 站内信</h3>
+    <span class="fp-close" onclick="closeInbox()">×</span>
+  </div>
+  <div class="fp-list" id="inboxList"></div>
+</div>
+
+<!-- 封号遮罩 -->
+<div class="banned-overlay" id="bannedOverlay" style="display:none;">
+  <div class="banned-box">
+    <div class="icon">🚫</div>
+    <h2>账号已被封禁</h2>
+    <div class="ban-reason" id="banReason"></div>
+    <p id="banExpire"></p>
+    <p style="font-size:11px;color:var(--text-lighter);margin-top:12px;">如有异议，请联系站长申诉</p>
+  </div>
+</div>
 
 <!-- Toast -->
 <div id="toast"></div>
@@ -842,11 +1170,40 @@ function enterApp(){
   $('mainHeader').style.display='block';
   $('mainContent').style.display='block';
   $('profilePage').style.display='none';
+  /* 移动端导航 */
+  if(window.innerWidth<=960){
+    $('mobileNav').style.display='flex';
+    $('mobileZones').style.display='flex';
+  }else{
+    $('mobileNav').style.display='none';
+    $('mobileZones').style.display='none';
+  }
   renderNavRight();
   renderZones();
+  renderMobileZones();
   renderStats();
   renderHotPosts();
   goHome();
+}
+/* 窗口大小变化时切换移动端导航 */
+window.addEventListener('resize',function(){
+  if(!currentUser)return;
+  if(window.innerWidth<=960){
+    $('mobileNav').style.display='flex';
+    $('mobileZones').style.display='flex';
+  }else{
+    $('mobileNav').style.display='none';
+    $('mobileZones').style.display='none';
+  }
+});
+/* 移动端分区横滑栏 */
+function renderMobileZones(){
+  $('mobileZones').innerHTML=ZONES.map(z=>
+    '<a class="'+(currentZone===z.id?'active':'')+'" onclick="navigateZone(\''+z.id+'\')">'+z.icon+' '+z.name+'</a>'
+  ).join('');
+}
+function viewMyProfile(){
+  if(currentUser)viewProfile(currentUser.id);
 }
 
 /* ===== 导航右侧用户菜单 ===== */
@@ -866,10 +1223,13 @@ function renderNavRight(){
     '<div class="user-menu">'+avatarHtml+
     '<div class="user-dropdown" id="userDropdown">'+
       '<div class="ud-head"><b>'+esc(currentUser.nickname)+' '+roleBadge+'</b><span>@'+esc(currentUser.username)+'</span></div>'+
-      '<a onclick="viewProfile(currentUser.id)">👤 个人主页</a>'+
-      '<a onclick="openEditProfile()">⚙ 编辑资料</a>'+
-      '<a onclick="viewMyPosts()">📝 我的帖子</a>'+
-      (currentUser.role==='owner'||currentUser.role==='admin'?'<a onclick="openAdminPanel()">🛡 后台管理</a>':'')+
+      '<a onclick="viewProfile(currentUser.id);toggleUserMenu();">👤 个人主页</a>'+
+      '<a onclick="openFriendsPanel();toggleUserMenu();">👥 好友</a>'+
+      '<a onclick="openChatList();toggleUserMenu();">💬 私聊消息</a>'+
+      '<a onclick="openInbox();toggleUserMenu();">📬 站内信</a>'+
+      '<a onclick="openEditProfile();toggleUserMenu();">⚙ 编辑资料</a>'+
+      '<a onclick="viewMyPosts();toggleUserMenu();">📝 我的帖子</a>'+
+      (currentUser.role==='owner'||currentUser.role==='admin'?'<a onclick="openAdminPanel();toggleUserMenu();">🛡 后台管理</a>':'')+
       '<button onclick="doLogout()">🚪 退出登录</button>'+
     '</div></div>';
 }
@@ -905,6 +1265,7 @@ function navigateZone(zoneId){
   $('profilePage').style.display='none';
   $('mainContent').style.display='block';
   renderZones();
+  renderMobileZones();
   renderPostList();
   document.querySelectorAll('#mainNav a').forEach(a=>a.classList.remove('active'));
 }
@@ -940,8 +1301,10 @@ function goHome(){
   $('profilePage').style.display='none';
   $('mainContent').style.display='block';
   renderZones();
+  renderMobileZones();
   renderPostList();
   document.querySelectorAll('#mainNav a').forEach((a,i)=>a.classList.toggle('active',i===0));
+  document.querySelectorAll('.mobile-nav a').forEach((a,i)=>a.classList.toggle('active',i===0));
 }
 function renderPostList(){
   const posts=DB.get('posts',[]);
@@ -1070,6 +1433,7 @@ function openPostModal(){
 }
 function submitPost(){
   if(!currentUser){toast('请先登录','err');return;}
+  if(isUserBanned(currentUser.id)){toast('你的账号已被封禁，无法发帖','err');return;}
   const zone=$('postZone').value;
   const title=$('postTitle').value.trim();
   const content=$('postContent').value.trim();
@@ -1110,6 +1474,7 @@ function deletePost(postId){
 /* ===== 评论 ===== */
 function submitComment(postId){
   if(!currentUser){toast('请先登录','err');return;}
+  if(isUserBanned(currentUser.id)){toast('你的账号已被封禁，无法评论','err');return;}
   const content=$('commentInput').value.trim();
   if(!content){toast('评论内容不能为空','err');return;}
   const comments=DB.get('comments',[]);
@@ -1197,60 +1562,30 @@ function sharePost(postId){
   }else{prompt('复制链接分享：',url);}
 }
 
-/* ===== 图片上传 ===== */
-function uploadAvatar(inputId,callback){
-  const input=$(inputId);
-  input.onchange=function(e){
-    const file=e.target.files[0];
-    if(!file)return;
-    if(file.size>2*1024*1024){toast('图片不能超过2MB','err');return;}
-    const reader=new FileReader();
-    reader.onload=function(ev){
-      /* 压缩图片 */
-      const img=new Image();
-      img.onload=function(){
-        const canvas=document.createElement('canvas');
-        const maxSize=400;
-        let w=img.width,h=img.height;
-        if(w>h){if(w>maxSize){h=h*maxSize/w;w=maxSize;}}
-        else{if(h>maxSize){w=w*maxSize/h;h=maxSize;}}
-        canvas.width=w;canvas.height=h;
-        canvas.getContext('2d').drawImage(img,0,0,w,h);
-        const dataUrl=canvas.toDataURL('image/jpeg',0.85);
-        callback(dataUrl);
-      };
-      img.src=ev.target.result;
+/* ===== 图片上传（统一处理，label原生触发，兼容手机端） ===== */
+function handleImageUpload(e,maxSize,quality,callback){
+  const file=e.target.files[0];
+  if(!file)return;
+  if(file.size>5*1024*1024){toast('图片不能超过5MB','err');e.target.value='';return;}
+  const reader=new FileReader();
+  reader.onload=function(ev){
+    const img=new Image();
+    img.onload=function(){
+      const canvas=document.createElement('canvas');
+      let w=img.width,h=img.height;
+      if(w>h){if(w>maxSize){h=Math.round(h*maxSize/w);w=maxSize;}}
+      else{if(h>maxSize){w=Math.round(w*maxSize/h);h=maxSize;}}
+      canvas.width=w;canvas.height=h;
+      canvas.getContext('2d').drawImage(img,0,0,w,h);
+      const dataUrl=canvas.toDataURL('image/jpeg',quality||0.85);
+      callback(dataUrl);
     };
-    reader.readAsDataURL(file);
-    input.value='';
+    img.onerror=function(){toast('图片加载失败','err');};
+    img.src=ev.target.result;
   };
-  input.click();
-}
-function uploadCover(inputId,callback){
-  const input=$(inputId);
-  input.onchange=function(e){
-    const file=e.target.files[0];
-    if(!file)return;
-    if(file.size>3*1024*1024){toast('图片不能超过3MB','err');return;}
-    const reader=new FileReader();
-    reader.onload=function(ev){
-      const img=new Image();
-      img.onload=function(){
-        const canvas=document.createElement('canvas');
-        const maxW=1200;
-        let w=img.width,h=img.height;
-        if(w>maxW){h=h*maxW/w;w=maxW;}
-        canvas.width=w;canvas.height=h;
-        canvas.getContext('2d').drawImage(img,0,0,w,h);
-        const dataUrl=canvas.toDataURL('image/jpeg',0.85);
-        callback(dataUrl);
-      };
-      img.src=ev.target.result;
-    };
-    reader.readAsDataURL(file);
-    input.value='';
-  };
-  input.click();
+  reader.onerror=function(){toast('图片读取失败','err');};
+  reader.readAsDataURL(file);
+  e.target.value='';
 }
 
 /* ===== 个人主页 ===== */
@@ -1274,14 +1609,14 @@ function renderProfilePage(u){
   $('profilePage').innerHTML=
     '<div class="profile-page">'+
       '<div class="profile-cover" style="'+coverStyle+'">'+
-        (isOwner?'<div class="cover-edit" onclick="uploadCover(\'coverInput\',function(d){updateCover(d)})">📷 更换背景</div>':'')+
+        (isOwner?'<label for="coverInput" class="cover-edit">📷 更换背景</label>':'')+
       '</div>'+
       '<div class="profile-info">'+
         '<div class="profile-avatar-wrap">'+
-          '<div class="profile-avatar" onclick="'+(isOwner?'uploadAvatar(\'avatarInput\',function(d){updateAvatar(d)})':'')+'">'+
+          (isOwner?'<label for="avatarInput" class="profile-avatar">':'<div class="profile-avatar">')+
             (u.avatar?'<img src="'+u.avatar+'">':(u.nickname[0]||'👤'))+
             (isOwner?'<div class="avatar-edit">📷 更换头像</div>':'')+
-          '</div>'+
+          (isOwner?'</label>':'</div>')+
           '<div class="profile-name-area">'+
             '<h2>'+esc(u.nickname)+' '+getRoleBadge(u.role)+'</h2>'+
             '<div class="username">@'+esc(u.username)+' · '+esc(u.status||'')+' · '+esc(u.className||'')+'</div>'+
@@ -1294,7 +1629,16 @@ function renderProfilePage(u){
           '</div>'+
           '<div class="profile-actions">'+
             (isOwner?'<button class="btn btn-primary btn-sm" onclick="openEditProfile()">⚙ 编辑资料</button>':
-              '<button class="btn btn-outline btn-sm" onclick="viewProfile(\''+u.id+'\')">💬 私信</button>')+
+              (currentUser?
+                (areFriends(currentUser.id,u.id)?
+                  '<button class="btn btn-primary btn-sm" onclick="openChat(\''+u.id+'\')">💬 私聊</button>'+
+                  '<button class="btn btn-ghost btn-sm" onclick="removeFriend(\''+u.id+'\')">删除好友</button>':
+                  (hasPendingRequest(currentUser.id,u.id)?
+                    '<button class="btn btn-ghost btn-sm" disabled style="opacity:.5;">已发送请求</button>':
+                    '<button class="btn btn-primary btn-sm" onclick="sendFriendRequest(\''+u.id+'\')">+ 加好友</button>'+
+                    '<button class="btn btn-outline btn-sm" onclick="openChat(\''+u.id+'\')">💬 私聊</button>'))+
+                '<button class="btn btn-ghost btn-sm" onclick="openReport(\'user\',\''+u.id+'\',\''+esc(u.nickname).replace(/'/g,"\\'")+'\')" style="color:#e74c3c;">🚨 举报</button>'
+              :'<button class="btn btn-outline btn-sm" onclick="toast(\'请先登录\',\'err\')">💬 私聊</button>'))+
           '</div>'+
         '</div>'+
         '<div class="profile-stats">'+
@@ -1395,64 +1739,179 @@ function renderAdminContent(tab){
   const users=DB.get('users',[]);
   const posts=DB.get('posts',[]);
   const comments=DB.get('comments',[]);
+  const reports=DB.get('reports',[]);
+  const bans=DB.get('bans',[]);
+  const pendingCount=reports.filter(r=>r.status==='pending').length;
   let html='<div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;">'+
     '<button class="btn btn-sm '+(tab==='users'?'btn-primary':'btn-ghost')+'" onclick="renderAdminContent(\'users\')">👥 用户管理</button>'+
     '<button class="btn btn-sm '+(tab==='posts'?'btn-primary':'btn-ghost')+'" onclick="renderAdminContent(\'posts\')">📝 帖子管理</button>'+
     '<button class="btn btn-sm '+(tab==='comments'?'btn-primary':'btn-ghost')+'" onclick="renderAdminContent(\'comments\')">💬 评论管理</button>'+
-    '<button class="btn btn-sm '+(tab==='roles'?'btn-primary':'btn-ghost')+'" onclick="renderAdminContent(\'roles\')">🛡 权限管理</button>'+
+    '<button class="btn btn-sm '+(tab==='reports'?'btn-primary':'btn-ghost')+'" onclick="renderAdminContent(\'reports\')">🚨 举报'+(pendingCount>0?' ('+pendingCount+')':'')+'</button>'+
+    '<button class="btn btn-sm '+(tab==='bans'?'btn-primary':'btn-ghost')+'" onclick="renderAdminContent(\'bans\')">🔒 封号管理</button>'+
+    '<button class="btn btn-sm '+(tab==='roles'?'btn-primary':'btn-ghost')+'" onclick="renderAdminContent(\'roles\')">🛡 权限说明</button>'+
     '</div>';
   if(tab==='users'){
     html+='<table class="adminTable" style="width:100%;font-size:12.5px;border-collapse:collapse;">'+
-      '<thead><tr style="background:var(--bg-primary);"><th style="padding:8px;text-align:left;">用户</th><th style="padding:8px;text-align:left;">身份</th><th style="padding:8px;text-align:left;">班级</th><th style="padding:8px;text-align:left;">注册时间</th><th style="padding:8px;text-align:left;">操作</th></tr></thead><tbody>';
+      '<thead><tr style="background:var(--bg-primary);"><th style="padding:8px;text-align:left;">用户</th><th style="padding:8px;text-align:left;">身份</th><th style="padding:8px;text-align:left;">状态</th><th style="padding:8px;text-align:left;">操作</th></tr></thead><tbody>';
     users.forEach(u=>{
+      const ban=getUserBanInfo(u.id);
+      const banStatus=ban?(ban.level==='permanent'?'永久封禁':(ban.level==='warning'?'已警告':'封禁中')):'正常';
+      const banColor=ban?(ban.level==='warning'?'#f39c12':'#e74c3c'):'var(--primary)';
       html+='<tr style="border-bottom:1px solid var(--border-light);">'+
         '<td style="padding:8px;"><b>'+esc(u.nickname)+'</b><br><span style="color:var(--text-lighter);font-size:11px;">@'+esc(u.username)+'</span></td>'+
         '<td style="padding:8px;">'+getRoleBadge(u.role)+'</td>'+
-        '<td style="padding:8px;">'+esc(u.className||'-')+'</td>'+
-        '<td style="padding:8px;font-size:11px;color:var(--text-lighter);">'+new Date(u.regDate).toLocaleDateString('zh-CN')+'</td>'+
+        '<td style="padding:8px;color:'+banColor+';font-weight:600;font-size:12px;">'+banStatus+'</td>'+
         '<td style="padding:8px;">'+
-          (u.role!=='owner'?'<button class="btn btn-ghost btn-sm" onclick="toggleUserRole(\''+u.id+'\')">切换角色</button> ':
-          '<span style="color:var(--text-lighter);font-size:11px;">站长</span>')+
+          (u.role!=='owner'?'<button class="btn btn-ghost btn-sm" onclick="toggleUserRole(\''+u.id+'\')">角色</button> ':'')+
+          (u.role!=='owner'?(ban?'<button class="btn btn-ghost btn-sm" onclick="unbanUser(\''+u.id+'\');renderAdminContent(\'users\')" style="margin-left:4px;">解封</button>':
+          '<button class="btn btn-danger btn-sm" onclick="showBanDialog(\''+u.id+'\',\''+esc(u.nickname).replace(/'/g,"\\'")+'\')" style="margin-left:4px;">封号</button>'):'')+
           (u.role!=='owner'?'<button class="btn btn-danger btn-sm" onclick="deleteUser(\''+u.id+'\')" style="margin-left:4px;">删除</button>':'')+
         '</td></tr>';
     });
     html+='</tbody></table>';
   }else if(tab==='posts'){
     html+='<table class="adminTable" style="width:100%;font-size:12.5px;border-collapse:collapse;">'+
-      '<thead><tr style="background:var(--bg-primary);"><th style="padding:8px;text-align:left;">标题</th><th style="padding:8px;text-align:left;">作者</th><th style="padding:8px;text-align:left;">分区</th><th style="padding:8px;text-align:left;">时间</th><th style="padding:8px;text-align:left;">操作</th></tr></thead><tbody>';
+      '<thead><tr style="background:var(--bg-primary);"><th style="padding:8px;text-align:left;">标题</th><th style="padding:8px;text-align:left;">作者</th><th style="padding:8px;text-align:left;">分区</th><th style="padding:8px;text-align:left;">操作</th></tr></thead><tbody>';
     posts.sort((a,b)=>b.date-a.date).forEach(p=>{
       const zone=ZONES.find(z=>z.id===p.zone);
       html+='<tr style="border-bottom:1px solid var(--border-light);">'+
         '<td style="padding:8px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+esc(p.title)+'</td>'+
         '<td style="padding:8px;">'+esc(p.authorName)+'</td>'+
         '<td style="padding:8px;">'+(zone?zone.name:'-')+'</td>'+
-        '<td style="padding:8px;font-size:11px;color:var(--text-lighter);">'+timeAgo(p.date)+'</td>'+
         '<td style="padding:8px;"><button class="btn btn-danger btn-sm" onclick="adminDeletePost(\''+p.id+'\')">删除</button></td>'+
         '</tr>';
     });
     html+='</tbody></table>';
   }else if(tab==='comments'){
     html+='<table class="adminTable" style="width:100%;font-size:12.5px;border-collapse:collapse;">'+
-      '<thead><tr style="background:var(--bg-primary);"><th style="padding:8px;text-align:left;">内容</th><th style="padding:8px;text-align:left;">作者</th><th style="padding:8px;text-align:left;">时间</th><th style="padding:8px;text-align:left;">操作</th></tr></thead><tbody>';
+      '<thead><tr style="background:var(--bg-primary);"><th style="padding:8px;text-align:left;">内容</th><th style="padding:8px;text-align:left;">作者</th><th style="padding:8px;text-align:left;">操作</th></tr></thead><tbody>';
     comments.sort((a,b)=>b.date-a.date).forEach(c=>{
       html+='<tr style="border-bottom:1px solid var(--border-light);">'+
         '<td style="padding:8px;max-width:250px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+esc(c.content)+'</td>'+
         '<td style="padding:8px;">'+esc(c.authorName)+'</td>'+
-        '<td style="padding:8px;font-size:11px;color:var(--text-lighter);">'+timeAgo(c.date)+'</td>'+
         '<td style="padding:8px;"><button class="btn btn-danger btn-sm" onclick="adminDeleteComment(\''+c.id+'\')">删除</button></td>'+
         '</tr>';
     });
     html+='</tbody></table>';
+  }else if(tab==='reports'){
+    const pendingReports=reports.filter(r=>r.status==='pending').sort((a,b)=>b.date-a.date);
+    const handledReports=reports.filter(r=>r.status!=='pending').sort((a,b)=>b.date-a.date).slice(0,20);
+    if(pendingReports.length===0&&handledReports.length===0){
+      html+='<div style="text-align:center;padding:40px;color:var(--text-lighter);"><div style="font-size:40px;margin-bottom:10px;">✅</div>暂无举报记录</div>';
+    }else{
+      if(pendingReports.length>0){
+        html+='<h4 style="margin-bottom:10px;color:#e74c3c;">⏳ 待处理 ('+pendingReports.length+')</h4>';
+        pendingReports.forEach(r=>{
+          html+='<div style="background:var(--bg-lighter);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:10px;">'+
+            '<div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px;">'+
+              '<div style="flex:1;min-width:200px;">'+
+                '<div style="font-size:13px;font-weight:600;margin-bottom:4px;">举报 '+esc(r.targetName)+'（'+r.targetType+'）</div>'+
+                '<div style="font-size:12px;color:var(--text-light);line-height:1.6;">'+
+                  '举报人：'+esc(r.reporterName)+' · '+timeAgo(r.date)+'<br>'+
+                  '举报类型：<b style="color:#e74c3c;">'+r.reason+'</b>'+
+                  (r.detail?'<br>详细说明：'+esc(r.detail):'')+
+                '</div>'+
+              '</div>'+
+              '<div style="display:flex;gap:6px;flex-wrap:wrap;">'+
+                '<button class="btn btn-ghost btn-sm" onclick="dismissReport(\''+r.id+'\')">忽略</button>'+
+                (r.targetType==='user'?'<button class="btn btn-danger btn-sm" onclick="showBanDialog(\''+r.targetId+'\',\''+esc(r.targetName).replace(/'/g,"\\'")+'\');dismissReport(\''+r.id+'\')">封号处理</button>':
+                '<button class="btn btn-danger btn-sm" onclick="'+(r.targetType==='post'?'adminDeletePost(\''+r.targetId+'\')':'adminDeleteComment(\''+r.targetId+'\')')+';dismissReport(\''+r.id+'\')">删除内容</button>')+
+              '</div>'+
+            '</div></div>';
+        });
+      }
+      if(handledReports.length>0){
+        html+='<h4 style="margin:16px 0 10px;color:var(--text-lighter);">📋 已处理记录</h4>';
+        handledReports.forEach(r=>{
+          html+='<div style="background:var(--bg-lighter);border-radius:8px;padding:10px;margin-bottom:6px;font-size:12px;color:var(--text-light);">'+
+            esc(r.reporterName)+' 举报 '+esc(r.targetName)+'（'+r.reason+'）· '+r.status+' · '+timeAgo(r.date)+
+          '</div>';
+        });
+      }
+    }
+  }else if(tab==='bans'){
+    const activeBans=bans.filter(b=>b.active).sort((a,b)=>b.date-a.date);
+    if(activeBans.length===0){
+      html+='<div style="text-align:center;padding:40px;color:var(--text-lighter);"><div style="font-size:40px;margin-bottom:10px;">🔓</div>暂无封禁记录</div>';
+    }else{
+      html+='<table class="adminTable" style="width:100%;font-size:12.5px;border-collapse:collapse;">'+
+        '<thead><tr style="background:var(--bg-primary);"><th style="padding:8px;text-align:left;">用户</th><th style="padding:8px;text-align:left;">封禁等级</th><th style="padding:8px;text-align:left;">原因</th><th style="padding:8px;text-align:left;">到期时间</th><th style="padding:8px;text-align:left;">操作</th></tr></thead><tbody>';
+      activeBans.forEach(b=>{
+        const u=users.find(x=>x.id===b.userId);
+        const banInfo=BAN_LEVELS[b.level];
+        html+='<tr style="border-bottom:1px solid var(--border-light);">'+
+          '<td style="padding:8px;">'+(u?esc(u.nickname):'已删除用户')+'</td>'+
+          '<td style="padding:8px;color:#e74c3c;font-weight:600;">'+banInfo.name+'</td>'+
+          '<td style="padding:8px;font-size:12px;">'+esc(b.reason)+'</td>'+
+          '<td style="padding:8px;font-size:11px;color:var(--text-lighter);">'+(b.level==='permanent'?'永久':new Date(b.expireAt).toLocaleString('zh-CN'))+'</td>'+
+          '<td style="padding:8px;"><button class="btn btn-ghost btn-sm" onclick="unbanUser(\''+b.userId+'\');renderAdminContent(\'bans\')">解除封禁</button></td>'+
+        '</tr>';
+      });
+      html+='</tbody></table>';
+    }
   }else if(tab==='roles'){
     html+='<div style="background:var(--bg-primary);padding:14px;border-radius:8px;margin-bottom:14px;font-size:12.5px;line-height:1.8;">'+
       '<b>👑 站长</b>：最高权限，可管理所有用户、帖子、评论，不可被删除或降级<br>'+
       '<b>🛡 管理员</b>：可删除帖子和评论，可管理普通用户，可由站长设置<br>'+
       '<b>🎓 在读学生</b>：正常发帖评论权限<br>'+
-      '<b>🎓 毕业生</b>：校园墙专区只读，其他分区正常<br>'+
-      '</div>'+
-      '<p style="font-size:12px;color:var(--text-lighter);">在「用户管理」中点击「切换角色」可在管理员/在读/毕业之间切换</p>';
+      '<b>🎓 毕业生</b>：校园墙专区只读，其他分区正常<br><br>'+
+      '<b>🔒 封号档次：</b><br>'+
+      '⚠️ 警告 — 仅发出警告，不限制使用<br>'+
+      '🚫 封禁1天/3天/7天 — 期间无法发帖、评论、私聊<br>'+
+      '⛔ 永久封禁 — 永久无法使用社区功能'+
+      '</div>';
   }
   $('adminContent').innerHTML=html;
+}
+function dismissReport(reportId){
+  let reports=DB.get('reports',[]);
+  const r=reports.find(x=>x.id===reportId);
+  if(r){r.status='dismissed';DB.set('reports',reports);}
+  toast('已忽略该举报');
+  renderAdminContent('reports');
+}
+let banDialogTarget={id:'',name:''};
+let selectedBanLevel='';
+function showBanDialog(userId,userName){
+  banDialogTarget={id:userId,name:userName};
+  selectedBanLevel='';
+  const levels=Object.entries(BAN_LEVELS);
+  const html='<h3>🔒 封禁用户</h3>'+
+    '<p style="font-size:13px;margin-bottom:12px;">封禁用户：<b>'+esc(userName)+'</b></p>'+
+    '<label style="font-size:13px;font-weight:600;">封禁等级 <span class="req">*</span></label>'+
+    '<div class="report-types">'+
+      levels.map(([key,info])=>'<div class="report-type" onclick="selectBanLevel(this,\''+key+'\')" style="font-size:11.5px;padding:8px;">'+info.name+'<br><span style="font-size:10px;color:var(--text-lighter);">'+info.desc+'</span></div>').join('')+
+    '</div>'+
+    '<label style="font-size:13px;font-weight:600;">封禁原因</label>'+
+    '<input id="banReasonInput" placeholder="请输入封禁原因" style="width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:8px;margin-top:6px;font-size:13px;">'+
+    '<div class="modal-actions" style="margin-top:16px;">'+
+      '<button class="btn btn-ghost" onclick="closeModal(\'banDialogModal\')">取消</button>'+
+      '<button class="btn btn-danger" onclick="confirmBan()">确认封禁</button>'+
+    '</div>';
+  let modal=$('banDialogModal');
+  if(!modal){
+    modal=document.createElement('div');
+    modal.className='modal-overlay';
+    modal.id='banDialogModal';
+    modal.innerHTML='<div class="modal-box" style="max-width:460px;"><span class="close-x" onclick="closeModal(\'banDialogModal\')">×</span><div id="banDialogContent"></div></div>';
+    document.body.appendChild(modal);
+    modal.addEventListener('click',e=>{if(e.target===modal)modal.classList.remove('show');});
+  }
+  $('banDialogContent').innerHTML=html;
+  showModal('banDialogModal');
+}
+function selectBanLevel(el,level){
+  selectedBanLevel=level;
+  document.querySelectorAll('#banDialogContent .report-type').forEach(x=>x.classList.remove('selected'));
+  el.classList.add('selected');
+}
+function confirmBan(){
+  if(!selectedBanLevel){toast('请选择封禁等级','err');return;}
+  const reason=$('banReasonInput').value.trim()||'违反社区规范';
+  if(banUser(banDialogTarget.id,selectedBanLevel,reason)){
+    closeModal('banDialogModal');
+    renderAdminContent('users');
+  }
 }
 function toggleUserRole(userId){
   if(!currentUser||currentUser.role!=='owner'){toast('只有站长可以修改角色','err');return;}
@@ -1514,10 +1973,496 @@ function adminDeleteComment(commentId){
   renderStats();
 }
 
+/* ===== 好友系统 ===== */
+function getFriends(){return DB.get('friends',[]);}
+function getFriendRequests(){return DB.get('friendRequests',[]);}
+function areFriends(userId1,userId2){
+  return getFriends().some(f=>
+    (f.from===userId1&&f.to===userId2)||(f.from===userId2&&f.to===userId1)
+  );
+}
+function hasPendingRequest(fromId,toId){
+  return getFriendRequests().some(r=>r.from===fromId&&r.to===toId&&r.status==='pending');
+}
+function sendFriendRequest(toUserId){
+  if(!currentUser){toast('请先登录','err');return;}
+  if(currentUser.id===toUserId){toast('不能添加自己为好友','err');return;}
+  if(areFriends(currentUser.id,toUserId)){toast('你们已经是好友了','err');return;}
+  if(hasPendingRequest(currentUser.id,toUserId)){toast('已发送过好友请求，等待对方确认','err');return;}
+  if(hasPendingRequest(toUserId,currentUser.id)){
+    /* 对方已经请求过我，直接接受 */
+    acceptFriendRequest(toUserId);
+    return;
+  }
+  const users=DB.get('users',[]);
+  const toUser=users.find(u=>u.id===toUserId);
+  if(!toUser){toast('用户不存在','err');return;}
+  const reqs=getFriendRequests();
+  reqs.push({id:uid(),from:currentUser.id,to:toUserId,status:'pending',date:Date.now()});
+  DB.set('friendRequests',reqs);
+  /* 站内信通知对方 */
+  sendInboxMessage(toUserId,'好友请求',currentUser.nickname+' 请求添加你为好友','friend_request',{fromId:currentUser.id});
+  toast('好友请求已发送','ok');
+  renderFriendTab();
+}
+function acceptFriendRequest(fromUserId){
+  let reqs=getFriendRequests();
+  const req=reqs.find(r=>r.from===fromUserId&&r.to===currentUser.id&&r.status==='pending');
+  if(!req){toast('请求不存在','err');return;}
+  req.status='accepted';
+  DB.set('friendRequests',reqs);
+  const friends=getFriends();
+  friends.push({from:fromUserId,to:currentUser.id,date:Date.now()});
+  DB.set('friends',friends);
+  const users=DB.get('users',[]);
+  const fromUser=users.find(u=>u.id===fromUserId);
+  sendInboxMessage(fromUserId,'好友请求已接受','你和 '+currentUser.nickname+' 已成为好友','friend_accepted',{});
+  toast('已添加 '+fromUser.nickname+' 为好友','ok');
+  renderFriendTab();
+  updateReqBadge();
+}
+function rejectFriendRequest(fromUserId){
+  let reqs=getFriendRequests();
+  reqs=reqs.filter(r=>!(r.from===fromUserId&&r.to===currentUser.id&&r.status==='pending'));
+  DB.set('friendRequests',reqs);
+  toast('已拒绝好友请求');
+  renderFriendTab();
+  updateReqBadge();
+}
+function removeFriend(friendId){
+  if(!confirm('确定删除该好友吗？'))return;
+  let friends=getFriends();
+  friends=friends.filter(f=>!((f.from===currentUser.id&&f.to===friendId)||(f.from===friendId&&f.to===currentUser.id)));
+  DB.set('friends',friends);
+  toast('已删除好友');
+  renderFriendTab();
+}
+function getMyFriends(){
+  const friends=getFriends();
+  const myFriendIds=[];
+  friends.forEach(f=>{
+    if(f.from===currentUser.id)myFriendIds.push(f.to);
+    else if(f.to===currentUser.id)myFriendIds.push(f.from);
+  });
+  const users=DB.get('users',[]);
+  return users.filter(u=>myFriendIds.includes(u.id));
+}
+function openFriendsPanel(){
+  if(!currentUser){toast('请先登录','err');return;}
+  $('friendsPanel').classList.add('show');
+  currentFriendTab='friends';
+  document.querySelectorAll('#friendsPanel .fp-tabs a').forEach((a,i)=>a.classList.toggle('active',i===0));
+  $('fpSearch').style.display='none';
+  renderFriendTab();
+}
+function closeFriendsPanel(){$('friendsPanel').classList.remove('show');}
+let currentFriendTab='friends';
+function switchFriendTab(tab,el){
+  currentFriendTab=tab;
+  document.querySelectorAll('#friendsPanel .fp-tabs a').forEach(a=>a.classList.remove('active'));
+  el.classList.add('active');
+  $('fpSearch').style.display=tab==='add'?'block':'none';
+  if(tab==='add'){$('searchUserInput').value='';searchUsers();}
+  renderFriendTab();
+}
+function renderFriendTab(){
+  const list=$('friendsList');
+  if(currentFriendTab==='friends'){
+    const friends=getMyFriends();
+    if(friends.length===0){
+      list.innerHTML='<div class="fp-empty"><div class="icon">👥</div><p>还没有好友<br>去「添加好友」搜索同学吧</p></div>';
+      return;
+    }
+    list.innerHTML=friends.map(f=>
+      '<div class="friend-item" onclick="openChat(\''+f.id+'\')">'+
+        '<div class="f-avatar">'+(f.avatar?'<img src="'+f.avatar+'">':(f.nickname[0]||'👤'))+'</div>'+
+        '<div class="f-info">'+
+          '<div class="f-name">'+esc(f.nickname)+' '+getRoleBadge(f.role)+'</div>'+
+          '<div class="f-status">'+esc(f.status||'')+' · '+esc(f.className||'')+'</div>'+
+        '</div>'+
+        '<div class="f-actions" onclick="event.stopPropagation();">'+
+          '<button class="btn btn-primary btn-sm" onclick="openChat(\''+f.id+'\')">💬</button>'+
+          '<button class="btn btn-ghost btn-sm" onclick="removeFriend(\''+f.id+'\')">删除</button>'+
+        '</div>'+
+      '</div>'
+    ).join('');
+  }else if(currentFriendTab==='requests'){
+    const reqs=getFriendRequests().filter(r=>r.to===currentUser.id&&r.status==='pending');
+    if(reqs.length===0){
+      list.innerHTML='<div class="fp-empty"><div class="icon">📭</div><p>暂无好友请求</p></div>';
+      return;
+    }
+    const users=DB.get('users',[]);
+    list.innerHTML=reqs.map(r=>{
+      const u=users.find(x=>x.id===r.from);
+      if(!u)return '';
+      return '<div class="friend-item">'+
+        '<div class="f-avatar">'+(u.avatar?'<img src="'+u.avatar+'">':(u.nickname[0]||'👤'))+'</div>'+
+        '<div class="f-info">'+
+          '<div class="f-name">'+esc(u.nickname)+' '+getRoleBadge(u.role)+'</div>'+
+          '<div class="f-status">请求添加你为好友 · '+timeAgo(r.date)+'</div>'+
+        '</div>'+
+        '<div class="f-actions">'+
+          '<button class="btn btn-primary btn-sm" onclick="acceptFriendRequest(\''+u.id+'\')">接受</button>'+
+          '<button class="btn btn-ghost btn-sm" onclick="rejectFriendRequest(\''+u.id+'\')">拒绝</button>'+
+        '</div>'+
+      '</div>';
+    }).join('');
+  }
+}
+function searchUsers(){
+  const q=$('searchUserInput').value.trim().toLowerCase();
+  const list=$('friendsList');
+  if(!q){
+    list.innerHTML='<div class="fp-empty"><div class="icon">🔍</div><p>输入用户名或昵称搜索</p></div>';
+    return;
+  }
+  const users=DB.get('users',[]).filter(u=>
+    u.id!==currentUser.id&&
+    (u.username.toLowerCase().includes(q)||u.nickname.toLowerCase().includes(q))
+  );
+  if(users.length===0){
+    list.innerHTML='<div class="fp-empty"><div class="icon">😕</div><p>没有找到相关用户</p></div>';
+    return;
+  }
+  list.innerHTML=users.map(u=>{
+    const isF=areFriends(currentUser.id,u.id);
+    const hasReq=hasPendingRequest(currentUser.id,u.id);
+    return '<div class="friend-item">'+
+      '<div class="f-avatar" onclick="viewProfile(\''+u.id+'\')">'+(u.avatar?'<img src="'+u.avatar+'">':(u.nickname[0]||'👤'))+'</div>'+
+      '<div class="f-info" onclick="viewProfile(\''+u.id+'\')">'+
+        '<div class="f-name">'+esc(u.nickname)+' '+getRoleBadge(u.role)+'</div>'+
+        '<div class="f-status">@'+esc(u.username)+' · '+esc(u.status||'')+'</div>'+
+      '</div>'+
+      '<div class="f-actions">'+
+        (isF?'<button class="btn btn-ghost btn-sm" onclick="openChat(\''+u.id+'\')">💬 私聊</button>':
+         hasReq?'<button class="btn btn-ghost btn-sm" disabled style="opacity:.5;">已发送</button>':
+         '<button class="btn btn-primary btn-sm" onclick="sendFriendRequest(\''+u.id+'\')">+ 好友</button>')+
+      '</div>'+
+    '</div>';
+  }).join('');
+}
+function updateReqBadge(){
+  const count=getFriendRequests().filter(r=>r.to===currentUser.id&&r.status==='pending').length;
+  const badge=$('reqBadge');
+  if(badge){
+    if(count>0){badge.style.display='inline';badge.textContent=count;}
+    else badge.style.display='none';
+  }
+}
+
+/* ===== 私聊系统 ===== */
+function getChatMessages(userId1,userId2){
+  const all=DB.get('chatMessages',[]);
+  return all.filter(m=>
+    (m.from===userId1&&m.to===userId2)||(m.from===userId2&&m.to===userId1)
+  ).sort((a,b)=>a.date-b.date);
+}
+function sendChatMessage(){
+  if(!currentChatUserId){toast('请先选择聊天对象','err');return;}
+  const input=$('chatInput');
+  const content=input.value.trim();
+  if(!content){return;}
+  if(isUserBanned(currentUser.id)){toast('你的账号已被封禁，无法发送消息','err');return;}
+  const msgs=DB.get('chatMessages',[]);
+  msgs.push({id:uid(),from:currentUser.id,to:currentChatUserId,content,date:Date.now(),read:false});
+  DB.set('chatMessages',msgs);
+  input.value='';
+  renderChatMessages();
+  /* 滚动到底部 */
+  setTimeout(()=>{const el=$('chatMessages');el.scrollTop=el.scrollHeight;},50);
+}
+let currentChatUserId=null;
+function openChat(userId){
+  if(!currentUser){toast('请先登录','err');return;}
+  if(userId===currentUser.id){toast('不能和自己聊天','err');return;}
+  currentChatUserId=userId;
+  const users=DB.get('users',[]);
+  const u=users.find(x=>x.id===userId);
+  if(!u){toast('用户不存在','err');return;}
+  $('chatName').innerHTML=esc(u.nickname)+' '+getRoleBadge(u.role);
+  $('chatStatus').textContent=u.status||'在线';
+  $('chatAvatar').innerHTML=u.avatar?'<img src="'+u.avatar+'">':(u.nickname[0]||'👤');
+  $('chatPanel').classList.add('show');
+  closeFriendsPanel();
+  closeInbox();
+  renderChatMessages();
+  /* 标记为已读 */
+  markChatAsRead(userId);
+  updateMsgBadge();
+  setTimeout(()=>{const el=$('chatMessages');el.scrollTop=el.scrollHeight;},100);
+}
+function closeChat(){
+  $('chatPanel').classList.remove('show');
+  currentChatUserId=null;
+}
+function renderChatMessages(){
+  if(!currentChatUserId)return;
+  const msgs=getChatMessages(currentUser.id,currentChatUserId);
+  const el=$('chatMessages');
+  if(msgs.length===0){
+    el.innerHTML='<div style="text-align:center;color:var(--text-lighter);padding:40px;font-size:13px;">开始聊天吧~</div>';
+    return;
+  }
+  const users=DB.get('users',[]);
+  let html='';
+  let lastDate=null;
+  msgs.forEach(m=>{
+    const msgDate=new Date(m.date).toLocaleDateString('zh-CN');
+    if(msgDate!==lastDate){
+      html+='<div class="msg-time">'+msgDate+'</div>';
+      lastDate=msgDate;
+    }
+    const isMine=m.from===currentUser.id;
+    const sender=users.find(u=>u.id===m.from);
+    const avatarHtml=sender?(sender.avatar?'<img src="'+sender.avatar+'">':(sender.nickname[0]||'👤')):'?';
+    html+='<div class="msg-row '+(isMine?'mine':'')+'">'+
+      '<div class="msg-avatar">'+avatarHtml+'</div>'+
+      '<div class="msg-bubble">'+esc(m.content)+'</div>'+
+    '</div>';
+  });
+  el.innerHTML=html;
+}
+function markChatAsRead(userId){
+  let msgs=DB.get('chatMessages',[]);
+  msgs.forEach(m=>{
+    if(m.from===userId&&m.to===currentUser.id&&!m.read)m.read=true;
+  });
+  DB.set('chatMessages',msgs);
+}
+function getUnreadMsgCount(){
+  if(!currentUser)return 0;
+  return DB.get('chatMessages',[]).filter(m=>m.to===currentUser.id&&!m.read).length;
+}
+function updateMsgBadge(){
+  const count=getUnreadMsgCount();
+  const badge=$('mobileMsgBadge');
+  if(badge){
+    if(count>0){badge.style.display='flex';badge.textContent=count>99?'99+':count;}
+    else badge.style.display='none';
+  }
+}
+function openChatList(){
+  if(!currentUser){toast('请先登录','err');return;}
+  /* 打开好友面板并切换到好友列表（从那里进入聊天） */
+  openFriendsPanel();
+  currentFriendTab='friends';
+  document.querySelectorAll('#friendsPanel .fp-tabs a').forEach((a,i)=>a.classList.toggle('active',i===0));
+  $('fpSearch').style.display='none';
+  renderFriendTab();
+}
+function showChatMenu(){
+  if(!currentChatUserId)return;
+  const users=DB.get('users',[]);
+  const u=users.find(x=>x.id===currentChatUserId);
+  if(!u)return;
+  if(confirm('要举报 '+u.nickname+' 吗？')){
+    openReport('user',currentChatUserId,u.nickname);
+  }
+}
+
+/* ===== 站内信系统 ===== */
+function getInboxMessages(){return DB.get('inboxMessages',[]);}
+function sendInboxMessage(toUserId,title,content,type,data){
+  const msgs=getInboxMessages();
+  msgs.push({id:uid(),to:toUserId,title,content,type:type||'system',data:data||{},read:false,date:Date.now()});
+  DB.set('inboxMessages',msgs);
+}
+function sendInboxToAdmins(title,content,type,data){
+  const users=DB.get('users',[]);
+  users.filter(u=>u.role==='owner'||u.role==='admin').forEach(u=>{
+    sendInboxMessage(u.id,title,content,type,data);
+  });
+}
+function openInbox(){
+  if(!currentUser){toast('请先登录','err');return;}
+  $('inboxPanel').classList.add('show');
+  renderInbox();
+}
+function closeInbox(){$('inboxPanel').classList.remove('show');}
+function renderInbox(){
+  const msgs=getInboxMessages().filter(m=>m.to===currentUser.id).sort((a,b)=>b.date-a.date);
+  const list=$('inboxList');
+  if(msgs.length===0){
+    list.innerHTML='<div class="fp-empty"><div class="icon">📭</div><p>暂无站内信</p></div>';
+    return;
+  }
+  const icons={system:'🔔',friend_request:'👥',friend_accepted:'✅',report:'🚨',ban:'🚫',warning:'⚠️'};
+  list.innerHTML=msgs.map(m=>
+    '<div class="inbox-item '+(m.read?'':'unread')+'" onclick="readInboxMessage(\''+m.id+'\')">'+
+      '<div class="ib-icon">'+(icons[m.type]||'📩')+'</div>'+
+      '<div class="ib-content">'+
+        '<div class="ib-title">'+esc(m.title)+'</div>'+
+        '<div class="ib-desc">'+esc(m.content)+'</div>'+
+      '</div>'+
+      '<div class="ib-time">'+timeAgo(m.date)+'</div>'+
+    '</div>'
+  ).join('');
+}
+function readInboxMessage(msgId){
+  let msgs=getInboxMessages();
+  const m=msgs.find(x=>x.id===msgId);
+  if(!m)return;
+  m.read=true;
+  DB.set('inboxMessages',msgs);
+  renderInbox();
+  /* 如果是好友请求，跳转到好友面板 */
+  if(m.type==='friend_request'&&m.data&&m.data.fromId){
+    closeInbox();
+    openFriendsPanel();
+    currentFriendTab='requests';
+    document.querySelectorAll('#friendsPanel .fp-tabs a').forEach((a,i)=>a.classList.toggle('active',i===1));
+    $('fpSearch').style.display='none';
+    renderFriendTab();
+  }
+}
+function getUnreadInboxCount(){
+  if(!currentUser)return 0;
+  return getInboxMessages().filter(m=>m.to===currentUser.id&&!m.read).length;
+}
+
+/* ===== 举报系统 ===== */
+let reportTarget={type:null,id:null,name:''};
+let selectedReportType='';
+function openReport(type,id,name){
+  if(!currentUser){toast('请先登录','err');return;}
+  reportTarget={type,id,name};
+  selectedReportType='';
+  document.querySelectorAll('.report-type').forEach(el=>el.classList.remove('selected'));
+  $('reportDetail').value='';
+  const typeNames={user:'用户',post:'帖子',comment:'评论',message:'聊天消息'};
+  $('reportTargetInfo').textContent='举报对象：'+(typeNames[type]||type)+' · '+name;
+  showModal('reportModal');
+}
+function selectReportType(el,type){
+  selectedReportType=type;
+  document.querySelectorAll('.report-type').forEach(x=>x.classList.remove('selected'));
+  el.classList.add('selected');
+}
+function submitReport(){
+  if(!selectedReportType){toast('请选择举报类型','err');return;}
+  const detail=$('reportDetail').value.trim();
+  const reports=DB.get('reports',[]);
+  reports.push({
+    id:uid(),reporterId:currentUser.id,reporterName:currentUser.nickname,
+    targetType:reportTarget.type,targetId:reportTarget.id,targetName:reportTarget.name,
+    reason:selectedReportType,detail,status:'pending',date:Date.now()
+  });
+  DB.set('reports',reports);
+  /* 站内信通知所有站长和管理员 */
+  sendInboxToAdmins(
+    '🚨 新举报待处理',
+    '举报人：'+currentUser.nickname+'\n举报对象：'+reportTarget.name+'（'+reportTarget.type+'）\n举报类型：'+selectedReportType+(detail?'\n详细说明：'+detail:''),
+    'report',{reportId:reports[reports.length-1].id}
+  );
+  closeModal('reportModal');
+  toast('举报已提交，管理员会尽快处理','ok');
+}
+function getPendingReports(){
+  return DB.get('reports',[]).filter(r=>r.status==='pending');
+}
+
+/* ===== 封号系统 ===== */
+const BAN_LEVELS={
+  warning:{name:'警告',days:0,desc:'仅发出警告，不限制使用'},
+  ban1:{name:'封禁1天',days:1,desc:'1天内无法发帖、评论、私聊'},
+  ban3:{name:'封禁3天',days:3,desc:'3天内无法发帖、评论、私聊'},
+  ban7:{name:'封禁7天',days:7,desc:'7天内无法发帖、评论、私聊'},
+  permanent:{name:'永久封禁',days:-1,desc:'永久无法使用社区功能'}
+};
+function getUserBanInfo(userId){
+  const bans=DB.get('bans',[]);
+  return bans.find(b=>b.userId===userId&&b.active);
+}
+function isUserBanned(userId){
+  const ban=getUserBanInfo(userId);
+  if(!ban)return false;
+  if(ban.level==='permanent')return true;
+  if(ban.expireAt&&Date.now()<ban.expireAt)return true;
+  /* 已过期，自动解除 */
+  if(ban.expireAt&&Date.now()>=ban.expireAt){
+    ban.active=false;
+    const bans=DB.get('bans',[]);
+    DB.set('bans',bans);
+  }
+  return false;
+}
+function banUser(userId,level,reason){
+  const users=DB.get('users',[]);
+  const u=users.find(x=>x.id===userId);
+  if(!u)return false;
+  if(u.role==='owner'){toast('不能封禁站长','err');return false;}
+  const banInfo=BAN_LEVELS[level];
+  if(!banInfo){toast('无效的封禁等级','err');return false;}
+  const bans=DB.get('bans',[]);
+  /* 先解除之前的封禁 */
+  bans.forEach(b=>{if(b.userId===userId)b.active=false;});
+  const newBan={
+    id:uid(),userId,level,reason:reason||'违反社区规范',
+    operatorId:currentUser.id,operatorName:currentUser.nickname,
+    active:true,date:Date.now(),
+    expireAt:banInfo.days>0?Date.now()+banInfo.days*86400000:null
+  };
+  bans.push(newBan);
+  DB.set('bans',bans);
+  /* 站内信通知被封用户 */
+  sendInboxMessage(userId,
+    level==='warning'?'⚠️ 账号警告':'🚫 账号已被'+banInfo.name,
+    '原因：'+(reason||'违反社区规范')+'\n处理人：'+currentUser.nickname+
+    (banInfo.days>0?'\n解封时间：'+new Date(newBan.expireAt).toLocaleString('zh-CN'):
+     level==='permanent'?'\n此为永久封禁':'\n本次为警告，请遵守社区规范'),
+    'ban',{banId:newBan.id}
+  );
+  toast('已对 '+u.nickname+' 执行：'+banInfo.name,'ok');
+  return true;
+}
+function unbanUser(userId){
+  const bans=DB.get('bans',[]);
+  bans.forEach(b=>{if(b.userId===userId&&b.active)b.active=false;});
+  DB.set('bans',bans);
+  const users=DB.get('users',[]);
+  const u=users.find(x=>x.id===userId);
+  if(u){
+    sendInboxMessage(userId,'✅ 账号已解封','你的账号已被解封，请遵守社区规范，文明发言。','system',{});
+  }
+  toast('已解除封禁','ok');
+}
+function checkBanStatus(){
+  if(!currentUser)return;
+  const ban=getUserBanInfo(currentUser.id);
+  if(!ban||!ban.active)return;
+  if(ban.level==='warning')return; /* 警告不遮罩 */
+  if(ban.level==='permanent'||(ban.expireAt&&Date.now()<ban.expireAt)){
+    const banInfo=BAN_LEVELS[ban.level];
+    $('banReason').innerHTML='<b>封禁等级：</b>'+banInfo.name+'<br><b>原因：</b>'+esc(ban.reason)+'<br><b>处理人：</b>'+esc(ban.operatorName);
+    if(ban.level==='permanent'){
+      $('banExpire').textContent='此为永久封禁';
+    }else{
+      const remain=ban.expireAt-Date.now();
+      const days=Math.floor(remain/86400000);
+      const hours=Math.floor((remain%86400000)/3600000);
+      $('banExpire').textContent='剩余封禁时间：'+days+'天'+hours+'小时';
+    }
+    $('bannedOverlay').style.display='flex';
+  }
+}
+
 /* ===== 初始化 ===== */
 function init(){
+  /* 绑定图片上传（label原生触发，兼容手机端） */
+  $('avatarInput').addEventListener('change',function(e){
+    handleImageUpload(e,400,0.88,function(d){updateAvatar(d);});
+  });
+  $('coverInput').addEventListener('change',function(e){
+    handleImageUpload(e,1200,0.85,function(d){updateCover(d);});
+  });
+
   if(currentUser){
+    /* 检查封号状态 */
+    checkBanStatus();
     enterApp();
+    updateMsgBadge();
+    updateReqBadge();
   }else{
     renderLoginForm();
   }

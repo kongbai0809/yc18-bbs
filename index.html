@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>银川十八中贴吧 · 校园社区</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 /* ===== 变量 ===== */
 :root{
@@ -1113,8 +1114,66 @@ function decrypt(str){
 /* ===== 数据层 ===== */
 const DB={
   get(k,d){try{const v=localStorage.getItem('yc18_'+k);return v?JSON.parse(v):d;}catch(e){return d;}},
-  set(k,v){try{localStorage.setItem('yc18_'+k,JSON.stringify(v));}catch(e){}}
+  set(k,v){try{localStorage.setItem('yc18_'+k,JSON.stringify(v));}catch(e){}
+    /* 写入后自动防抖同步到云端 */
+    scheduleCloudSync();
+  }
 };
+
+/* ===== Supabase 云端同步 ===== */
+const _sb = supabase.createClient(
+  'https://qyczdojgzwwndqgalemq.supabase.co',
+  'sb_publishable_S2gBborHHh0XT-8Z6KPDYg_5J5g3P6i'
+);
+let _syncTimer=null;
+let _syncing=false;
+function scheduleCloudSync(){
+  clearTimeout(_syncTimer);
+  _syncTimer=setTimeout(()=>cloudSave(),1500);
+}
+async function cloudSave(){
+  if(_syncing)return;
+  _syncing=true;
+  try{
+    const data={
+      id:'main',
+      users:DB.get('users',[]),
+      posts:DB.get('posts',[]),
+      comments:DB.get('comments',[]),
+      friends:DB.get('friends',[]),
+      messages:DB.get('messages',[]),
+      reports:DB.get('reports',[]),
+      notifications:DB.get('notifications',[]),
+      post_likes:DB.get('post_likes',[]),
+      comment_likes:DB.get('comment_likes',[]),
+      settings:DB.get('settings',{}),
+      updated_at:new Date().toISOString()
+    };
+    await _sb.from('app_state').upsert(data);
+  }catch(e){console.warn('云端同步失败:',e.message);}
+  _syncing=false;
+}
+async function cloudLoad(){
+  try{
+    const {data,error}=await _sb.from('app_state').select('*').eq('id','main').single();
+    if(error)throw error;
+    if(data){
+      if(data.users&&data.users.length>0)DB.set('users',data.users);
+      if(data.posts&&data.posts.length>0)DB.set('posts',data.posts);
+      if(data.comments&&data.comments.length>0)DB.set('comments',data.comments);
+      if(data.friends)DB.set('friends',data.friends);
+      if(data.messages)DB.set('messages',data.messages);
+      if(data.reports)DB.set('reports',data.reports);
+      if(data.notifications)DB.set('notifications',data.notifications);
+      if(data.post_likes)DB.set('post_likes',data.post_likes);
+      if(data.comment_likes)DB.set('comment_likes',data.comment_likes);
+      if(data.settings)DB.set('settings',data.settings);
+      console.log('✅ 云端数据加载成功');
+    }
+  }catch(e){
+    console.warn('云端数据加载失败，使用本地数据:',e.message);
+  }
+}
 
 /* ===== 分区定义 ===== */
 const ZONES=[
@@ -2692,7 +2751,11 @@ function checkBanStatus(){
 }
 
 /* ===== 初始化 ===== */
-function init(){
+async function init(){
+  /* 先从云端加载最新数据 */
+  await cloudLoad();
+  /* 重新读取当前用户（云端数据可能更新了） */
+  currentUser=DB.get('currentUser',null);
   /* 绑定图片上传（label原生触发，兼容手机端） */
   $('avatarInput').addEventListener('change',function(e){
     handleImageUpload(e,400,0.88,function(d){updateAvatar(d);});
@@ -2718,7 +2781,7 @@ function init(){
       document.querySelectorAll('.modal-overlay.show').forEach(m=>m.classList.remove('show'));
     }
   });
-  console.log('🏫 银川十八中贴吧已加载');
+  console.log('🏫 银川十八中贴吧已加载（云端同步已开启）');
 }
 init();
 </script>

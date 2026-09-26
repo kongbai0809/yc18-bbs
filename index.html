@@ -1334,6 +1334,83 @@ async function cloudLoad(){
   }
 }
 
+/* ===== 私聊消息轮询：定时从云端拉取新消息，无需刷新 ===== */
+let _chatPollTimer=null;
+let _chatPollVisible=true;
+let _lastPollCount=0;
+async function pollChatMessages(){
+  if(!currentUser||_syncing)return;
+  try{
+    const res=await fetch(SB_URL+'/rest/v1/app_state?id=eq.main&select=chatMessages',{
+      headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}
+    });
+    if(!res.ok)return;
+    const rows=await res.json();
+    if(!rows||!rows.length||!rows[0].chatMessages)return;
+    const cloudMsgs=rows[0].chatMessages;
+    if(!Array.isArray(cloudMsgs)||!cloudMsgs.length)return;
+    const local=DB.get('chatMessages',[]);
+    /* 合并：云端有而本地没有的新消息加入本地 */
+    const localIds=new Set(local.map(m=>m.id));
+    let changed=false;
+    cloudMsgs.forEach(cm=>{
+      if(!localIds.has(cm.id)){
+        local.push(cm);
+        localIds.add(cm.id);
+        changed=true;
+      }
+    });
+    if(!changed)return;
+    /* 按时间排序 */
+    local.sort((a,b)=>a.date-b.date);
+    DB.set('chatMessages',local);
+    /* 有新消息：若正在和对方聊天则即时渲染，否则更新角标+提示音 */
+    const mine=currentUser.id;
+    const newToMe=cloudMsgs.filter(m=>m.to===mine&&!localIds.has(m.id));
+    if(currentChatUserId){
+      /* 正在聊天：重新渲染当前会话 */
+      renderChatMessages();
+      markChatAsRead(currentChatUserId);
+      updateMsgBadge();
+      setTimeout(()=>{const el=$('chatMessages');if(el)el.scrollTop=el.scrollHeight;},50);
+    }else{
+      updateMsgBadge();
+      if(!document.hidden){
+        const count=getUnreadMsgCount();
+        if(count>_lastPollCount){
+          /* 播放提示音 */
+          try{
+            const actx=new (window.AudioContext||window.webkitAudioContext)();
+            const osc=actx.createOscillator();
+            const gain=actx.createGain();
+            osc.connect(gain);gain.connect(actx.destination);
+            osc.frequency.setValueAtTime(880,actx.currentTime);
+            gain.gain.setValueAtTime(0.08,actx.currentTime);
+            osc.start();
+            setTimeout(()=>{osc.stop();actx.close();},300);
+          }catch(e){}
+        }
+      }
+    }
+    _lastPollCount=getUnreadMsgCount();
+  }catch(e){/* 静默失败，下次重试 */}
+}
+function startChatPolling(){
+  stopChatPolling();
+  _chatPollTimer=setInterval(()=>{
+    if(document.hidden)return; /* 页面隐藏时不轮询，省流量 */
+    pollChatMessages();
+  },3000);
+}
+function stopChatPolling(){
+  if(_chatPollTimer){clearInterval(_chatPollTimer);_chatPollTimer=null;}
+}
+/* 页面可见性变化时控制轮询 */
+document.addEventListener('visibilitychange',()=>{
+  if(document.hidden){stopChatPolling();}
+  else{startChatPolling();pollChatMessages();}
+});
+
 /* ===== 分区定义 ===== */
 const ZONES=[
   {id:'all',name:'全部帖子',icon:'📋',desc:'所有分区的帖子'},
@@ -3017,6 +3094,8 @@ function openChat(userId){
   closeFriendsPanel();
   closeInbox();
   renderChatMessages();
+  /* 打开聊天立即拉取云端最新消息 */
+  pollChatMessages();
   /* 标记为已读 */
   markChatAsRead(userId);
   updateMsgBadge();
@@ -3314,6 +3393,8 @@ async function init(){
   });
   /* 初始化完成，启用云端同步 */
   _cloudSyncEnabled=true;
+  /* 启动私聊消息轮询（3秒一次，自动拉取新消息） */
+  startChatPolling();
   console.log('🏫 银川十八中贴吧已加载（云端同步已开启）');
 }
 init();

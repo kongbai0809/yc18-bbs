@@ -1,0 +1,25 @@
+{
+  "name": "银川十八中贴吧",
+  "short_name": "十八中贴吧",
+  "description": "银川市第十八中学学生社区：发帖、交友、日记、校园墙、私聊",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#0d6b3d",
+  "lang": "zh-CN",
+  "icons": [
+    {
+      "src": "./logo.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "./logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

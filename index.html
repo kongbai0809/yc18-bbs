@@ -2,7 +2,10 @@
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0d6b3d">
+  <link rel="apple-touch-icon" href="logo.png">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <title>银川十八中贴吧 · 校园社区</title>
 <style>
 /* ===== 变量 ===== */
@@ -25,6 +28,64 @@
   --font:"PingFang SC","Hiragino Sans GB","Microsoft YaHei","Noto Sans SC",sans-serif;
 }
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+/* ===== 暗黑模式 ===== */
+body[data-theme="dark"]{
+  --bg-white:#1a1f1a !important;
+  --bg-primary:#232a23 !important;
+  --bg-lighter:#2a332a !important;
+  --border:#3a443a !important;
+  --border-light:#333c33 !important;
+  --text:#e8efe8 !important;
+  --text-light:#b9c4b9 !important;
+  --text-lighter:#7d8a7d !important;
+}
+body[data-theme="dark"] .post-card,
+body[data-theme="dark"] .modal-content,
+body[data-theme="dark"] .chat-panel,
+body[data-theme="dark"] .friends-panel,
+body[data-theme="dark"] .inbox-panel,
+body[data-theme="dark"] .user-dropdown,
+body[data-theme="dark"] .post-detail,
+body[data-theme="dark"] .profile-page,
+body[data-theme="dark"] .comment-form,
+body[data-theme="dark"] .auth-box,
+body[data-theme="dark"] .admin-table-box,
+body[data-theme="dark"] .zone-item:hover,
+body[data-theme="dark"] input,
+body[data-theme="dark"] textarea,
+body[data-theme="dark"] select{
+  background:var(--bg-white);
+  color:var(--text);
+  border-color:var(--border);
+}
+body[data-theme="dark"] .pc-actions button,
+body[data-theme="dark"] .pd-actions button,
+body[data-theme="dark"] .ci-actions button{background:var(--bg-lighter);border-color:var(--border);color:var(--text);}
+body[data-theme="dark"] .msg-bubble{background:var(--bg-lighter);}
+body[data-theme="dark"] .msg-row.mine .msg-bubble{background:var(--primary);color:#fff;}
+body[data-theme="dark"] #chatMenuPop{background:var(--bg-white);color:var(--text);}
+body[data-theme="dark"] .rank-table,body[data-theme="dark"] table.adminTable{color:var(--text);}
+
+/* ===== 等级/勋章/黑名单等新组件 ===== */
+.profile-medals{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;}
+.medal-chip{display:inline-flex;align-items:center;gap:4px;background:linear-gradient(135deg,#fdf6d8,#f9f0c0);border:1px solid #e8d98a;color:#8a6d1a;font-size:11px;padding:3px 9px;border-radius:20px;cursor:default;}
+body[data-theme="dark"] .medal-chip{background:#2a332a;border-color:#4a543a;color:#e8d98a;}
+.level-badge{background:linear-gradient(135deg,#e6f4ea,#d3ecd9) !important;color:#0d6b3d !important;font-weight:700;border-color:#9fceb0 !important;}
+body[data-theme="dark"] .level-badge{background:#1f3a2a !important;color:#7fd39a !important;}
+.profile-blockbox{background:#fff;border:1px solid var(--border);border-radius:10px;margin-bottom:12px;overflow:hidden;}
+body[data-theme="dark"] .profile-blockbox{background:var(--bg-white);}
+.bb-head{padding:11px 14px;font-size:13px;font-weight:600;cursor:pointer;background:var(--bg-primary);color:var(--text);}
+.bb-body{padding:12px 14px;}
+.role-moderator{background:linear-gradient(135deg,#eef7ee,#dcf0dc);color:#0d6b3d !important;border:1px solid #9fceb0;}
+body[data-theme="dark"] .role-moderator{background:#1f3a2a;color:#7fd39a !important;}
+.msg-body{display:flex;flex-direction:column;max-width:72%;}
+.msg-status{font-size:10px;color:var(--text-lighter);margin-top:2px;padding:0 4px;}
+.msg-read{color:var(--primary);}
+.msg-unread{color:#f39c12;}
+.msg-revoked{color:var(--text-lighter);font-style:italic;}
+.empty-state{text-align:center;padding:40px 20px;color:var(--text-lighter);}
+.empty-state .icon{font-size:42px;margin-bottom:10px;}
+
 html,body{width:100%;min-height:100%;overflow-x:hidden;}
 body{
   font-family:var(--font);color:var(--text);background:var(--bg-lighter);
@@ -1401,6 +1462,13 @@ async function cloudSave(){
       diary_comments:DB.get('diary_comments',[]),
       diaryLikes:DB.get('diaryLikes',{}),
       settings:DB.get('settings',{}),
+      /* A级新增集合 */
+      mutes:DB.get('mutes',[]),
+      recycleBin:DB.get('recycleBin',[]),
+      adminLogs:DB.get('adminLogs',[]),
+      favorites:DB.get('favorites',[]),
+      announcements:DB.get('announcements',[]),
+      deletedChats:DB.get('deletedChats',[]),
       updated_at:new Date().toISOString()
     };
     const res=await fetch(SB_URL+'/rest/v1/app_state',{
@@ -1440,11 +1508,685 @@ async function cloudLoad(){
       if(data.diary_comments)DB.set('diary_comments',data.diary_comments);
       if(data.diaryLikes)DB.set('diaryLikes',data.diaryLikes);
       if(data.settings)DB.set('settings',data.settings);
+      if(data.mutes)DB.set('mutes',data.mutes);
+      if(data.recycleBin)DB.set('recycleBin',data.recycleBin);
+      if(data.adminLogs)DB.set('adminLogs',data.adminLogs);
+      if(data.favorites)DB.set('favorites',data.favorites);
+      if(data.announcements)DB.set('announcements',data.announcements);
+      if(data.deletedChats)DB.set('deletedChats',data.deletedChats);
       console.log('✅ 云端数据加载成功，用户:'+(data.users||[]).length+' 帖子:'+(data.posts||[]).length+' 私聊:'+(data.chatMessages||[]).length);
     }
   }catch(e){
     console.warn('⚠️ 云端数据加载失败，使用本地数据:',e.message);
   }
+}
+
+/* ===== 社区治理与社交增强核心库（A级） ===== */
+
+/* ---------- 等级与积分 ---------- */
+const LEVELS=[
+  {min:0,name:'🌱 新芽'},
+  {min:30,name:'🌿 幼苗'},
+  {min:80,name:'🍀 青苗'},
+  {min:160,name:'🌲 青松'},
+  {min:260,name:'📘 学童'},
+  {min:400,name:'📙 学子'},
+  {min:600,name:'📗 学霸'},
+  {min:900,name:'🏅 学神'},
+  {min:1300,name:'🏆 校园之星'},
+  {min:2000,name:'👑 校园传说'}
+];
+function getLevel(points){
+  const p=points||0;
+  let lv=LEVELS[0];
+  LEVELS.forEach(L=>{if(p>=L.min)lv=L;});
+  return lv;
+}
+function getLevelIndex(points){
+  let idx=0;
+  LEVELS.forEach((L,i)=>{if((points||0)>=L.min)idx=i;});
+  return idx;
+}
+function addPoints(userId,delta,reason){
+  if(!delta)return;
+  const users=DB.get('users',[]);
+  const u=users.find(x=>x.id===userId);
+  if(!u||u.role==='owner')return; /* 站长不参与积分 */
+  u.points=(u.points||0)+delta;
+  if(u.points<0)u.points=0;
+  const lv=getLevel(u.points);
+  if(!u.levelName||lv.name!==u.levelName){
+    u.levelName=lv.name;
+    if(u.id===currentUser?.id)currentUser.levelName=lv.name;
+  }
+  DB.set('users',users);
+}
+function getPoints(userId){
+  const u=DB.get('users',[]).find(x=>x.id===userId);
+  return u?u.points||0:0;
+}
+
+/* ---------- 勋章 ---------- */
+const MEDALS=[
+  {id:'first_post',name:'初露锋芒',icon:'✍️',desc:'发布第一篇帖子'},
+  {id:'post10',name:'笔耕不辍',icon:'📝',desc:'发布10篇帖子'},
+  {id:'comment20',name:'妙语连珠',icon:'💬',desc:'发表20条评论'},
+  {id:'like50',name:'人气之星',icon:'⭐',desc:'累计获赞50次'},
+  {id:'checkin7',name:'七日勤勉',icon:'📅',desc:'连续签到7天'},
+  {id:'checkin30',name:'月月不辍',icon:'🗓',desc:'连续签到30天'},
+  {id:'friend5',name:'广交挚友',icon:'🤝',desc:'拥有5位好友'},
+  {id:'diary5',name:'生活记录家',icon:'📖',desc:'发布5篇日记'}
+];
+function grantMedal(userId,medalId){
+  const users=DB.get('users',[]);
+  const u=users.find(x=>x.id===userId);
+  if(!u)return;
+  if(!u.medals)u.medals=[];
+  if(!u.medals.includes(medalId)){
+    u.medals.push(medalId);
+    DB.set('users',users);
+    if(currentUser&&currentUser.id===userId)currentUser.medals=[...u.medals];
+    const m=MEDALS.find(x=>x.id===medalId);
+    if(m)toast('🎖 获得勋章「'+m.name+'」！','ok');
+  }
+}
+function checkMedals(userId){
+  const users=DB.get('users',[]);
+  const u=users.find(x=>x.id===userId);
+  if(!u)return;
+  const posts=DB.get('posts',[]).filter(p=>p.authorId===userId&&!p.deleted).length;
+  const comments=DB.get('comments',[]).filter(c=>c.authorId===userId&&!c.deleted).length;
+  const likeCount=DB.get('posts',[]).reduce((s,p)=>s+(p.authorId===userId?(p.likes||0):0),0);
+  const friends=DB.get('friends',[]).filter(f=>f.u1===userId||f.u2===userId).length;
+  const diaries=DB.get('diaries',[]).filter(d=>d.authorId===userId).length;
+  const checkinStreak=u.checkinStreak||0;
+  let changed=false;
+  const grants=[];
+  if(posts>=1&&!u.medals.includes('first_post')){grants.push('first_post');}
+  if(posts>=10&&!u.medals.includes('post10')){grants.push('post10');}
+  if(comments>=20&&!u.medals.includes('comment20')){grants.push('comment20');}
+  if(likeCount>=50&&!u.medals.includes('like50')){grants.push('like50');}
+  if(checkinStreak>=7&&!u.medals.includes('checkin7')){grants.push('checkin7');}
+  if(checkinStreak>=30&&!u.medals.includes('checkin30')){grants.push('checkin30');}
+  if(friends>=5&&!u.medals.includes('friend5')){grants.push('friend5');}
+  if(diaries>=5&&!u.medals.includes('diary5')){grants.push('diary5');}
+  grants.forEach(g=>{
+    if(!u.medals.includes(g)){u.medals.push(g);changed=true;}
+  });
+  if(changed){
+    DB.set('users',users);
+    if(currentUser&&currentUser.id===userId)currentUser.medals=[...u.medals];
+    grants.forEach(g=>{const m=MEDALS.find(x=>x.id===g);if(m)toast('🎖 获得勋章「'+m.name+'」！','ok');});
+  }
+}
+
+/* ---------- 签到 ---------- */
+function todayStr(){return new Date().toLocaleDateString('zh-CN');}
+function doCheckin(){
+  if(!currentUser){toast('请先登录','err');return;}
+  const users=DB.get('users',[]);
+  const u=users.find(x=>x.id===currentUser.id);
+  if(!u)return;
+  if(u.lastCheckin===todayStr()){toast('今天已经签到过了','err');return;}
+  const yesterday=new Date(Date.now()-86400000).toLocaleDateString('zh-CN');
+  u.checkinStreak=(u.lastCheckin===yesterday)?(u.checkinStreak||0)+1:1;
+  u.checkinTotal=(u.checkinTotal||0)+1;
+  u.lastCheckin=todayStr();
+  /* 连续签到加成积分：基础2 + 连续每5天多1，封顶6 */
+  const bonus=Math.min(4,Math.floor(u.checkinStreak/5));
+  const delta=2+bonus;
+  u.points=(u.points||0)+delta;
+  u.levelName=getLevel(u.points).name;
+  DB.set('users',users);
+  if(currentUser)currentUser.levelName=u.levelName;
+  toast('✅ 签到成功 +'+delta+' 积分（连续'+u.checkinStreak+'天）','ok');
+  checkMedals(u.id);
+}
+function renderCheckinBadge(){
+  if(!currentUser)return;
+  const u=DB.get('users',[]).find(x=>x.id===currentUser.id);
+  if(!u)return;
+  /* 个人主页和用户菜单显示签到信息 */
+}
+
+/* ---------- 黑名单 / 免打扰 ---------- */
+function blockUser(userId){
+  if(!currentUser){toast('请先登录','err');return;}
+  if(userId===currentUser.id){toast('不能拉黑自己','err');return;}
+  const users=DB.get('users',[]);
+  const u=users.find(x=>x.id===currentUser.id);
+  if(!u)return;
+  if(!u.blocked)u.blocked=[];
+  if(u.blocked.includes(userId)){toast('已在黑名单中','err');return;}
+  u.blocked.push(userId);
+  /* 取消好友关系 */
+  let friends=DB.get('friends',[]);
+  friends=friends.filter(f=>!(f.u1===currentUser.id&&f.u2===userId)&&!(f.u1===userId&&f.u2===currentUser.id));
+  DB.set('friends',friends);
+  /* 移除好友请求 */
+  let frs=DB.get('friendRequests',[]);
+  frs=frs.filter(r=>!(r.from===currentUser.id&&r.to===userId)&&!(r.from===userId&&r.to===currentUser.id));
+  DB.set('friendRequests',frs);
+  DB.set('users',users);
+  const tu=users.find(x=>x.id===userId);
+  toast('已拉黑 '+(tu?tu.nickname:'该用户')+'，对方将看不到你的内容','ok');
+  if(currentUser&&$('profilePage').style.display==='block')renderProfilePage(u);
+}
+function unblockUser(userId){
+  if(!currentUser){toast('请先登录','err');return;}
+  const users=DB.get('users',[]);
+  const u=users.find(x=>x.id===currentUser.id);
+  if(!u||!u.blocked)return;
+  u.blocked=u.blocked.filter(id=>id!==userId);
+  DB.set('users',users);
+  toast('已解除拉黑','ok');
+  const cur=$('profilePage').style.display==='block';
+  if(cur)renderProfilePage(u);
+}
+function isBlockedBy(meId,otherId){
+  const users=DB.get('users',[]);
+  const other=users.find(x=>x.id===otherId);
+  const me=users.find(x=>x.id===meId);
+  if(!other)return false;
+  return (other.blocked&&other.blocked.includes(meId))||(me&&me.blocked&&me.blocked.includes(otherId));
+}
+/* 免打扰：关闭提示音与横幅提醒 */
+function isDnd(){
+  if(!currentUser)return false;
+  const u=DB.get('users',[]).find(x=>x.id===currentUser.id);
+  return !!(u&&u.dnd);
+}
+function toggleDnd(){
+  if(!currentUser){toast('请先登录','err');return;}
+  const users=DB.get('users',[]);
+  const u=users.find(x=>x.id===currentUser.id);
+  if(!u)return;
+  u.dnd=!u.dnd;
+  DB.set('users',users);
+  if(currentUser)currentUser.dnd=u.dnd;
+  toast(u.dnd?'已开启免打扰（静音通知）':'已关闭免打扰','ok');
+}
+/* 黑名单管理面板渲染（个人主页内） */
+function toggleBlockBox(el){
+  const body=el.nextElementSibling;
+  body.style.display=body.style.display==='none'?'block':'none';
+}
+function renderBlockList(){
+  const users=DB.get('users',[]);
+  const u=users.find(x=>x.id===currentUser.id);
+  if(!u||!u.blocked||!u.blocked.length){
+    return '<div class="empty-state" style="padding:24px;"><div class="icon">🚫</div><p>你还没有拉黑任何人</p></div>';
+  }
+  return '<div style="margin-top:10px;">'+u.blocked.map(id=>{
+    const b=users.find(x=>x.id===id);
+    return '<div style="display:flex;align-items:center;gap:10px;background:var(--bg-white);border:1px solid var(--border);border-radius:10px;padding:10px 12px;margin-bottom:8px;">'+
+      '<div class="pb-avatar" style="width:36px;height:36px;font-size:14px;">'+(b&&b.avatar?'<img src="'+b.avatar+'" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">':(b?b.nickname[0]:'👤'))+'</div>'+
+      '<div style="flex:1;min-width:0;"><b>'+esc(b?b.nickname:'已注销用户')+'</b>'+(b?'<br><span style="font-size:11px;color:var(--text-lighter);">@'+esc(b.username)+'</span>':'')+'</div>'+
+      '<button class="btn btn-ghost btn-sm" onclick="unblockUser(\''+id+'\')">解除</button>'+
+    '</div>';
+  }).join('')+'</div>';
+}
+
+/* ---------- 细粒度禁言 ---------- */
+function addMute(userId,scope,expireAt,reason){
+  const mutes=DB.get('mutes',[]);
+  /* 移除同用户同范围的旧禁言 */
+  const filtered=mutes.filter(m=>!(m.userId===userId&&m.scope===scope));
+  filtered.push({id:uid(),userId,scope,expireAt,reason,date:Date.now()});
+  DB.set('mutes',filtered);
+}
+function removeMute(muteId){
+  const mutes=DB.get('mutes',[]);
+  DB.set('mutes',mutes.filter(m=>m.id!==muteId));
+}
+function getActiveMutes(userId){
+  const now=Date.now();
+  return DB.get('mutes',[]).filter(m=>m.userId===userId&&(!m.expireAt||m.expireAt>now));
+}
+function isMuted(userId,scope){
+  if(!userId)return false;
+  const mutes=getActiveMutes(userId);
+  return mutes.some(m=>m.scope===scope||m.scope==='all');
+}
+function canPost(userId){return !isMuted(userId,'post');}
+function canComment(userId){return !isMuted(userId,'comment');}
+function canChat(userId){return !isMuted(userId,'chat');}
+/* 到期自动清理（渲染时惰性清理） */
+function cleanupMutes(){
+  const now=Date.now();
+  const mutes=DB.get('mutes',[]);
+  const active=mutes.filter(m=>!m.expireAt||m.expireAt>now);
+  if(active.length!==mutes.length)DB.set('mutes',active);
+}
+
+/* ---------- 操作日志 ---------- */
+function logAdminAction(operator,target,detail){
+  const logs=DB.get('adminLogs',[]);
+  logs.unshift({id:uid(),operator,target,detail,date:Date.now()});
+  if(logs.length>500)logs.length=500;
+  DB.set('adminLogs',logs);
+}
+
+/* ---------- 分区版主 ---------- */
+function getModerators(){
+  const s=DB.get('settings',{});
+  return s.moderators||{};
+}
+function setZoneModerator(zoneId,userId,add){
+  const s=DB.get('settings',{});
+  if(!s.moderators)s.moderators={};
+  if(!s.moderators[zoneId])s.moderators[zoneId]=[];
+  if(add){
+    if(!s.moderators[zoneId].includes(userId))s.moderators[zoneId].push(userId);
+  }else{
+    s.moderators[zoneId]=s.moderators[zoneId].filter(id=>id!==userId);
+    if(!s.moderators[zoneId].length)delete s.moderators[zoneId];
+  }
+  DB.set('settings',s);
+}
+function isZoneModerator(userId,zoneId){
+  if(!userId)return false;
+  const mods=getModerators();
+  return !!(mods[zoneId]&&mods[zoneId].includes(userId));
+}
+/* 能否管理某内容（删帖/删评/恢复） */
+function canManageContent(item){
+  if(!currentUser)return false;
+  if(currentUser.role==='owner')return true;
+  if(currentUser.role==='admin')return item.authorRole!=='owner';
+  /* 版主：仅限本分区，且不能动站长/管理员内容 */
+  if(currentUser.role==='student'||currentUser.role==='graduate'){
+    if(item.zone&&isZoneModerator(currentUser.id,item.zone)){
+      return item.authorRole!=='owner'&&item.authorRole!=='admin';
+    }
+  }
+  return currentUser.id===item.authorId;
+}
+function getModeratorZones(userId){
+  const mods=getModerators();
+  const zones=[];
+  Object.keys(mods).forEach(zid=>{if(mods[zid].includes(userId))zones.push(zid);});
+  return zones;
+}
+function getModBadge(userId){
+  const zones=getModeratorZones(userId);
+  if(!zones.length)return '';
+  return '<span class="role-badge role-moderator">🛡 '+zones.map(z=>{const zi=ZONES.find(x=>x.id===z);return zi?zi.name.replace(/专区|讨论区|墙|区/g,''):z;}).join('/')+'版主</span>';
+}
+
+/* ---------- 回收站 / 软删除 ---------- */
+function softDeleteItem(type,item){
+  const bin=DB.get('recycleBin',[]);
+  bin.unshift({id:uid(),type,itemId:item.id,title:item.title||(item.content||'').slice(0,30),authorName:item.authorName,deletedBy:currentUser?currentUser.nickname:'',date:Date.now()});
+  if(bin.length>200)bin.length=200;
+  DB.set('recycleBin',bin);
+}
+function restoreItem(type,itemId){
+  const bin=DB.get('recycleBin',[]);
+  const rec=bin.find(r=>r.type===type&&r.itemId===itemId);
+  if(!rec){toast('记录不存在','err');return;}
+  if(type==='post'){
+    const posts=DB.get('posts',[]);
+    const p=posts.find(x=>x.id===itemId);
+    if(p){p.deleted=false;DB.set('posts',posts);}
+  }else if(type==='comment'){
+    const comments=DB.get('comments',[]);
+    const c=comments.find(x=>x.id===itemId);
+    if(c){c.deleted=false;DB.set('comments',comments);}
+  }
+  DB.set('recycleBin',bin.filter(r=>!(r.type===type&&r.itemId===itemId)));
+  toast('已恢复','ok');
+  logAdminAction(currentUser?currentUser.nickname:'',type==='post'?'恢复帖子':'恢复评论','#'+itemId);
+}
+function purgeItem(type,itemId){
+  const bin=DB.get('recycleBin',[]);
+  const rec=bin.find(r=>r.type===type&&r.itemId===itemId);
+  if(!rec){toast('记录不存在','err');return;}
+  if(type==='post'){
+    const posts=DB.get('posts',[]);
+    DB.set('posts',posts.filter(p=>p.id!==itemId));
+    /* 同时清理该帖评论 */
+    const comments=DB.get('comments',[]);
+    DB.set('comments',comments.filter(c=>c.postId!==itemId));
+  }else if(type==='comment'){
+    const comments=DB.get('comments',[]);
+    DB.set('comments',comments.filter(c=>c.id!==itemId));
+  }
+  DB.set('recycleBin',bin.filter(r=>!(r.type===type&&r.itemId===itemId)));
+  toast('已彻底删除','ok');
+  logAdminAction(currentUser?currentUser.nickname:'',type==='post'?'彻底删除帖子':'彻底删除评论','#'+itemId);
+}
+
+/* ---------- 收藏 ---------- */
+function isFavorite(postId){
+  if(!currentUser)return false;
+  return DB.get('favorites',[]).some(f=>f.userId===currentUser.id&&f.postId===postId);
+}
+function toggleFavorite(postId){
+  if(!currentUser){toast('请先登录','err');return;}
+  const posts=DB.get('posts',[]);
+  const p=posts.find(x=>x.id===postId);
+  if(!p){toast('帖子不存在','err');return;}
+  const favs=DB.get('favorites',[]);
+  const idx=favs.findIndex(f=>f.userId===currentUser.id&&f.postId===postId);
+  if(idx>=0){
+    favs.splice(idx,1);
+    DB.set('favorites',favs);
+    if(p.authorId!==currentUser.id)addPoints(p.authorId,-0,0); /* 不扣分 */
+    toast('已取消收藏');
+  }else{
+    favs.push({userId:currentUser.id,postId,date:Date.now()});
+    DB.set('favorites',favs);
+    if(p.authorId!==currentUser.id){
+      addPoints(p.authorId,3,'帖子被收藏');
+      sendInboxMessage(p.authorId,'⭐ 你的帖子「'+p.title+'」被 '+currentUser.nickname+' 收藏了','','favorite');
+    }
+    toast('⭐ 已收藏');
+  }
+  if(currentPostId===postId)renderPostDetail();
+  else renderPostList();
+}
+function renderMyFavorites(){
+  if(!currentUser){toast('请先登录','err');return;}
+  const favs=DB.get('favorites',[]).filter(f=>f.userId===currentUser.id).sort((a,b)=>b.date-a.date);
+  const posts=DB.get('posts',[]);
+  currentView='favorites';
+  $('profilePage').style.display='none';
+  $('mainContent').style.display='block';
+  let html='<div class="back-btn" onclick="goHome()">← 返回首页</div>'+
+    '<h3 style="margin:10px 0 14px;">⭐ 我的收藏 ('+favs.length+')</h3>';
+  if(!favs.length){
+    html+='<div class="empty-state"><div class="icon">⭐</div><p>还没有收藏任何帖子，看到喜欢的就点⭐收藏吧</p></div>';
+  }else{
+    html+=favs.map(f=>{
+      const p=posts.find(x=>x.id===f.postId);
+      return p?(p.deleted?'':postCardHTML(p)):'';
+    }).join('');
+  }
+  $('contentArea').innerHTML=html;
+  document.querySelectorAll('#mainNav a').forEach(a=>a.classList.remove('active'));
+}
+
+/* ---------- 关注 ---------- */
+function isFollowing(userId){
+  if(!currentUser)return false;
+  const u=DB.get('users',[]).find(x=>x.id===currentUser.id);
+  return !!(u&&u.following&&u.following.includes(userId));
+}
+function toggleFollow(userId){
+  if(!currentUser){toast('请先登录','err');return;}
+  if(userId===currentUser.id){toast('不能关注自己','err');return;}
+  const users=DB.get('users',[]);
+  const u=users.find(x=>x.id===currentUser.id);
+  if(!u)return;
+  if(!u.following)u.following=[];
+  const idx=u.following.indexOf(userId);
+  if(idx>=0){
+    u.following.splice(idx,1);
+    DB.set('users',users);
+    toast('已取消关注');
+  }else{
+    u.following.push(userId);
+    DB.set('users',users);
+    const tu=users.find(x=>x.id===userId);
+    sendInboxMessage(userId,'👀 '+currentUser.nickname+' 关注了你','','follow');
+    toast('已关注 '+(tu?tu.nickname:'TA'));
+  }
+  if($('profilePage').style.display==='block')renderProfilePage(u);
+}
+
+/* ---------- 公告系统 ---------- */
+function getActiveAnnouncements(){
+  const now=Date.now();
+  const list=DB.get('announcements',[]).filter(a=>!a.expireAt||a.expireAt>now).sort((a,b)=>(b.pinned?1:0)-(a.pinned?1:0)||b.date-a.date);
+  return list;
+}
+function addAnnouncement(title,content,expireAt,pinned){
+  const list=DB.get('announcements',[]);
+  list.unshift({id:uid(),title,content,expireAt:pinned?null:expireAt,pinned:!!pinned,date:Date.now(),author:currentUser?currentUser.nickname:''});
+  DB.set('announcements',list);
+}
+function renderAnnouncementWidget(){
+  const list=getActiveAnnouncements();
+  const el=$('announceWidget');
+  if(!el)return;
+  if(!list.length){
+    el.innerHTML='欢迎来到银川十八中贴吧！请遵守社区规范，文明发言。';
+    return;
+  }
+  el.innerHTML=list.map(a=>
+    '<div style="margin-bottom:8px;'+(a.pinned?'border-left:3px solid var(--primary);padding-left:8px;':'')+'">'+
+      (a.pinned?'<b style="color:var(--primary);font-size:11px;">📌 置顶 </b>':'')+
+      '<b style="font-size:12.5px;">'+esc(a.title)+'</b>'+
+      '<div style="font-size:12px;color:var(--text-light);line-height:1.7;margin-top:2px;">'+esc(a.content).replace(/\n/g,'<br>')+'</div>'+
+      '<div style="font-size:10.5px;color:var(--text-lighter);margin-top:2px;">'+timeAgo(a.date)+'</div>'+
+    '</div>'
+  ).join('');
+}
+
+/* ---------- @提及 ---------- */
+function parseMentions(text,postZone){
+  if(!text||!currentUser)return;
+  const re=/@([\u4e00-\u9fa5A-Za-z0-9_]{2,20})/g;
+  const users=DB.get('users',[]);
+  const matches=[];
+  let m;
+  while((m=re.exec(text)))matches.push(m[1]);
+  matches.forEach(name=>{
+    const target=users.find(u=>u.username===name||u.nickname===name);
+    if(target&&target.id!==currentUser.id){
+      sendInboxMessage(target.id,'📢 '+currentUser.nickname+' 在帖子中提到了你：@'+name,'','mention');
+    }
+  });
+}
+function highlightMentions(text){
+  return esc(text).replace(/@([\u4e00-\u9fa5A-Za-z0-9_]{2,20})/g,'<span style="color:var(--primary);font-weight:600;">@$1</span>');
+}
+
+/* ---------- 新手引导 ---------- */
+function maybeShowOnboarding(){
+  if(!currentUser)return;
+  const users=DB.get('users',[]);
+  const u=users.find(x=>x.id===currentUser.id);
+  if(!u||u.onboarded)return;
+  u.onboarded=true;
+  DB.set('users',users);
+  const steps=[
+    {icon:'🏠',title:'欢迎来到银川十八中贴吧！',desc:'这里是银川市第十八中学的校园社区，发帖、交友、记录校园生活。'},
+    {icon:'📂',title:'分区发帖',desc:'左侧/顶部有六大分区和三个年级专区，校园墙、学习交流、毕业纪念……找到你的圈子。'},
+    {icon:'👥',title:'好友与私聊',desc:'可以搜索添加同学为好友，好友之间可私聊，新消息会自动提醒。'},
+    {icon:'⭐',title:'收藏与关注',desc:'看到好帖子点⭐收藏，关注感兴趣的同学，随时回顾。'},
+    {icon:'🗓',title:'每日签到',desc:'每天签到赚积分升级，解锁更多勋章！'}
+  ];
+  let i=0;
+  const box=document.createElement('div');
+  box.style.cssText='position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;';
+  box.innerHTML='<div style="max-width:360px;width:90%;background:#fff;border-radius:16px;padding:28px;text-align:center;box-shadow:0 12px 40px rgba(0,0,0,.3);">'+
+    '<div style="font-size:44px;margin-bottom:10px;" id="onbIcon">'+steps[0].icon+'</div>'+
+    '<h3 style="margin:0 0 6px;color:var(--primary);" id="onbTitle">'+steps[0].title+'</h3>'+
+    '<p style="font-size:13px;color:var(--text-light);line-height:1.7;margin:0 0 18px;" id="onbDesc">'+steps[0].desc+'</p>'+
+    '<div style="display:flex;justify-content:center;gap:10px;margin-bottom:18px;" id="onbDots"></div>'+
+    '<div style="display:flex;gap:10px;">'+
+      '<button class="btn btn-ghost" id="onbSkip" style="flex:1;">跳过</button>'+
+      '<button class="btn btn-primary" id="onbNext" style="flex:1;">下一步</button>'+
+    '</div></div>';
+  const dots=[];
+  function renderDots(){
+    const d=box.querySelector('#onbDots');
+    d.innerHTML='';
+    steps.forEach((_,di)=>{
+      const dot=document.createElement('span');
+      dot.style.cssText='width:8px;height:8px;border-radius:50%;background:'+(di===i?'var(--primary)':'#ddd')+';';
+      d.appendChild(dot);
+    });
+  }
+  function show(idx){
+    i=idx;
+    box.querySelector('#onbIcon').textContent=steps[i].icon;
+    box.querySelector('#onbTitle').textContent=steps[i].title;
+    box.querySelector('#onbDesc').textContent=steps[i].desc;
+    box.querySelector('#onbNext').textContent=(i===steps.length-1)?'开始探索':'下一步';
+    renderDots();
+  }
+  box.querySelector('#onbSkip').onclick=()=>box.remove();
+  box.querySelector('#onbNext').onclick=()=>{
+    if(i<steps.length-1)show(i+1);
+    else box.remove();
+  };
+  document.body.appendChild(box);
+  renderDots();
+}
+
+/* ---------- 管理辅助（后台新页签配套） ---------- */
+function adminAddMute(){
+  const userId=$('muteUser').value;
+  const scope=$('muteScope').value;
+  const dur=$('muteDur').value;
+  const reason=$('muteReason').value.trim();
+  if(!userId){toast('请选择用户','err');return;}
+  const expireAt=dur?Date.now()+parseInt(dur):null;
+  addMute(userId,scope,expireAt,reason);
+  const u=DB.get('users',[]).find(x=>x.id===userId);
+  const scopes={post:'禁发帖',comment:'禁评论',chat:'禁私聊',all:'全部禁言'};
+  toast('已对 '+u.nickname+' 设置'+scopes[scope]+'，到期自动解除','ok');
+  logAdminAction(currentUser.nickname,'设置禁言',u.nickname+' · '+scopes[scope]+(expireAt?' · '+new Date(expireAt).toLocaleString('zh-CN'):' · 永久'));
+  renderAdminContent('mute');
+}
+function adminSetMod(zoneId){
+  const userId=$('modSel_'+zoneId).value;
+  if(!userId){toast('请选择用户','err');return;}
+  setZoneModerator(zoneId,userId,true);
+  const u=DB.get('users',[]).find(x=>x.id===userId);
+  const z=ZONES.find(x=>x.id===zoneId);
+  toast('已任命 '+u.nickname+' 为'+(z?z.name:'该分区')+'版主','ok');
+  logAdminAction(currentUser.nickname,'任命版主',u.nickname+' → '+(z?z.name:''));
+  renderAdminContent('mods');
+}
+function adminClearMods(zoneId){
+  const z=ZONES.find(x=>x.id===zoneId);
+  if(!confirm('清空'+(z?z.name:'该分区')+'的全部版主？'))return;
+  DB.set('settings',{...(DB.get('settings',{})),moderators:{...(DB.get('settings',{}).moderators||{})}});
+  const mods=DB.get('settings',{}).moderators||{};
+  delete mods[zoneId];
+  DB.set('settings',{...DB.get('settings',{}),moderators:mods});
+  logAdminAction(currentUser.nickname,'清空版主',z?z.name:'');
+  toast('已清空版主','ok');
+  renderAdminContent('mods');
+}
+function adminAddAnnouncement(){
+  const title=$('annTitle').value.trim();
+  const content=$('annContent').value.trim();
+  if(!title||!content){toast('标题和内容不能为空','err');return;}
+  const expireVal=$('annExpire').value;
+  const expireAt=expireVal?new Date(expireVal).getTime():null;
+  const pinned=$('annPinned').checked;
+  addAnnouncement(title,content,expireAt,pinned);
+  logAdminAction(currentUser.nickname,'发布公告','《'+title+'》');
+  renderAnnouncementWidget();
+  toast('公告已发布','ok');
+  renderAdminContent('announce');
+}
+function adminToggleAnnouncePin(id){
+  const list=DB.get('announcements',[]);
+  const a=list.find(x=>x.id===id);
+  if(!a)return;
+  a.pinned=!a.pinned;
+  DB.set('announcements',list);
+  renderAnnouncementWidget();
+}
+function adminDeleteAnnouncement(id){
+  DB.set('announcements',DB.get('announcements',[]).filter(x=>x.id!==id));
+  renderAnnouncementWidget();
+}
+
+/* ---------- 暗黑模式（云端同步） ---------- */
+function applyTheme(theme){
+  document.body.setAttribute('data-theme',theme||'light');
+}
+function toggleTheme(){
+  if(!currentUser){toast('请先登录后切换主题','err');return;}
+  const s=DB.get('settings',{});
+  const next=s.theme==='dark'?'light':'dark';
+  s.theme=next;
+  DB.set('settings',s);
+  applyTheme(next);
+  toast(next==='dark'?'已切换到暗黑模式 🌙':'已切换到浅色模式 ☀️','ok');
+}
+function initTheme(){
+  const s=DB.get('settings',{});
+  if(s.theme)applyTheme(s.theme);
+}
+
+/* ---------- 前台排行榜 ---------- */
+function renderLeaderboard(){
+  if(!currentUser){toast('请先登录','err');return;}
+  $('profilePage').style.display='none';
+  $('mainContent').style.display='block';
+  const users=DB.get('users',[]);
+  const posts=DB.get('posts',[]);
+  const comments=DB.get('comments',[]);
+  const rankData=users.map(u=>{
+    const myPosts=posts.filter(p=>p.authorId===u.id&&!p.deleted);
+    const myComments=comments.filter(c=>c.authorId===u.id&&!c.deleted);
+    const likes=myPosts.reduce((s,p)=>s+(p.likes||0),0);
+    return {u,points:u.points||0,activity:myPosts.length+myComments.length,likes};
+  }).filter(r=>!r.u.banned);
+  const contrib=[...rankData].sort((a,b)=>b.points-a.points).slice(0,10);
+  const active=[...rankData].sort((a,b)=>b.activity-a.activity).slice(0,10);
+  const liked=[...rankData].sort((a,b)=>b.likes-a.likes).slice(0,10);
+  function rankTable(title,list,cols){
+    return '<h4 style="margin:16px 0 8px;">'+title+'</h4><table style="width:100%;font-size:13px;border-collapse:collapse;background:#fff;border:1px solid var(--border);border-radius:10px;overflow:hidden;">'+
+      '<thead><tr style="background:var(--bg-primary);"><th style="padding:8px;text-align:left;">#</th><th style="padding:8px;text-align:left;">用户</th>'+
+      (cols.points?'<th style="padding:8px;">✨ 积分</th>':'')+
+      (cols.activity?'<th style="padding:8px;">🔥 活跃</th>':'')+
+      (cols.likes?'<th style="padding:8px;">👍 获赞</th>':'')+'</tr></thead><tbody>'+
+      list.map((r,i)=>'<tr style="border-bottom:1px solid var(--border-light);">'+
+        '<td style="padding:8px;width:40px;">'+(i<3?'🥇🥈🥉'[i]:i+1)+'</td>'+
+        '<td style="padding:8px;"><b>'+esc(r.u.nickname)+'</b> '+getRoleBadge(r.u.role)+'<br><span style="font-size:11px;color:var(--text-lighter);">'+(r.u.levelName||getLevel(r.points).name)+'</span></td>'+
+        (cols.points?'<td style="padding:8px;text-align:center;">'+(r.points||0)+'</td>':'')+
+        (cols.activity?'<td style="padding:8px;text-align:center;">'+(r.activity)+'</td>':'')+
+        (cols.likes?'<td style="padding:8px;text-align:center;">'+(r.likes)+'</td>':'')+
+      '</tr>').join('')+'</tbody></table>';
+  }
+  $('contentArea').innerHTML=
+    '<div class="back-btn" onclick="goHome()">← 返回首页</div>'+
+    '<h3 style="margin:10px 0 6px;">🏆 社区排行榜</h3>'+
+    '<p style="font-size:12px;color:var(--text-light);margin-bottom:6px;">总榜 · 发帖/评论/获赞/被收藏/签到都会增加积分</p>'+
+    rankTable('✨ 贡献榜（积分）',contrib,{points:true})+
+    rankTable('🔥 活跃榜（发帖+评论数）',active,{activity:true})+
+    rankTable('👍 获赞榜',liked,{likes:true});
+  document.querySelectorAll('#mainNav a').forEach(a=>a.classList.remove('active'));
+}
+
+/* ---------- 版规页面 ---------- */
+function renderRules(){
+  $('profilePage').style.display='none';
+  $('mainContent').style.display='block';
+  $('contentArea').innerHTML=
+    '<div class="back-btn" onclick="goHome()">← 返回首页</div>'+
+    '<h3 style="margin:10px 0 14px;">📜 社区版规</h3>'+
+    '<div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:18px;line-height:2;font-size:13.5px;color:var(--text);">'+
+      '<h4 style="color:var(--primary);margin:8px 0 4px;">一、基本守则</h4>'+
+      '<p>1. 本贴吧为银川市第十八中学学生社区，仅限本校在读学生与毕业校友注册使用。</p>'+
+      '<p>2. 发帖请选择正确分区：校园墙、学习交流、日常分享、毕业纪念、社团活动、失物招领，以及七/八/九年级专区。</p>'+
+      '<p>3. 请文明发言，尊重每一位同学，禁止人身攻击、辱骂、地域歧视等不友善行为。</p>'+
+      '<h4 style="color:var(--primary);margin:8px 0 4px;">二、内容规范</h4>'+
+      '<p>4. 禁止发布违法信息、色情低俗、暴力恐怖、谣言及广告垃圾内容。</p>'+
+      '<p>5. 涉及他人姓名、学号、照片等信息请征得本人同意，禁止人肉、泄露他人隐私。</p>'+
+      '<p>6. 请勿刷屏、恶意灌水；抄袭他人内容请注明出处。</p>'+
+      '<h4 style="color:var(--primary);margin:8px 0 4px;">三、校园安全</h4>'+
+      '<p>7. 遇到校园霸凌、心理困扰请第一时间联系老师或使用「🚨 心理危机求助」功能，生命至上。</p>'+
+      '<p>8. 网络交友需谨慎，不要向陌生人透露个人家庭住址、银行账号等敏感信息。</p>'+
+      '<h4 style="color:var(--primary);margin:8px 0 4px;">四、违规处理</h4>'+
+      '<p>9. 违规内容将被删除或移入回收站，视情节给予警告、禁言、封号处理。</p>'+
+      '<p>10. 禁言细分为禁发帖/禁评论/禁私聊，按违规程度设置时长，到期自动解除。</p>'+
+      '<p>11. 对处理有异议可在后台申诉，站长和管理员会复核处理。</p>'+
+      '<h4 style="color:var(--primary);margin:8px 0 4px;">五、权限体系</h4>'+
+      '<p>12. 站长拥有最高权限；管理员协助管理；分区版主管辖对应分区。</p>'+
+      '<p>13. 管理员不能封禁站长、不能删除站长的帖子或评论；反之站长可以管理一切。</p>'+
+      '<p>14. 毕业生在校园墙与年级专区仅可浏览（只读），其他分区可正常交流。</p>'+
+      '<div style="margin-top:12px;text-align:center;color:var(--text-lighter);font-size:12px;">本版规自发布之日起施行，最终解释权归银川十八中贴吧站长所有。</div>'+
+    '</div>';
 }
 
 /* ===== 学籍系统：自动计算毕业时间 ===== */
@@ -1548,6 +2290,8 @@ function approveSchoolAdjust(userId){
   u.pendingAdjust=null;
   DB.set('users',users);
   toast('已批准学籍调整','ok');
+  logAdminAction(currentUser.nickname,'批准学籍调整',u.nickname+' → 入学'+req.newYear+'年');
+  sendInboxMessage(u.id,'✅ 学籍调整已通过','你的学籍调整申请已通过，当前入学年份：'+req.newYear+'年','system',{});
   renderAdminContent('school');
 }
 /* 审核：拒绝学籍调整 */
@@ -1558,6 +2302,8 @@ function rejectSchoolAdjust(userId){
   u.pendingAdjust=null;
   DB.set('users',users);
   toast('已拒绝该申请','ok');
+  logAdminAction(currentUser.nickname,'拒绝学籍调整',u.nickname);
+  sendInboxMessage(u.id,'❌ 学籍调整被拒绝','很抱歉，你的学籍调整申请未通过审核，如有疑问请联系站长','system',{});
   renderAdminContent('school');
 }
 
@@ -1604,7 +2350,7 @@ async function pollChatMessages(){
       updateMsgBadge();
       if(!document.hidden){
         const count=getUnreadMsgCount();
-        if(count>_lastPollCount){
+        if(count>_lastPollCount&&!isDnd()){
           /* 播放提示音 */
           try{
             const actx=new (window.AudioContext||window.webkitAudioContext)();
@@ -1931,6 +2677,8 @@ function enterApp(){
   renderStats();
   renderHotPosts();
   goHome();
+  /* 首次登录新手引导 */
+  setTimeout(maybeShowOnboarding,800);
 }
 /* 窗口大小变化时切换移动端导航 */
 window.addEventListener('resize',function(){
@@ -1976,6 +2724,11 @@ function renderNavRight(){
       '<a onclick="openInbox();toggleUserMenu();">📬 站内信</a>'+
       '<a onclick="openEditProfile();toggleUserMenu();">⚙ 编辑资料</a>'+
       '<a onclick="viewMyPosts();toggleUserMenu();">📝 我的帖子</a>'+
+      '<a onclick="renderMyFavorites();toggleUserMenu();">⭐ 我的收藏</a>'+
+      '<a onclick="renderLeaderboard();toggleUserMenu();">🏆 排行榜</a>'+
+      '<a onclick="doCheckin();toggleUserMenu();">📅 每日签到</a>'+
+      '<a onclick="renderRules();toggleUserMenu();">📜 版规</a>'+
+      '<a onclick="toggleTheme();toggleUserMenu();">🌙 暗黑模式</a>'+
       (currentUser.role==='owner'||currentUser.role==='admin'?'<a onclick="openAdminPanel();toggleUserMenu();">🛡 后台管理</a>':'')+
       '<button onclick="doLogout()">🚪 退出登录</button>'+
     '</div></div>';
@@ -2003,8 +2756,9 @@ function renderZones(){
   ).join('');
 }
 function getZonePostCount(zoneId){
-  if(zoneId==='all')return DB.get('posts',[]).length;
-  return DB.get('posts',[]).filter(p=>p.zone===zoneId).length;
+  const live=DB.get('posts',[]).filter(p=>!p.deleted);
+  if(zoneId==='all')return live.length;
+  return live.filter(p=>p.zone===zoneId).length;
 }
 function navigateZone(zoneId){
   currentZone=zoneId;
@@ -2021,8 +2775,8 @@ function navigateZone(zoneId){
 
 /* ===== 社区统计 ===== */
 function renderStats(){
-  const posts=DB.get('posts',[]);
-  const comments=DB.get('comments',[]);
+  const posts=DB.get('posts',[]).filter(p=>!p.deleted);
+  const comments=DB.get('comments',[]).filter(c=>!c.deleted);
   const users=DB.get('users',[]);
   const todayPosts=posts.filter(p=>Date.now()-p.date<86400000).length;
   $('statsGrid').innerHTML=
@@ -2034,7 +2788,7 @@ function renderStats(){
 
 /* ===== 热门帖子 ===== */
 function renderHotPosts(){
-  const posts=DB.get('posts',[]).sort((a,b)=>(b.likes+b.comments*2)-(a.likes+a.comments*2)).slice(0,5);
+  const posts=DB.get('posts',[]).filter(p=>!p.deleted&&!(currentUser&&isBlockedBy(currentUser.id,p.authorId))).sort((a,b)=>(b.likes+b.comments*2)-(a.likes+a.comments*2)).slice(0,5);
   $('hotList').innerHTML=posts.map((p,i)=>
     '<div class="hot-item" onclick="viewPost(\''+p.id+'\')">'+
       '<span class="rank">'+(i+1)+'</span>'+
@@ -2062,8 +2816,8 @@ function renderSearchResults(){
   const users=DB.get('users',[]);
   const comments=DB.get('comments',[]);
   /* 帖子：标题/内容匹配 */
-  const postHits=posts.filter(p=>
-    p.title.toLowerCase().includes(kw)||p.content.toLowerCase().includes(kw)
+  const postHits=posts.filter(p=>!p.deleted&&!(currentUser&&isBlockedBy(currentUser.id,p.authorId))&&
+    (p.title.toLowerCase().includes(kw)||p.content.toLowerCase().includes(kw))
   ).sort((a,b)=>b.date-a.date);
   /* 用户：昵称/用户名匹配 */
   const userHits=users.filter(u=>
@@ -2071,7 +2825,7 @@ function renderSearchResults(){
     (u.username&&u.username.toLowerCase().includes(kw))
   );
   /* 评论：内容匹配，关联到帖子标题 */
-  const commentHits=comments.filter(c=>c.content.toLowerCase().includes(kw)).sort((a,b)=>b.date-a.date);
+  const commentHits=comments.filter(c=>!c.deleted&&!(currentUser&&isBlockedBy(currentUser.id,c.authorId))&&c.content.toLowerCase().includes(kw)).sort((a,b)=>b.date-a.date);
   /* 分区：名称/描述匹配 */
   const zoneHits=ZONES.filter(z=>z.name.includes(searchKeyword)||(z.desc&&z.desc.includes(searchKeyword)));
   const total=postHits.length+userHits.length+commentHits.length;
@@ -2150,12 +2904,15 @@ function goHome(){
   renderZones();
   renderMobileZones();
   renderPostList();
+  renderAnnouncementWidget();
   document.querySelectorAll('#mainNav a').forEach((a,i)=>a.classList.toggle('active',i===0));
   document.querySelectorAll('.mobile-nav a').forEach((a,i)=>a.classList.toggle('active',i===0));
 }
 function renderPostList(){
   const posts=DB.get('posts',[]);
-  let filtered=currentZone==='all'?posts:posts.filter(p=>p.zone===currentZone);
+  /* 过滤：软删除 + 拉黑（互相不可见） */
+  let filtered=posts.filter(p=>!p.deleted&&!(currentUser&&isBlockedBy(currentUser.id,p.authorId)));
+  filtered=currentZone==='all'?filtered:filtered.filter(p=>p.zone===currentZone);
   filtered=filtered.sort((a,b)=>b.date-a.date);
   const zoneInfo=ZONES.find(z=>z.id===currentZone);
   const readonly=zoneInfo&&zoneInfo.graduateReadonly&&currentUser&&currentUser.role==='graduate';
@@ -2182,13 +2939,14 @@ function renderPostList(){
 }
 function postCardHTML(p){
   const zone=ZONES.find(z=>z.id===p.zone);
-  const comments=DB.get('comments',[]).filter(c=>c.postId===p.id).length;
+  const comments=DB.get('comments',[]).filter(c=>c.postId===p.id&&!c.deleted).length;
   const liked=currentUser&&isPostLiked(p.id);
+  const faved=currentUser&&isFavorite(p.id);
   return '<div class="post-card" onclick="viewPost(\''+p.id+'\')">'+
     '<div class="pc-head">'+
       '<div class="pc-avatar">'+(p.authorAvatar?'<img src="'+p.authorAvatar+'" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">':(p.authorAvatar||'👤'))+'</div>'+
       '<div class="pc-meta">'+
-        '<div class="name">'+esc(p.authorName)+' '+getRoleBadge(p.authorRole)+'</div>'+
+        '<div class="name">'+esc(p.authorName)+' '+getRoleBadge(p.authorRole)+getModBadge(p.authorId)+'</div>'+
         '<div class="time">'+timeAgo(p.date)+(p.edited?'<span class="edited-mark">· 已编辑</span>':'')+'</div>'+
       '</div>'+
       '<span class="pc-zone">'+(zone?zone.icon+' '+zone.name:'')+'</span>'+
@@ -2200,6 +2958,7 @@ function postCardHTML(p){
     '<div class="pc-actions">'+
       '<button class="'+(liked?'liked':'')+'" onclick="event.stopPropagation();togglePostLike(\''+p.id+'\')">👍 '+(p.likes||0)+'</button>'+
       '<button onclick="event.stopPropagation();viewPost(\''+p.id+'\')">💬 '+comments+'</button>'+
+      '<button class="'+(faved?'liked':'')+'" onclick="event.stopPropagation();toggleFavorite(\''+p.id+'\')">'+(faved?'⭐':'☆')+'</button>'+
       (currentUser&&currentUser.id===p.authorId?
         '<button style="margin-left:auto;" onclick="event.stopPropagation();openEditPost(\''+p.id+'\')">✏ 编辑</button>':
         '<button style="margin-left:auto;">👁 '+(p.views||0)+'</button>')+
@@ -2224,14 +2983,15 @@ function viewPost(postId){
 function renderPostDetail(){
   const posts=DB.get('posts',[]);
   const p=posts.find(x=>x.id===currentPostId);
-  if(!p){$('contentArea').innerHTML='<div class="empty-state"><div class="icon">❌</div><p>帖子不存在</p></div>';return;}
+  if(!p||p.deleted){$('contentArea').innerHTML='<div class="empty-state"><div class="icon">❌</div><p>帖子不存在或已删除</p></div>';return;}
   const zone=ZONES.find(z=>z.id===p.zone);
   const readonly=zone&&zone.graduateReadonly&&currentUser&&currentUser.role==='graduate';
-  const allComments=DB.get('comments',[]).filter(c=>c.postId===p.id).sort((a,b)=>b.date-a.date);
+  const allComments=DB.get('comments',[]).filter(c=>c.postId===p.id&&!c.deleted&&!(currentUser&&isBlockedBy(currentUser.id,c.authorId))).sort((a,b)=>b.date-a.date);
   const shownComments=allComments.slice(0,commentsPage*COMMENT_PAGE);
   const hasMoreComments=allComments.length>shownComments.length;
   const liked=currentUser&&isPostLiked(p.id);
-  const canDelete=currentUser&&(currentUser.role==='owner'||currentUser.role==='admin'||currentUser.id===p.authorId);
+  const faved=currentUser&&isFavorite(p.id);
+  const canDelete=currentUser&&canManageContent(p);
   const canEdit=currentUser&&currentUser.id===p.authorId;
   $('contentArea').innerHTML=
     '<div class="post-detail">'+
@@ -2239,17 +2999,18 @@ function renderPostDetail(){
       '<h2>'+esc(p.title)+'</h2>'+
       '<div class="pd-meta">'+
         '<div class="avatar">'+(p.authorAvatar?'<img src="'+p.authorAvatar+'" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">':(p.authorAvatar||'👤'))+'</div>'+
-        '<div class="info"><div class="name">'+esc(p.authorName)+' '+getRoleBadge(p.authorRole)+'</div>'+
+        '<div class="info"><div class="name">'+esc(p.authorName)+' '+getRoleBadge(p.authorRole)+getModBadge(p.authorId)+'</div>'+
         '<div class="time">'+new Date(p.date).toLocaleString('zh-CN')+' · 👁 '+(p.views||0)+' 次浏览'+(p.edited?'<span class="edited-mark">· 已编辑</span>':'')+'</div>'+
         (p.edited&&p.editedAt?'<div class="pd-edited">✏ 最后编辑于 '+new Date(p.editedAt).toLocaleString('zh-CN')+'</div>':'')+
         '</div>'+
         '<span class="pc-zone">'+(zone?zone.icon+' '+zone.name:'')+'</span>'+
       '</div>'+
-      '<div class="pd-content">'+esc(p.content).replace(/\n/g,'<br>')+'</div>'+
+      '<div class="pd-content">'+highlightMentions(p.content).replace(/\n/g,'<br>')+'</div>'+
       renderPostImages(p.images, true)+
       renderPostAudio(p.audios)+
       '<div class="pd-actions">'+
         '<button class="'+(liked?'liked':'')+'" onclick="togglePostLike(\''+p.id+'\')">👍 点赞 ('+(p.likes||0)+')</button>'+
+        '<button class="'+(faved?'liked':'')+'" onclick="toggleFavorite(\''+p.id+'\')">'+(faved?'⭐ 已收藏':'☆ 收藏')+'</button>'+
         '<button onclick="sharePost(\''+p.id+'\')">🔗 分享</button>'+
         (canEdit?'<button onclick="openEditPost(\''+p.id+'\')">✏ 编辑</button>':'')+
         (canDelete?'<button style="margin-left:auto;color:#e74c3c;" onclick="deletePost(\''+p.id+'\')">🗑 删除</button>':'')+
@@ -2271,14 +3032,14 @@ function renderPostDetail(){
     '</div>';
 }
 function commentItemHTML(c){
-  const canDelete=currentUser&&(currentUser.role==='owner'||currentUser.role==='admin'||currentUser.id===c.authorId);
+  const canDelete=currentUser&&canManageContent({...c,zone:DB.get('posts',[]).find(p=>p.id===c.postId)?.zone});
   const liked=currentUser&&isCommentLiked(c.id);
   return '<div class="comment-item">'+
     '<div class="ci-avatar">'+(c.authorAvatar?'<img src="'+c.authorAvatar+'" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">':(c.authorAvatar||'👤'))+'</div>'+
     '<div class="ci-body">'+
-      '<div class="ci-head"><span class="name">'+esc(c.authorName)+' '+getRoleBadge(c.authorRole)+'</span>'+
+      '<div class="ci-head"><span class="name">'+esc(c.authorName)+' '+getRoleBadge(c.authorRole)+getModBadge(c.authorId)+'</span>'+
       '<span class="time">'+timeAgo(c.date)+'</span></div>'+
-      '<div class="ci-content">'+esc(c.content)+'</div>'+
+      '<div class="ci-content">'+highlightMentions(c.content)+'</div>'+
       '<div class="ci-actions">'+
         '<button class="'+(liked?'liked':'')+'" onclick="toggleCommentLike(\''+c.id+'\')">👍 '+(c.likes||0)+'</button>'+
         (canDelete?'<button onclick="deleteComment(\''+c.id+'\')">🗑 删除</button>':'')+
@@ -2759,6 +3520,7 @@ function openEditPost(postId){
 function submitPost(){
   if(!currentUser){toast('请先登录','err');return;}
   if(isUserBanned(currentUser.id)){toast('你的账号已被封禁，无法发帖','err');return;}
+  if(!canPost(currentUser.id)){toast('你已被禁言，暂时无法发帖','err');return;}
   const zone=$('postZone').value;
   const title=$('postTitle').value.trim();
   const content=$('postContent').value.trim();
@@ -2800,12 +3562,16 @@ function submitPost(){
     audios:postAudios.length>0?[...postAudios]:[],
     authorId:currentUser.id,authorName:currentUser.nickname,
     authorRole:currentUser.role,authorAvatar:currentUser.avatar||'',
-    date:Date.now(),views:0,likes:0,comments:0
+    date:Date.now(),views:0,likes:0,comments:0,deleted:false
   });
   DB.set('posts',posts);
   clearPostDraft();
   closeModal('postModal');
   toast('发布成功！','ok');
+  /* 发帖积分+@提及+勋章 */
+  addPoints(currentUser.id,5,'发帖');
+  parseMentions(content,zone);
+  checkMedals(currentUser.id);
   renderStats();
   renderHotPosts();
   currentZone=zone;
@@ -2822,26 +3588,56 @@ function deletePost(postId){
   if(currentUser.role==='admin'&&post.authorRole==='owner'){
     toast('你没有权限删除站长的帖子','err');return;
   }
-  /* 普通用户只能删自己的帖子 */
-  if(currentUser.role!=='owner'&&currentUser.role!=='admin'&&post.authorId!==currentUser.id){
+  /* 版主只能删本分区且非站长/管理员的帖子 */
+  if((currentUser.role==='student'||currentUser.role==='graduate')&&isZoneModerator(currentUser.id,post.zone)){
+    if(post.authorRole==='owner'||post.authorRole==='admin'){toast('你没有权限删除该帖','err');return;}
+  }else if(currentUser.role!=='owner'&&currentUser.role!=='admin'&&post.authorId!==currentUser.id){
     toast('你只能删除自己的帖子','err');return;
   }
-  if(!confirm('确定删除这篇帖子吗？'))return;
-  let newPosts=posts.filter(p=>p.id!==postId);
-  DB.set('posts',newPosts);
-  let comments=DB.get('comments',[]);
-  comments=comments.filter(c=>c.postId!==postId);
-  DB.set('comments',comments);
-  toast('帖子已删除');
+  if(!confirm('确定删除这篇帖子吗？（可在回收站恢复）'))return;
+  /* 软删除：标记+进回收站 */
+  post.deleted=true;
+  DB.set('posts',posts);
+  softDeleteItem('post',post);
+  logAdminAction(currentUser.nickname,'删除帖子','《'+post.title+'》@'+post.authorName);
+  toast('帖子已移入回收站');
   renderStats();
   renderHotPosts();
   goHome();
+}
+function deleteComment(commentId){
+  if(!currentUser){toast('请先登录','err');return;}
+  const comments=DB.get('comments',[]);
+  const c=comments.find(x=>x.id===commentId);
+  if(!c){toast('评论不存在','err');return;}
+  /* 权限检查：管理员不能删站长的评论 */
+  if(currentUser.role==='admin'&&c.authorRole==='owner'){
+    toast('你没有权限删除站长的评论','err');return;
+  }
+  const post=DB.get('posts',[]).find(p=>p.id===c.postId);
+  /* 版主只能删本分区评论 */
+  if((currentUser.role==='student'||currentUser.role==='graduate')&&post&&isZoneModerator(currentUser.id,post.zone)){
+    if(c.authorRole==='owner'||c.authorRole==='admin'){toast('你没有权限删除该评论','err');return;}
+  }else if(currentUser.role!=='owner'&&currentUser.role!=='admin'&&c.authorId!==currentUser.id){
+    toast('你只能删除自己的评论','err');return;
+  }
+  if(!confirm('确定删除这条评论吗？（可在回收站恢复）'))return;
+  c.deleted=true;
+  DB.set('comments',comments);
+  softDeleteItem('comment',c);
+  logAdminAction(currentUser.nickname,'删除评论','"'+c.content.slice(0,20)+'"@'+c.authorName);
+  const posts=DB.get('posts',[]);
+  const p=posts.find(x=>x.id===c.postId);
+  if(p){p.comments=Math.max(0,(p.comments||0)-1);DB.set('posts',posts);}
+  toast('评论已移入回收站');
+  renderPostDetail();
 }
 
 /* ===== 评论 ===== */
 function submitComment(postId){
   if(!currentUser){toast('请先登录','err');return;}
   if(isUserBanned(currentUser.id)){toast('你的账号已被封禁，无法评论','err');return;}
+  if(!canComment(currentUser.id)){toast('你已被禁言，暂时无法评论','err');return;}
   const content=$('commentInput').value.trim();
   if(!content){toast('评论内容不能为空','err');return;}
   const comments=DB.get('comments',[]);
@@ -2849,12 +3645,16 @@ function submitComment(postId){
     id:uid(),postId,
     authorId:currentUser.id,authorName:currentUser.nickname,
     authorRole:currentUser.role,authorAvatar:currentUser.avatar||'',
-    content,date:Date.now(),likes:0
+    content,date:Date.now(),likes:0,deleted:false
   });
   DB.set('comments',comments);
   const posts=DB.get('posts',[]);
   const p=posts.find(x=>x.id===postId);
   if(p){p.comments=(p.comments||0)+1;DB.set('posts',posts);}
+  /* 评论积分+@提及+勋章 */
+  addPoints(currentUser.id,2,'评论');
+  parseMentions(content,p?p.zone:'');
+  checkMedals(currentUser.id);
   toast('评论成功','ok');
   renderHotPosts();
   renderPostDetail();
@@ -2868,17 +3668,22 @@ function deleteComment(commentId){
   if(currentUser.role==='admin'&&c.authorRole==='owner'){
     toast('你没有权限删除站长的评论','err');return;
   }
-  /* 普通用户只能删自己的评论 */
-  if(currentUser.role!=='owner'&&currentUser.role!=='admin'&&c.authorId!==currentUser.id){
+  const post=DB.get('posts',[]).find(p=>p.id===c.postId);
+  /* 版主只能删本分区评论 */
+  if((currentUser.role==='student'||currentUser.role==='graduate')&&post&&isZoneModerator(currentUser.id,post.zone)){
+    if(c.authorRole==='owner'||c.authorRole==='admin'){toast('你没有权限删除该评论','err');return;}
+  }else if(currentUser.role!=='owner'&&currentUser.role!=='admin'&&c.authorId!==currentUser.id){
     toast('你只能删除自己的评论','err');return;
   }
-  if(!confirm('确定删除这条评论吗？'))return;
-  let newComments=comments.filter(x=>x.id!==commentId);
-  DB.set('comments',newComments);
+  if(!confirm('确定删除这条评论吗？（可在回收站恢复）'))return;
+  c.deleted=true;
+  DB.set('comments',comments);
+  softDeleteItem('comment',c);
+  logAdminAction(currentUser.nickname,'删除评论','"'+c.content.slice(0,20)+'"@'+c.authorName);
   const posts=DB.get('posts',[]);
   const p=posts.find(x=>x.id===c.postId);
   if(p){p.comments=Math.max(0,(p.comments||0)-1);DB.set('posts',posts);}
-  toast('评论已删除');
+  toast('评论已移入回收站');
   renderPostDetail();
 }
 
@@ -2902,6 +3707,11 @@ function togglePostLike(postId){
   }else{
     userLikes.push(postId);
     if(p)p.likes=(p.likes||0)+1;
+    /* 给作者加积分+通知 */
+    if(p&&p.authorId!==currentUser.id){
+      addPoints(p.authorId,1,'帖子被赞');
+      sendInboxMessage(p.authorId,'👍 '+currentUser.nickname+' 赞了你的帖子「'+p.title+'」','','like');
+    }
     toast('点赞成功','ok');
   }
   liked[currentUser.id]=userLikes;
@@ -2924,7 +3734,11 @@ function toggleCommentLike(commentId){
   const c=comments.find(x=>x.id===commentId);
   const idx=userLikes.indexOf(commentId);
   if(idx>=0){userLikes.splice(idx,1);if(c)c.likes=Math.max(0,(c.likes||0)-1);}
-  else{userLikes.push(commentId);if(c)c.likes=(c.likes||0)+1;}
+  else{
+    userLikes.push(commentId);if(c)c.likes=(c.likes||0)+1;
+    /* 评论获赞给作者加积分 */
+    if(c&&c.authorId!==currentUser.id)addPoints(c.authorId,1,'评论被赞');
+  }
   liked[currentUser.id]=userLikes;
   DB.set('commentLikes',liked);
   DB.set('comments',comments);
@@ -2966,6 +3780,13 @@ function handleImageUpload(e,maxSize,quality,callback){
 /* ===== 个人主页 ===== */
 function viewProfile(userId){
   currentProfileId=userId;
+  if(currentUser&&isBlockedBy(currentUser.id,userId)){
+    $('mainHeader').style.display='block';
+    $('mainContent').style.display='none';
+    $('profilePage').style.display='block';
+    $('profilePage').innerHTML='<div class="empty-state" style="padding:60px 20px;"><div class="icon">🚫</div><p>无法查看该用户主页（你或对方已拉黑对方）</p><button class="btn btn-ghost btn-sm" style="margin-top:12px;" onclick="goHome()">返回首页</button></div>';
+    return;
+  }
   const users=DB.get('users',[]);
   const u=users.find(x=>x.id===userId);
   if(!u){toast('用户不存在','err');return;}
@@ -2993,19 +3814,24 @@ function renderProfilePage(u){
             (isOwner?'<div class="avatar-edit">📷 更换头像</div>':'')+
           (isOwner?'</label>':'</div>')+
           '<div class="profile-name-area">'+
-            '<h2>'+esc(u.nickname)+' '+getRoleBadge(u.role)+'</h2>'+
+            '<h2>'+esc(u.nickname)+' '+getRoleBadge(u.role)+getModBadge(u.id)+'</h2>'+
             '<div class="username">@'+esc(u.username)+' · '+esc(u.status||'')+' · '+esc(u.className||'')+'</div>'+
             '<div class="profile-badges">'+
               '<span class="profile-badge">📅 注册于 '+new Date(u.regDate).toLocaleDateString('zh-CN')+'</span>'+
               '<span class="profile-badge">🎓 '+esc(u.status||'在读')+' · '+getEnrollYear(u)+'级</span>'+
+              '<span class="profile-badge level-badge" title="积分：'+(u.points||0)+'">'+(u.levelName||getLevel(u.points).name)+'</span>'+
+              '<span class="profile-badge">✨ '+(u.points||0)+' 积分</span>'+
+              (isOwner?'<span class="profile-badge" style="cursor:pointer;color:var(--primary);border:1px dashed var(--primary);" onclick="doCheckin()" title="每日签到赚积分">📅 签到</span>':'')+
               (isOwner?'<span class="profile-badge" style="cursor:pointer;color:var(--primary);border:1px dashed var(--primary);" onclick="openSchoolAdjust()" title="点击调整入学年份/恢复在读，需管理员审核">⚙ 调整学籍</span>':'')+
             '</div>'+
+            (u.medals&&u.medals.length?'<div class="profile-medals">'+u.medals.map(mid=>{const m=MEDALS.find(x=>x.id===mid);return m?'<span class="medal-chip" title="'+esc(m.desc)+'">'+m.icon+' '+esc(m.name)+'</span>':'';}).join('')+'</div>':'')+
             (u.signature?'<div class="profile-signature">「'+esc(u.signature)+'」</div>':'')+
             (u.location?'<div class="profile-location">📍 '+esc(u.location)+'</div>':'')+
           '</div>'+
           '<div class="profile-actions">'+
             (isOwner?'<button class="btn btn-primary btn-sm" onclick="openEditProfile()">⚙ 编辑资料</button>':
               (currentUser?
+                ((isFollowing(u.id)?'<button class="btn btn-ghost btn-sm" onclick="toggleFollow(\''+u.id+'\')">已关注</button>':'<button class="btn btn-outline btn-sm" onclick="toggleFollow(\''+u.id+'\')">+ 关注</button>')+
                 (areFriends(currentUser.id,u.id)?
                   '<button class="btn btn-primary btn-sm" onclick="openChat(\''+u.id+'\')">💬 私聊</button>'+
                   '<button class="btn btn-ghost btn-sm" onclick="removeFriend(\''+u.id+'\')">删除好友</button>':
@@ -3013,7 +3839,10 @@ function renderProfilePage(u){
                     '<button class="btn btn-ghost btn-sm" disabled style="opacity:.5;">已发送请求</button>':
                     '<button class="btn btn-primary btn-sm" onclick="sendFriendRequest(\''+u.id+'\')">+ 加好友</button>'+
                     '<button class="btn btn-outline btn-sm" onclick="openChat(\''+u.id+'\')">💬 私聊</button>'))+
-                '<button class="btn btn-ghost btn-sm" onclick="openReport(\'user\',\''+u.id+'\',\''+esc(u.nickname).replace(/'/g,"\\'")+'\')" style="color:#e74c3c;">🚨 举报</button>'
+                '<button class="btn btn-ghost btn-sm" onclick="openReport(\'user\',\''+u.id+'\',\''+esc(u.nickname).replace(/'/g,"\\'")+'\')" style="color:#e74c3c;">🚨 举报</button>'+
+                (u.blocked&&u.blocked.includes(currentUser.id)?
+                  '<button class="btn btn-ghost btn-sm" disabled style="opacity:.5;">对方已拉黑你</button>':
+                  '<button class="btn btn-ghost btn-sm" style="color:#e74c3c;" onclick="blockUser(\''+u.id+'\')">🚫 拉黑</button>'))
               :'<button class="btn btn-outline btn-sm" onclick="toast(\'请先登录\',\'err\')">💬 私聊</button>'))+
           '</div>'+
         '</div>'+
@@ -3022,11 +3851,15 @@ function renderProfilePage(u){
           '<div class="ps-item"><div class="num">'+comments.length+'</div><div class="label">评论</div></div>'+
           '<div class="ps-item"><div class="num">'+totalLikes+'</div><div class="label">获赞</div></div>'+
         '</div>'+
+        (isOwner?'<div class="profile-blockbox">'+
+          '<div class="bb-head" onclick="toggleBlockBox(this)">🚫 我的黑名单（'+(u.blocked?u.blocked.length:0)+'）<span style="float:right;">▾</span></div>'+
+          '<div class="bb-body" style="display:none;">'+renderBlockList()+'</div>'+
+        '</div>':'')+
         '<div class="profile-tabs">'+
           '<a class="active">📝 TA的帖子</a>'+
         '</div>'+
         '<div class="profile-content">'+
-          (posts.length?posts.map(postCardHTML).join(''):
+          (posts.filter(p=>!p.deleted).length?posts.filter(p=>!p.deleted).map(postCardHTML).join(''):
           '<div class="empty-state"><div class="icon">📭</div><p>TA还没有发布过帖子</p></div>')+
         '</div>'+
       '</div>'+
@@ -3126,6 +3959,12 @@ function renderAdminContent(tab){
     '<button class="btn btn-sm '+(tab==='bans'?'btn-primary':'btn-ghost')+'" onclick="renderAdminContent(\'bans\')">🔒 封号管理</button>'+
     '<button class="btn btn-sm '+(tab==='school'?'btn-primary':'btn-ghost')+'" onclick="renderAdminContent(\'school\')">🎓 学籍审核</button>'+
     '<button class="btn btn-sm '+(tab==='roles'?'btn-primary':'btn-ghost')+'" onclick="renderAdminContent(\'roles\')">🛡 权限说明</button>'+
+    '<button class="btn btn-sm '+(tab==='mute'?'btn-primary':'btn-ghost')+'" onclick="renderAdminContent(\'mute\')">🤐 禁言</button>'+
+    '<button class="btn btn-sm '+(tab==='mods'?'btn-primary':'btn-ghost')+'" onclick="renderAdminContent(\'mods\')">🛡 版主</button>'+
+    '<button class="btn btn-sm '+(tab==='recycle'?'btn-primary':'btn-ghost')+'" onclick="renderAdminContent(\'recycle\')">🗑 回收站</button>'+
+    '<button class="btn btn-sm '+(tab==='logs'?'btn-primary':'btn-ghost')+'" onclick="renderAdminContent(\'logs\')">📜 操作日志</button>'+
+    '<button class="btn btn-sm '+(tab==='rank'?'btn-primary':'btn-ghost')+'" onclick="renderAdminContent(\'rank\')">🏆 排行榜</button>'+
+    '<button class="btn btn-sm '+(tab==='announce'?'btn-primary':'btn-ghost')+'" onclick="renderAdminContent(\'announce\')">📢 公告</button>'+
     '</div>';
   if(tab==='users'){
     html+='<table class="adminTable" style="width:100%;font-size:12.5px;border-collapse:collapse;">'+
@@ -3149,7 +3988,7 @@ function renderAdminContent(tab){
   }else if(tab==='posts'){
     html+='<table class="adminTable" style="width:100%;font-size:12.5px;border-collapse:collapse;">'+
       '<thead><tr style="background:var(--bg-primary);"><th style="padding:8px;text-align:left;">标题</th><th style="padding:8px;text-align:left;">作者</th><th style="padding:8px;text-align:left;">分区</th><th style="padding:8px;text-align:left;">操作</th></tr></thead><tbody>';
-    posts.sort((a,b)=>b.date-a.date).forEach(p=>{
+    posts.filter(p=>!p.deleted).sort((a,b)=>b.date-a.date).forEach(p=>{
       const zone=ZONES.find(z=>z.id===p.zone);
       html+='<tr style="border-bottom:1px solid var(--border-light);">'+
         '<td style="padding:8px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+esc(p.title)+'</td>'+
@@ -3162,7 +4001,7 @@ function renderAdminContent(tab){
   }else if(tab==='comments'){
     html+='<table class="adminTable" style="width:100%;font-size:12.5px;border-collapse:collapse;">'+
       '<thead><tr style="background:var(--bg-primary);"><th style="padding:8px;text-align:left;">内容</th><th style="padding:8px;text-align:left;">作者</th><th style="padding:8px;text-align:left;">操作</th></tr></thead><tbody>';
-    comments.sort((a,b)=>b.date-a.date).forEach(c=>{
+    comments.filter(c=>!c.deleted).sort((a,b)=>b.date-a.date).forEach(c=>{
       html+='<tr style="border-bottom:1px solid var(--border-light);">'+
         '<td style="padding:8px;max-width:250px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+esc(c.content)+'</td>'+
         '<td style="padding:8px;">'+esc(c.authorName)+'</td>'+
@@ -3269,6 +4108,127 @@ function renderAdminContent(tab){
       '🚫 封禁1天/3天/7天 — 期间无法发帖、评论、私聊<br>'+
       '⛔ 永久封禁 — 永久无法使用社区功能'+
       '</div>';
+  }else if(tab==='mute'){
+    cleanupMutes();
+    const mutes=DB.get('mutes',[]);
+    const scopes=[['post','禁发帖'],['comment','禁评论'],['chat','禁私聊'],['all','全部禁']];
+    const durations=[['', '永久'],['3600000','1小时'],['86400000','1天'],['259200000','3天'],['604800000','7天']];
+    html+='<div style="background:var(--bg-lighter);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:14px;font-size:12.5px;">'+
+      '<b style="color:#e67e22;">🤐 细粒度禁言</b><div style="color:var(--text-light);font-size:12px;margin-top:4px;">可单独禁止某用户发帖 / 评论 / 私聊，支持到期自动解除，区别于全账号封号</div></div>';
+    if(!mutes.length)html+='<div style="text-align:center;padding:30px;color:var(--text-lighter);">暂无生效中的禁言</div>';
+    else{
+      mutes.sort((a,b)=>b.date-a.date).forEach(m=>{
+        const u=users.find(x=>x.id===m.userId);
+        const sc=scopes.find(x=>x[0]===m.scope);
+        const remain=m.expireAt?Math.ceil((m.expireAt-Date.now())/3600000)+'小时后解除':'永久';
+        html+='<div style="display:flex;align-items:center;gap:10px;background:var(--bg-lighter);border:1px solid var(--border);border-radius:8px;padding:10px;margin-bottom:8px;flex-wrap:wrap;">'+
+          '<b style="font-size:13px;">'+esc(u?u.nickname:'已注销')+'</b>'+
+          '<span class="role-badge role-admin" style="font-size:11px;">'+(sc?sc[1]:m.scope)+'</span>'+
+          '<span style="font-size:11.5px;color:var(--text-light);">'+(m.reason?'原因：'+esc(m.reason)+' · ':'')+remain+'</span>'+
+          '<button class="btn btn-primary btn-sm" style="margin-left:auto;" onclick="removeMute(\''+m.id+'\');renderAdminContent(\'mute\')">解除</button>'+
+        '</div>';
+      });
+    }
+    html+='<div style="margin-top:16px;padding:14px;border:1px dashed var(--border);border-radius:10px;">'+
+      '<b style="font-size:13px;">➕ 新增禁言</b>'+
+      '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;">'+
+        '<select id="muteUser" style="padding:8px;border:1px solid var(--border);border-radius:8px;background:#fff;font-size:13px;max-width:170px;"><option value="">选择用户...</option>'+users.filter(u=>u.role!=='owner').map(u=>'<option value="'+u.id+'">'+esc(u.nickname)+' (@'+esc(u.username)+')</option>').join('')+'</select>'+
+        '<select id="muteScope" style="padding:8px;border:1px solid var(--border);border-radius:8px;background:#fff;font-size:13px;">'+scopes.map(sc=>'<option value="'+sc[0]+'">'+sc[1]+'</option>').join('')+'</select>'+
+        '<select id="muteDur" style="padding:8px;border:1px solid var(--border);border-radius:8px;background:#fff;font-size:13px;">'+durations.map(d=>'<option value="'+d[0]+'">'+d[1]+'</option>').join('')+'</select>'+
+        '<input id="muteReason" placeholder="禁言原因（选填）" style="padding:8px;border:1px solid var(--border);border-radius:8px;font-size:13px;flex:1;min-width:140px;">'+
+        '<button class="btn btn-primary btn-sm" onclick="adminAddMute()">设置禁言</button>'+
+      '</div></div>';
+  }else if(tab==='mods'){
+    html+='<div style="background:var(--bg-lighter);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:14px;font-size:12.5px;">'+
+      '<b>🛡 分区版主</b><div style="color:var(--text-light);font-size:12px;margin-top:4px;">版主仅能管理所属分区的帖子与评论（不能跨分区、不能动站长/管理员内容）。站长和管理员默认可管理全站。</div></div>';
+    ZONES.forEach(z=>{
+      const mods=getModerators()[z.id]||[];
+      html+='<div style="background:var(--bg-lighter);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:10px;">'+
+        '<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:6px;">'+
+          '<b style="font-size:13px;">'+z.icon+' '+z.name+'</b>'+
+          '<span style="font-size:11.5px;color:var(--text-light);">'+(mods.length?'版主：'+mods.map(mid=>{const mu=users.find(x=>x.id===mid);return esc(mu?mu.nickname:'?');}).join('、'):'暂无版主')+'</span>'+
+        '</div>'+
+        '<div style="display:flex;gap:6px;flex-wrap:wrap;">'+
+          '<select id="modSel_'+z.id+'" style="padding:6px;border:1px solid var(--border);border-radius:8px;background:#fff;font-size:12px;max-width:160px;"><option value="">选择用户设为版主</option>'+users.filter(u=>u.role==='student'||u.role==='graduate').map(u=>'<option value="'+u.id+'"'+(mods.includes(u.id)?' disabled':'')+'>'+esc(u.nickname)+'</option>').join('')+'</select>'+
+          '<button class="btn btn-primary btn-sm" onclick="adminSetMod(\''+z.id+'\')">任命</button>'+
+          (mods.length?'<button class="btn btn-ghost btn-sm" onclick="adminClearMods(\''+z.id+'\')">清空版主</button>':'')+
+        '</div></div>';
+    });
+  }else if(tab==='recycle'){
+    const bin=DB.get('recycleBin',[]);
+    const typeNames={post:'📝 帖子',comment:'💬 评论'};
+    if(!bin.length){
+      html+='<div style="text-align:center;padding:40px;color:var(--text-lighter);"><div style="font-size:40px;margin-bottom:10px;">🗑</div>回收站为空</div>';
+    }else{
+      html+='<div style="color:var(--text-light);font-size:12px;margin-bottom:10px;">共 '+bin.length+' 条 · 删除的内容可恢复，彻底删除不可恢复</div>';
+      bin.slice(0,60).forEach(r=>{
+        html+='<div style="display:flex;align-items:center;gap:10px;background:var(--bg-lighter);border:1px solid var(--border);border-radius:8px;padding:10px;margin-bottom:8px;flex-wrap:wrap;">'+
+          '<span>'+(typeNames[r.type]||r.type)+'</span>'+
+          '<b style="font-size:13px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+esc(r.title||'无标题')+'</b>'+
+          '<span style="font-size:11px;color:var(--text-light);">作者：'+esc(r.authorName||'-')+' · 删除者：'+esc(r.deletedBy)+' · '+timeAgo(r.date)+'</span>'+
+          '<button class="btn btn-primary btn-sm" style="margin-left:auto;" onclick="restoreItem(\''+r.type+'\',\''+r.itemId+'\');renderAdminContent(\'recycle\')">恢复</button>'+
+          '<button class="btn btn-danger btn-sm" onclick="if(confirm(\'彻底删除，不可恢复，确定吗？\')){purgeItem(\''+r.type+'\',\''+r.itemId+'\');renderAdminContent(\'recycle\')}">彻底删除</button>'+
+        '</div>';
+      });
+    }
+  }else if(tab==='logs'){
+    const logs=DB.get('adminLogs',[]);
+    if(!logs.length){
+      html+='<div style="text-align:center;padding:40px;color:var(--text-lighter);"><div style="font-size:40px;margin-bottom:10px;">📜</div>暂无操作日志</div>';
+    }else{
+      html+='<div style="color:var(--text-light);font-size:12px;margin-bottom:10px;">管理员 / 版主的所有操作记录（永久留存，最多500条）</div>';
+      html+='<div style="max-height:420px;overflow-y:auto;">'+logs.map(l=>
+        '<div style="display:flex;gap:10px;padding:8px 4px;border-bottom:1px solid var(--border-light);font-size:12.5px;align-items:flex-start;">'+
+          '<span style="white-space:nowrap;color:var(--text-lighter);">'+timeAgo(l.date)+'</span>'+
+          '<b style="white-space:nowrap;color:var(--primary);">'+esc(l.operator)+'</b>'+
+          '<span style="white-space:nowrap;color:var(--text-light);">'+esc(l.target)+'</span>'+
+          '<span style="flex:1;">'+esc(l.detail)+'</span>'+
+        '</div>'
+      ).join('')+'</div>';
+    }
+  }else if(tab==='rank'){
+    html+='<div style="background:var(--bg-lighter);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:14px;font-size:12.5px;">'+
+      '<b>🏆 排行榜</b><div style="color:var(--text-light);font-size:12px;margin-top:4px;">积分贡献榜 / 活跃榜 / 获赞榜（总榜，积分自动随发帖评论点赞增减）</div></div>';
+    const rankData=users.map(u=>{
+      const myPosts=posts.filter(p=>p.authorId===u.id&&!p.deleted);
+      const myComments=comments.filter(c=>c.authorId===u.id&&!c.deleted);
+      const likes=myPosts.reduce((s,p)=>s+(p.likes||0),0);
+      return {u,points:u.points||0,activity:myPosts.length+myComments.length,likes,posts:myPosts.length};
+    }).filter(r=>r.u.role!=='owner'||true);
+    const contrib=[...rankData].sort((a,b)=>b.points-a.points).slice(0,10);
+    const active=[...rankData].sort((a,b)=>b.activity-a.activity).slice(0,10);
+    const liked=[...rankData].sort((a,b)=>b.likes-a.likes).slice(0,10);
+    function rankTable(list,showPoints,showAct,showLikes){
+      return '<table style="width:100%;font-size:12.5px;border-collapse:collapse;margin-bottom:18px;"><thead><tr style="background:var(--bg-primary);"><th style="padding:7px;text-align:left;">#</th><th style="padding:7px;text-align:left;">用户</th>'+(showPoints?'<th>积分</th>':'')+(showAct?'<th>发帖+评论</th>':'')+(showLikes?'<th>获赞</th>':'')+'</tr></thead><tbody>'+
+      list.map((r,i)=>'<tr style="border-bottom:1px solid var(--border-light);"><td style="padding:7px;">'+(i<3?'🥇🥈🥉'[i]:i+1)+'</td><td style="padding:7px;"><b>'+esc(r.u.nickname)+'</b> '+getRoleBadge(r.u.role)+'</td>'+(showPoints?'<td style="padding:7px;">'+(r.points)+'</td>':'')+(showAct?'<td style="padding:7px;">'+(r.activity)+'</td>':'')+(showLikes?'<td style="padding:7px;">'+(r.likes)+'</td>':'')+'</tr>').join('')+'</tbody></table>';
+    }
+    html+='<h4 style="margin:6px 0;">✨ 贡献榜（积分）</h4>'+rankTable(contrib,true,false,false)+
+      '<h4 style="margin:6px 0;">🔥 活跃榜</h4>'+rankTable(active,false,true,false)+
+      '<h4 style="margin:6px 0;">👍 获赞榜</h4>'+rankTable(liked,false,false,true);
+  }else if(tab==='announce'){
+    const list=DB.get('announcements',[]).sort((a,b)=>b.date-a.date);
+    html+='<div style="background:var(--bg-lighter);border:1px solid var(--border);border-radius:10px;padding:14px;font-size:12.5px;">'+
+      '<b>📢 发布公告</b>（会显示在首页侧边栏，可置顶，可设过期自动下线）'+
+      '<div style="display:flex;flex-direction:column;gap:8px;margin-top:10px;">'+
+        '<input id="annTitle" placeholder="公告标题" style="padding:8px;border:1px solid var(--border);border-radius:8px;font-size:13px;">'+
+        '<textarea id="annContent" placeholder="公告内容（支持多行）" style="padding:8px;border:1px solid var(--border);border-radius:8px;font-size:13px;min-height:70px;"></textarea>'+
+        '<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">'+
+          '<input type="datetime-local" id="annExpire" style="padding:6px;border:1px solid var(--border);border-radius:8px;font-size:12px;">'+
+          '<span style="font-size:12px;color:var(--text-light);">过期时间（留空=永久）</span>'+
+          '<label style="font-size:12.5px;display:flex;align-items:center;gap:4px;"><input type="checkbox" id="annPinned"> 置顶</label>'+
+          '<button class="btn btn-primary btn-sm" style="margin-left:auto;" onclick="adminAddAnnouncement()">发布</button>'+
+        '</div></div></div>';
+    if(!list.length)html+='<div style="text-align:center;padding:24px;color:var(--text-lighter);">暂无公告</div>';
+    else html+='<div style="margin-top:14px;">'+list.map(a=>{
+      const expired=a.expireAt&&a.expireAt<Date.now();
+      return '<div style="display:flex;align-items:center;gap:10px;background:var(--bg-lighter);border:1px solid var(--border);border-radius:8px;padding:10px;margin-bottom:8px;flex-wrap:wrap;">'+
+        (a.pinned?'<span style="font-size:11px;color:var(--primary);">📌</span>':'')+
+        '<b style="font-size:13px;">'+esc(a.title)+'</b>'+
+        '<span style="font-size:11px;color:'+(expired?'#e74c3c':'var(--text-light)')+';">'+(expired?'已过期下线':'发布于 '+timeAgo(a.date))+'</span>'+
+        '<button class="btn btn-ghost btn-sm" style="margin-left:auto;" onclick="adminToggleAnnouncePin(\''+a.id+'\');renderAdminContent(\'announce\')">'+(a.pinned?'取消置顶':'置顶')+'</button>'+
+        '<button class="btn btn-danger btn-sm" onclick="if(confirm(\'删除公告？\')){adminDeleteAnnouncement(\''+a.id+'\');renderAdminContent(\'announce\')}">删除</button>'+
+      '</div>';
+    }).join('')+'</div>';
   }
   $('adminContent').innerHTML=html;
 }
@@ -3334,6 +4294,8 @@ function toggleUserRole(userId){
   u.status=u.role==='graduate'?'毕业':'在读';
   DB.set('users',users);
   toast('已将 '+u.nickname+' 设为 '+names[u.role],'ok');
+  logAdminAction(currentUser.nickname,'修改角色',u.nickname+' → '+names[u.role]);
+  sendInboxMessage(u.id,'🛡 角色已变更','你的社区身份已变更为：'+names[u.role],'system',{});
   renderAdminContent('users');
 }
 function deleteUser(userId){
@@ -3349,35 +4311,40 @@ function deleteUser(userId){
   comments=comments.filter(c=>c.authorId!==userId);
   DB.set('comments',comments);
   toast('用户已删除');
+  logAdminAction(currentUser.nickname,'删除用户',u.nickname+'（及其全部内容）');
   renderAdminContent('users');
   renderStats();
 }
 function adminDeletePost(postId){
-  if(!confirm('确定删除这篇帖子吗？'))return;
-  let posts=DB.get('posts',[]);
-  posts=posts.filter(p=>p.id!==postId);
-  DB.set('posts',posts);
-  let comments=DB.get('comments',[]);
-  comments=comments.filter(c=>c.postId!==postId);
-  DB.set('comments',comments);
-  toast('帖子已删除');
+  if(!confirm('确定删除这篇帖子吗？（可在回收站恢复）'))return;
+  const posts=DB.get('posts',[]);
+  const p=posts.find(x=>x.id===postId);
+  if(p){
+    p.deleted=true;
+    DB.set('posts',posts);
+    softDeleteItem('post',p);
+    logAdminAction(currentUser.nickname,'后台删除帖子','《'+p.title+'》@'+p.authorName);
+  }
+  toast('帖子已移入回收站');
   renderAdminContent('posts');
   renderStats();
   renderHotPosts();
 }
 function adminDeleteComment(commentId){
-  if(!confirm('确定删除这条评论吗？'))return;
-  let comments=DB.get('comments',[]);
+  if(!confirm('确定删除这条评论吗？（可在回收站恢复）'))return;
+  const comments=DB.get('comments',[]);
   const c=comments.find(x=>x.id===commentId);
-  comments=comments.filter(x=>x.id!==commentId);
-  DB.set('comments',comments);
   if(c){
+    c.deleted=true;
+    DB.set('comments',comments);
+    softDeleteItem('comment',c);
+    logAdminAction(currentUser.nickname,'后台删除评论','"'+c.content.slice(0,20)+'"@'+c.authorName);
     const posts=DB.get('posts',[]);
     const p=posts.find(x=>x.id===c.postId);
     if(p)p.comments=Math.max(0,(p.comments||0)-1);
     DB.set('posts',posts);
   }
-  toast('评论已删除');
+  toast('评论已移入回收站');
   renderAdminContent('comments');
   renderStats();
 }
@@ -3562,8 +4529,14 @@ function updateReqBadge(){
 }
 
 /* ===== 私聊系统 ===== */
+function isFriendOf(u1,u2){
+  return DB.get('friends',[]).some(f=>(f.u1===u1&&f.u2===u2)||(f.u1===u2&&f.u2===u1));
+}
 function getChatMessages(userId1,userId2){
   const all=DB.get('chatMessages',[]);
+  /* 会话被任一方删除后，历史对双方隐藏 */
+  const dc=DB.get('deletedChats',[]);
+  if(dc.some(d=>(d.u1===userId1&&d.u2===userId2)||(d.u1===userId2&&d.u2===userId1)))return [];
   return all.filter(m=>
     (m.from===userId1&&m.to===userId2)||(m.from===userId2&&m.to===userId1)
   ).sort((a,b)=>a.date-b.date);
@@ -3574,18 +4547,54 @@ function sendChatMessage(){
   const content=input.value.trim();
   if(!content){return;}
   if(isUserBanned(currentUser.id)){toast('你的账号已被封禁，无法发送消息','err');return;}
+  if(!canChat(currentUser.id)){toast('你已被禁言，暂时无法发送私聊消息','err');return;}
+  if(isBlockedBy(currentUser.id,currentChatUserId)){toast('无法发送：你或对方已拉黑对方','err');return;}
+  if(!isFriendOf(currentUser.id,currentChatUserId)){
+    const u=DB.get('users',[]).find(x=>x.id===currentChatUserId);
+    toast('仅好友可私聊，请先添加 '+esc(u?u.nickname:'对方')+' 为好友','err');
+    return;
+  }
+  /* 新消息解除会话删除状态 */
+  let dc=DB.get('deletedChats',[]);
+  const ndc=dc.filter(d=>!(d.u1===currentUser.id&&d.u2===currentChatUserId)&&!(d.u1===currentChatUserId&&d.u2===currentUser.id));
+  if(ndc.length!==dc.length)DB.set('deletedChats',ndc);
   const msgs=DB.get('chatMessages',[]);
-  msgs.push({id:uid(),from:currentUser.id,to:currentChatUserId,content,date:Date.now(),read:false});
+  msgs.push({id:uid(),from:currentUser.id,to:currentChatUserId,content,date:Date.now(),read:false,readAt:null});
   DB.set('chatMessages',msgs);
   input.value='';
   renderChatMessages();
   /* 滚动到底部 */
   setTimeout(()=>{const el=$('chatMessages');el.scrollTop=el.scrollHeight;},50);
 }
+/* 撤回消息（仅自己的消息） */
+function revokeChatMessage(msgId){
+  if(!currentUser)return;
+  const msgs=DB.get('chatMessages',[]);
+  const m=msgs.find(x=>x.id===msgId);
+  if(!m||m.from!==currentUser.id)return;
+  m.revoked=true;
+  DB.set('chatMessages',msgs);
+  renderChatMessages();
+  toast('已撤回一条消息');
+}
+/* 删除与当前对象的整个会话 */
+function deleteChatConversation(){
+  if(!currentChatUserId)return;
+  if(!confirm('确定删除与对方的全部聊天记录吗？（对方也将看不到历史消息）'))return;
+  let dc=DB.get('deletedChats',[]);
+  dc.push({id:uid(),u1:currentUser.id,u2:currentChatUserId,date:Date.now()});
+  if(dc.length>100)dc.length=100;
+  DB.set('deletedChats',dc);
+  const msgs=DB.get('chatMessages',[]);
+  DB.set('chatMessages',msgs.filter(m=>!(m.from===currentUser.id&&m.to===currentChatUserId)&&!(m.from===currentChatUserId&&m.to===currentUser.id)));
+  renderChatMessages();
+  toast('会话已删除');
+}
 let currentChatUserId=null;
 function openChat(userId){
   if(!currentUser){toast('请先登录','err');return;}
   if(userId===currentUser.id){toast('不能和自己聊天','err');return;}
+  if(isBlockedBy(currentUser.id,userId)){toast('无法打开会话：你或对方已拉黑对方','err');return;}
   currentChatUserId=userId;
   const users=DB.get('users',[]);
   const u=users.find(x=>x.id===userId);
@@ -3630,47 +4639,62 @@ function renderChatMessages(){
     const avatarHtml=sender?(sender.avatar?'<img src="'+sender.avatar+'">':(sender.nickname[0]||'👤')):'?';
     html+='<div class="msg-row '+(isMine?'mine':'')+'">'+
       '<div class="msg-avatar">'+avatarHtml+'</div>'+
-      '<div class="msg-bubble">'+esc(m.content)+'</div>'+
+      '<div class="msg-body">'+
+        '<div class="msg-bubble'+(m.revoked?' msg-revoked':'')+'">'+(m.revoked?'（消息已撤回）':esc(m.content))+'</div>'+
+        '<div class="msg-status">'+
+          (isMine&&!m.revoked?(m.read?'<span class="msg-read">已读</span>':'<span class="msg-unread">未读</span>'):'')+
+        '</div>'+
+      '</div>'+
     '</div>';
   });
   el.innerHTML=html;
 }
 function markChatAsRead(userId){
   let msgs=DB.get('chatMessages',[]);
+  let changed=false;
   msgs.forEach(m=>{
-    if(m.from===userId&&m.to===currentUser.id&&!m.read)m.read=true;
+    if(m.from===userId&&m.to===currentUser.id&&!m.read){m.read=true;m.readAt=Date.now();changed=true;}
   });
-  DB.set('chatMessages',msgs);
-}
-function getUnreadMsgCount(){
-  if(!currentUser)return 0;
-  return DB.get('chatMessages',[]).filter(m=>m.to===currentUser.id&&!m.read).length;
-}
-function updateMsgBadge(){
-  const count=getUnreadMsgCount();
-  const badge=$('mobileMsgBadge');
-  if(badge){
-    if(count>0){badge.style.display='flex';badge.textContent=count>99?'99+':count;}
-    else badge.style.display='none';
-  }
-}
-function openChatList(){
-  if(!currentUser){toast('请先登录','err');return;}
-  /* 打开好友面板并切换到好友列表（从那里进入聊天） */
-  openFriendsPanel();
-  currentFriendTab='friends';
-  document.querySelectorAll('#friendsPanel .fp-tabs a').forEach((a,i)=>a.classList.toggle('active',i===0));
-  $('fpSearch').style.display='none';
-  renderFriendTab();
+  if(changed)DB.set('chatMessages',msgs);
 }
 function showChatMenu(){
   if(!currentChatUserId)return;
   const users=DB.get('users',[]);
   const u=users.find(x=>x.id===currentChatUserId);
   if(!u)return;
-  if(confirm('要举报 '+u.nickname+' 吗？')){
-    openReport('user',currentChatUserId,u.nickname);
-  }
+  const old=document.getElementById('chatMenuPop');
+  if(old)old.remove();
+  const pop=document.createElement('div');
+  pop.id='chatMenuPop';
+  pop.style.cssText='position:fixed;top:56px;right:12px;z-index:10000;background:#fff;border:1px solid var(--border);border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,.18);min-width:190px;overflow:hidden;';
+  const items=[
+    {icon:'👤',text:'查看 '+u.nickname+' 的资料'},
+    {icon:'🗑',text:'删除会话'},
+    {icon:'🚨',text:'举报 '+u.nickname},
+    {icon:'↩',text:'关闭'}
+  ];
+  pop.innerHTML=items.map((it,i)=>
+    '<div style="padding:12px 16px;font-size:13.5px;cursor:pointer;border-bottom:'+(i<items.length-1?'1px solid var(--border)':'none')+';display:flex;align-items:center;gap:8px;" onmouseover="this.style.background=\'#f5f7f5\'" onmouseout="this.style.background=\'\'" onclick="handleChatMenu('+i+')">'+
+    '<span>'+it.icon+'</span>'+esc(it.text)+'</div>'
+  ).join('');
+  document.body.appendChild(pop);
+  const closer=(e)=>{if(pop&&!pop.contains(e.target)){pop.remove();document.removeEventListener('click',closer);}};
+  setTimeout(()=>document.addEventListener('click',closer),10);
+}
+function handleChatMenu(idx){
+  const pop=document.getElementById('chatMenuPop');
+  if(pop)pop.remove();
+  if(!currentChatUserId)return;
+  const u=DB.get('users',[]).find(x=>x.id===currentChatUserId);
+  if(!u)return;
+  if(idx===0){viewProfileFromChat(u.id);}
+  else if(idx===1){deleteChatConversation();}
+  else if(idx===2){openReport('user',currentChatUserId,u.nickname);}
+}
+function viewProfileFromChat(userId){
+  $('chatPanel').classList.remove('show');
+  currentChatUserId=null;
+  viewProfile(userId);
 }
 
 /* ===== 站内信系统 ===== */
@@ -3699,7 +4723,7 @@ function renderInbox(){
     list.innerHTML='<div class="fp-empty"><div class="icon">📭</div><p>暂无站内信</p></div>';
     return;
   }
-  const icons={system:'🔔',friend_request:'👥',friend_accepted:'✅',report:'🚨',ban:'🚫',warning:'⚠️'};
+  const icons={system:'🔔',friend_request:'👥',friend_accepted:'✅',report:'🚨',ban:'🚫',warning:'⚠️',mention:'📢',favorite:'⭐',follow:'👀',like:'👍'};
   list.innerHTML=msgs.map(m=>
     '<div class="inbox-item '+(m.read?'':'unread')+'" onclick="readInboxMessage(\''+m.id+'\')">'+
       '<div class="ib-icon">'+(icons[m.type]||'📩')+'</div>'+
@@ -3826,6 +4850,7 @@ function banUser(userId,level,reason){
     'ban',{banId:newBan.id}
   );
   toast('已对 '+u.nickname+' 执行：'+banInfo.name,'ok');
+  logAdminAction(currentUser.nickname,'封号',u.nickname+' · '+banInfo.name+(reason?' · 原因：'+reason:''));
   return true;
 }
 function unbanUser(userId){
@@ -3838,6 +4863,7 @@ function unbanUser(userId){
     sendInboxMessage(userId,'✅ 账号已解封','你的账号已被解封，请遵守社区规范，文明发言。','system',{});
   }
   toast('已解除封禁','ok');
+  logAdminAction(currentUser.nickname,'解除封禁',(u?u.nickname:'用户'));
 }
 function checkBanStatus(){
   if(!currentUser)return;
@@ -3860,11 +4886,23 @@ function checkBanStatus(){
 }
 
 /* ===== 初始化 ===== */
+/* PWA Service Worker 注册 */
+if('serviceWorker' in navigator){
+  window.addEventListener('load',()=>{
+    navigator.serviceWorker.register('./sw.js').catch(()=>{});
+  });
+}
 async function init(){
   /* 先从云端加载最新数据 */
   await cloudLoad();
   /* 学籍自动检查：满3年自动转毕业生 */
   processAutoGraduation();
+  /* 恢复暗黑模式主题 */
+  initTheme();
+  /* 渲染公告组件 */
+  renderAnnouncementWidget();
+  /* 清理到期禁言 */
+  cleanupMutes();
   /* 云端无数据时用默认数据填充（避免空站） */
   initDefaultData();
   /* 重新读取当前用户（云端数据可能更新了） */

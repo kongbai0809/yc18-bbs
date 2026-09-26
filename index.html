@@ -1430,6 +1430,73 @@ const DB={
 const SB_URL='https://qyczdojgzwwndqgalemq.supabase.co';
 const SB_KEY='sb_publishable_S2gBborHHh0XT-8Z6KPDYg_5J5g3P6i';
 const SB_HEADERS={'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json'};
+/* ===== B级：敏感词库（先审后发） ===== */
+const SENSITIVE_WORDS=['傻逼','傻B','傻b','操你','草你','艹你','妈的','他妈','麻痹','nmsl','你妈','滚蛋','贱人','废物','死全家','狗东西','尼玛','撕逼','装逼','约炮','卖淫','嫖娼','赌博','枪支','炸药','毒品','海洛因','冰毒','fuck','shit','bitch'];
+/* 心理危机词（命中仅弹关怀卡片，不阻断发布） */
+const CRISIS_WORDS=['自杀','想死','不想活','活不下去','轻生','割腕','跳楼','吃药死','自残','抑郁','绝望','没意义','结束生命','活够了','厌世','不想上学','压力大到'];
+function findHitWord(text,list){
+  if(!text)return null;
+  const lower=String(text).toLowerCase();
+  for(const w of list){if(lower.indexOf(w.toLowerCase())>=0)return w;}
+  return null;
+}
+function checkContent(text,opts){
+  /* 返回 {blocked, sensitive, crisis} */
+  const sensitive=findHitWord(text,SENSITIVE_WORDS);
+  if(sensitive){toast('内容包含敏感词「'+sensitive+'」，请修改后再发布','err');return {blocked:true};}
+  const crisis=findHitWord(text,CRISIS_WORDS);
+  if(crisis){setTimeout(showCrisisCard,300);}
+  return {blocked:false,crisis:!!crisis};
+}
+/* ===== 心理关怀温馨提示卡片 ===== */
+function showCrisisCard(){
+  let m=$('crisisModal');
+  if(!m){
+    m=document.createElement('div');m.id='crisisModal';m.className='modal-overlay';
+    m.innerHTML='<div class="modal-content" style="max-width:420px;text-align:left;">'+
+      '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;"><h3 style="margin:0;">🌷 温馨提示</h3><span onclick="$(\'crisisModal\').classList.remove(\'show\')" style="cursor:pointer;font-size:20px;color:var(--text-lighter);">×</span></div>'+
+      '<p style="color:var(--text-light);line-height:1.8;margin:8px 0 16px;">世界虽不完美，但我们仍可疗愈自己。如果你正感到难过，请一定记得：你不是一个人。</p>'+
+      '<a href="tel:01082951332" style="display:flex;align-items:center;gap:12px;background:var(--bg-lighter);border:1px solid var(--border);border-radius:12px;padding:14px;text-decoration:none;color:var(--text);">'+
+        '<div style="width:44px;height:44px;border-radius:50%;background:#fff3e0;display:flex;align-items:center;justify-content:center;font-size:22px;">📞</div>'+
+        '<div style="flex:1;"><div style="font-weight:700;font-size:15px;">全国24小时心理援助热线</div><div style="color:var(--text-lighter);font-size:13px;margin-top:2px;">010-82951332（免费）</div></div>'+
+        '<div style="color:var(--text-lighter);">›</div></a>'+
+      '<p style="font-size:12px;color:var(--text-lighter);margin-top:14px;line-height:1.7;">也可以拨打 12355 青少年服务热线，或联系班主任/心理老师。生命至上，总会有办法的。</p>'+
+      '</div>';
+    document.body.appendChild(m);
+    m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('show');});
+  }
+  m.classList.add('show');
+}
+/* ===== B级：埋点事件 ===== */
+function trackEvent(type,meta){
+  try{
+    const ev=DB.get('events',[]);
+    ev.push({id:uid(),type,userId:currentUser?currentUser.id:null,ts:Date.now(),meta:meta||{}});
+    if(ev.length>3000)ev.splice(0,ev.length-3000);
+    DB.set('events',ev);
+  }catch(e){}
+}
+/* ===== B级：Supabase Storage 上传（失败自动回退 base64） ===== */
+const SB_BUCKET='bbs-media';
+async function uploadToStorage(blob,path){
+  try{
+    const res=await fetch(SB_URL+'/storage/v1/object/'+SB_BUCKET+'/'+path,{
+      method:'POST',
+      headers:{apikey:SB_KEY,Authorization:'Bearer '+SB_KEY,'Content-Type':blob.type||'application/octet-stream'},
+      body:blob
+    });
+    if(!res.ok)throw new Error('HTTP '+res.status);
+    return SB_URL+'/storage/v1/object/public/'+SB_BUCKET+'/'+path;
+  }catch(e){console.warn('Storage上传失败，回退base64:',e.message);return null;}
+}
+function getDeviceName(){
+  const ua=navigator.userAgent;
+  let dev='未知设备';
+  if(/Mobile|Android|iPhone|iPad/i.test(ua)){dev=/iPad/i.test(ua)?'iPad':'手机';}
+  else dev='电脑';
+  if(/Chrome|Edg/i.test(ua))dev+='·'+(/Edg/i.test(ua)?'Edge':/Chrome/i.test(ua)?'Chrome':'浏览器');
+  return dev;
+}
 let _syncTimer=null;
 let _syncing=false;
 let _cloudSyncEnabled=false; /* 初始化阶段禁止同步，防止默认数据覆盖云端 */
@@ -1469,6 +1536,8 @@ async function cloudSave(){
       favorites:DB.get('favorites',[]),
       announcements:DB.get('announcements',[]),
       deletedChats:DB.get('deletedChats',[]),
+      events:DB.get('events',[]),
+      sessions:DB.get('sessions',[]),
       updated_at:new Date().toISOString()
     };
     const res=await fetch(SB_URL+'/rest/v1/app_state',{
@@ -1514,6 +1583,8 @@ async function cloudLoad(){
       if(data.favorites)DB.set('favorites',data.favorites);
       if(data.announcements)DB.set('announcements',data.announcements);
       if(data.deletedChats)DB.set('deletedChats',data.deletedChats);
+      if(data.events)DB.set('events',data.events);
+      if(data.sessions)DB.set('sessions',data.sessions);
       console.log('✅ 云端数据加载成功，用户:'+(data.users||[]).length+' 帖子:'+(data.posts||[]).length+' 私聊:'+(data.chatMessages||[]).length);
     }
   }catch(e){
@@ -1725,6 +1796,23 @@ function renderBlockList(){
       '<button class="btn btn-ghost btn-sm" onclick="unblockUser(\''+id+'\')">解除</button>'+
     '</div>';
   }).join('')+'</div>';
+}
+function renderMySessions(){
+  if(!currentUser)return '';
+  const mySid=localStorage.getItem('yc18_mySession');
+  const sessions=DB.get('sessions',[]).filter(s=>s.userId===currentUser.id).sort((a,b)=>b.lastActive-a.lastActive);
+  if(!sessions.length)return '<div class="empty-state" style="padding:24px;"><p>暂无设备记录</p></div>';
+  let html='<div style="margin-top:10px;">';
+  sessions.forEach(s=>{
+    const me=s.id===mySid;
+    html+='<div style="display:flex;align-items:center;gap:10px;background:var(--bg-white);border:1px solid var(--border);border-radius:10px;padding:10px 12px;margin-bottom:8px;">'+
+      '<div style="font-size:22px;">'+(me?'🖥️':'📱')+'</div>'+
+      '<div style="flex:1;min-width:0;"><b>'+esc(s.device||'未知设备')+'</b>'+(me?' <span style="font-size:11px;color:var(--primary);">（本设备）</span>':'')+
+        '<br><span style="font-size:11px;color:var(--text-lighter);">登录于 '+new Date(s.loginAt).toLocaleString('zh-CN')+' · 活跃 '+timeAgo(s.lastActive)+'</span></div>'+
+    '</div>';
+  });
+  html+='<button class="btn btn-danger btn-sm" style="width:100%;margin-top:6px;" onclick="logoutAllOtherDevices()">🚪 退出其他所有设备</button></div>';
+  return html;
 }
 
 /* ---------- 细粒度禁言 ---------- */
@@ -2570,6 +2658,7 @@ async function doRegister(){
   };
   users.push(newUser);
   DB.set('users',users);
+  trackEvent('register',{username:username});
   toast(isFirstUser?'注册成功！你是第一位用户，已自动成为站长👑':'注册成功！请登录','ok');
   setTimeout(renderLoginForm,800);
 }
@@ -2581,18 +2670,47 @@ async function doLogin(){
   if(!username||!password){toast('请输入用户名和密码','err');return;}
   const users=DB.get('users',[]);
   const u=users.find(x=>x.username===username);
+  /* 用户不存在也返回通用错误（不暴露用户名是否存在） */
   if(!u){toast('用户名或密码错误','err');return;}
+  /* 登录锁定检查 */
+  if(u.loginLockedUntil&&Date.now()<u.loginLockedUntil){
+    const left=Math.ceil((u.loginLockedUntil-Date.now())/60000);
+    toast('失败次数过多，账号已锁定，请 '+left+' 分钟后再试','err');return;
+  }
   const ok=await verifyPassword(password,u.password);
-  if(!ok){toast('用户名或密码错误','err');return;}
+  if(!ok){
+    u.loginFails=(u.loginFails||0)+1;
+    if(u.loginFails>=5){
+      u.loginLockedUntil=Date.now()+15*60*1000;
+      u.loginFails=0;
+      DB.set('users',users);
+      trackEvent('login_fail',{username:username,reason:'wrong_password'});
+      toast('连续失败5次，账号已临时锁定15分钟','err');
+    }else{
+      DB.set('users',users);
+      trackEvent('login_fail',{username:username,reason:'wrong_password'});
+      toast('用户名或密码错误（今日还可尝试 '+(5-u.loginFails)+' 次）','err');
+    }
+    return;
+  }
+  u.loginFails=0;u.loginLockedUntil=null;
   /* 自动迁移明文密码为哈希 */
   if(!/^[a-f0-9]{64}$/.test(u.password)){
     u.password=await hashPassword(password);
-    DB.set('users',users);
   }
+  /* 创建会话 */
+  const sessions=DB.get('sessions',[]);
+  const mySid=localStorage.getItem('yc18_mySession')||uid();
+  localStorage.setItem('yc18_mySession',mySid);
+  sessions.push({id:mySid,userId:u.id,device:getDeviceName(),loginAt:Date.now(),lastActive:Date.now(),tv:u.tokenVersion||0});
+  if(sessions.length>200)sessions.splice(0,sessions.length-200);
+  DB.set('sessions',sessions);
+  DB.set('users',users);
   currentUser={id:u.id,username:u.username,nickname:u.nickname,role:u.role,
     status:u.status,className:u.className,gender:u.gender,
     signature:u.signature,location:u.location,avatar:u.avatar,cover:u.cover};
   DB.set('currentUser',currentUser);
+  trackEvent('login',{device:getDeviceName()});
   toast('欢迎回来，'+u.nickname+'！','ok');
   enterApp();
 }
@@ -2644,6 +2762,13 @@ async function doChangePassword(){
 }
 function doLogout(){
   if(!confirm('确定退出登录吗？'))return;
+  /* 移除本会话 */
+  const mySid=localStorage.getItem('yc18_mySession');
+  if(mySid){
+    const sessions=DB.get('sessions',[]);
+    DB.set('sessions',sessions.filter(s=>s.id!==mySid));
+    localStorage.removeItem('yc18_mySession');
+  }
   currentUser=null;
   DB.set('currentUser',null);
   $('mainHeader').style.display='none';
@@ -2653,6 +2778,41 @@ function doLogout(){
   $('authPage').style.display='flex';
   renderLoginForm();
   toast('已退出登录');
+}
+/* 退出所有其他设备：bump tokenVersion，其他设备下次轮询被踢 */
+function logoutAllOtherDevices(){
+  if(!currentUser)return;
+  if(!confirm('确定要退出登录在其他所有设备上的会话吗？'))return;
+  const users=DB.get('users',[]);
+  const u=users.find(x=>x.id===currentUser.id);
+  if(u){u.tokenVersion=(u.tokenVersion||0)+1;DB.set('users',users);}
+  const mySid=localStorage.getItem('yc18_mySession');
+  DB.set('sessions',DB.get('sessions',[]).filter(s=>s.userId!==currentUser.id||s.id===mySid));
+  toast('已退出其他设备（本设备保持登录）','ok');
+}
+/* 每 30 秒检查本会话是否被踢 */
+function startSessionPolling(){
+  setInterval(()=>{
+    if(!currentUser)return;
+    const mySid=localStorage.getItem('yc18_mySession');
+    if(!mySid)return;
+    const u=DB.get('users',[]).find(x=>x.id===currentUser.id);
+    if(!u)return;
+    const s=DB.get('sessions',[]).find(x=>x.id===mySid);
+    if(!s||(u.tokenVersion||0)!==(s.tv||0)){
+      /* 被踢：强制登出 */
+      localStorage.removeItem('yc18_mySession');
+      currentUser=null;DB.set('currentUser',null);
+      $('mainHeader').style.display='none';
+      $('mainContent').style.display='none';
+      $('profilePage').style.display='none';
+      $('authPage').style.display='flex';
+      renderLoginForm();
+      toast('你的账号已在其他设备退出，请重新登录','err');
+    }else{
+      s.lastActive=Date.now();
+    }
+  },30000);
 }
 
 /* ===== 进入应用 ===== */
@@ -3063,14 +3223,17 @@ function initPostMediaUpload(){
       const reader=new FileReader();
       reader.onload=function(ev){
         const img=new Image();
-        img.onload=function(){
+        img.onload=async function(){
           const canvas=document.createElement('canvas');
           const maxW=1280;
           let w=img.width,h=img.height;
           if(w>maxW){h=Math.round(h*maxW/w);w=maxW;}
           canvas.width=w;canvas.height=h;
           canvas.getContext('2d').drawImage(img,0,0,w,h);
-          postImages.push(canvas.toDataURL('image/jpeg',0.85));
+          const blob=await new Promise(r=>canvas.toBlob(r,'image/jpeg',0.85));
+          const path='img/'+currentUser.id+'_'+Date.now()+'_'+Math.floor(Math.random()*1000)+'.jpg';
+          const url=await uploadToStorage(blob,path);
+          postImages.push(url||canvas.toDataURL('image/jpeg',0.85));
           processed++;
           if(processed>=toProcess.length){
             renderPostImagePreview();updateAddImageBtn();
@@ -3173,14 +3336,17 @@ function initDiaryMediaUpload(){
       const reader=new FileReader();
       reader.onload=function(ev){
         const img=new Image();
-        img.onload=function(){
+        img.onload=async function(){
           const canvas=document.createElement('canvas');
           const maxW=1280;
           let w=img.width,h=img.height;
           if(w>maxW){h=Math.round(h*maxW/w);w=maxW;}
           canvas.width=w;canvas.height=h;
           canvas.getContext('2d').drawImage(img,0,0,w,h);
-          diaryImages.push(canvas.toDataURL('image/jpeg',0.85));
+          const blob=await new Promise(r=>canvas.toBlob(r,'image/jpeg',0.85));
+          const path='img/'+currentUser.id+'_'+Date.now()+'_'+Math.floor(Math.random()*1000)+'.jpg';
+          const url=await uploadToStorage(blob,path);
+          diaryImages.push(url||canvas.toDataURL('image/jpeg',0.85));
           processed++;
           if(processed>=toProcess.length){renderDiaryImagePreview();updateAddDiaryImageBtn();}
         };
@@ -3528,6 +3694,8 @@ function submitPost(){
   if(zoneInfo&&zoneInfo.graduateReadonly&&currentUser.role==='graduate'){toast('该专区对毕业生只读，无法发帖','err');return;}
   if(!title||!content){toast('请填写标题和内容','err');return;}
   if(title.length<5){toast('标题至少5个字','err');return;}
+  const chk=checkContent(title+' '+content);
+  if(chk.blocked)return;
   const posts=DB.get('posts',[]);
   /* 编辑模式：更新现有帖子 */
   if(editingPostId){
@@ -3568,6 +3736,7 @@ function submitPost(){
   clearPostDraft();
   closeModal('postModal');
   toast('发布成功！','ok');
+  trackEvent('post_create',{zone:zone});
   /* 发帖积分+@提及+勋章 */
   addPoints(currentUser.id,5,'发帖');
   parseMentions(content,zone);
@@ -3640,6 +3809,8 @@ function submitComment(postId){
   if(!canComment(currentUser.id)){toast('你已被禁言，暂时无法评论','err');return;}
   const content=$('commentInput').value.trim();
   if(!content){toast('评论内容不能为空','err');return;}
+  const chk=checkContent(content);
+  if(chk.blocked)return;
   const comments=DB.get('comments',[]);
   comments.push({
     id:uid(),postId,
@@ -3655,6 +3826,7 @@ function submitComment(postId){
   addPoints(currentUser.id,2,'评论');
   parseMentions(content,p?p.zone:'');
   checkMedals(currentUser.id);
+  trackEvent('comment_create',{postId:postId});
   toast('评论成功','ok');
   renderHotPosts();
   renderPostDetail();
@@ -3756,18 +3928,23 @@ function handleImageUpload(e,maxSize,quality,callback){
   const file=e.target.files[0];
   if(!file)return;
   if(file.size>5*1024*1024){toast('图片不能超过5MB','err');e.target.value='';return;}
+  toast('上传中…','info');
   const reader=new FileReader();
   reader.onload=function(ev){
     const img=new Image();
-    img.onload=function(){
+    img.onload=async function(){
       const canvas=document.createElement('canvas');
       let w=img.width,h=img.height;
       if(w>h){if(w>maxSize){h=Math.round(h*maxSize/w);w=maxSize;}}
       else{if(h>maxSize){w=Math.round(w*maxSize/h);h=maxSize;}}
       canvas.width=w;canvas.height=h;
       canvas.getContext('2d').drawImage(img,0,0,w,h);
-      const dataUrl=canvas.toDataURL('image/jpeg',quality||0.85);
-      callback(dataUrl);
+      const blob=await new Promise(r=>canvas.toBlob(r,'image/jpeg',quality||0.85));
+      /* 优先 Storage，失败回退 base64 */
+      const path='img/'+currentUser.id+'_'+Date.now()+'.jpg';
+      const url=await uploadToStorage(blob,path);
+      if(url){callback(url);}
+      else{callback(canvas.toDataURL('image/jpeg',quality||0.85));}
     };
     img.onerror=function(){toast('图片加载失败','err');};
     img.src=ev.target.result;
@@ -3854,6 +4031,10 @@ function renderProfilePage(u){
         (isOwner?'<div class="profile-blockbox">'+
           '<div class="bb-head" onclick="toggleBlockBox(this)">🚫 我的黑名单（'+(u.blocked?u.blocked.length:0)+'）<span style="float:right;">▾</span></div>'+
           '<div class="bb-body" style="display:none;">'+renderBlockList()+'</div>'+
+        '</div>':'')+
+        (isOwner?'<div class="profile-blockbox">'+
+          '<div class="bb-head" onclick="toggleBlockBox(this)">💻 登录设备管理<span style="float:right;">▾</span></div>'+
+          '<div class="bb-body" style="display:none;">'+renderMySessions()+'</div>'+
         '</div>':'')+
         '<div class="profile-tabs">'+
           '<a class="active">📝 TA的帖子</a>'+
@@ -3965,6 +4146,7 @@ function renderAdminContent(tab){
     '<button class="btn btn-sm '+(tab==='logs'?'btn-primary':'btn-ghost')+'" onclick="renderAdminContent(\'logs\')">📜 操作日志</button>'+
     '<button class="btn btn-sm '+(tab==='rank'?'btn-primary':'btn-ghost')+'" onclick="renderAdminContent(\'rank\')">🏆 排行榜</button>'+
     '<button class="btn btn-sm '+(tab==='announce'?'btn-primary':'btn-ghost')+'" onclick="renderAdminContent(\'announce\')">📢 公告</button>'+
+    '<button class="btn btn-sm '+(tab==='dashboard'?'btn-primary':'btn-ghost')+'" onclick="renderAdminContent(\'dashboard\')">📊 数据看板</button>'+
     '</div>';
   if(tab==='users'){
     html+='<table class="adminTable" style="width:100%;font-size:12.5px;border-collapse:collapse;">'+
@@ -4229,6 +4411,65 @@ function renderAdminContent(tab){
         '<button class="btn btn-danger btn-sm" onclick="if(confirm(\'删除公告？\')){adminDeleteAnnouncement(\''+a.id+'\');renderAdminContent(\'announce\')}">删除</button>'+
       '</div>';
     }).join('')+'</div>';
+  }else if(tab==='dashboard'){
+    /* 近7天数据聚合 */
+    const events=DB.get('events',[]);
+    const users2=DB.get('users',[]);
+    const posts2=DB.get('posts',[]).filter(p=>!p.deleted);
+    const reports2=DB.get('reports',[]);
+    const now=Date.now();const DAY=86400000;
+    const days=[];
+    for(let i=6;i>=0;i--){
+      const d=new Date(now-i*DAY);d.setHours(0,0,0,0);
+      days.push({label:(d.getMonth()+1)+'/'+d.getDate(),start:d.getTime(),end:d.getTime()+DAY,posts:0,users:new Set(),logins:0});
+    }
+    events.forEach(ev=>{
+      const day=days.find(d=>ev.ts>=d.start&&ev.ts<d.end);
+      if(!day)return;
+      if(ev.type==='post_create')day.posts++;
+      if(ev.type==='login'&&ev.userId)day.users.add(ev.userId);
+      if(ev.type==='login')day.logins++;
+    });
+    const maxPosts=Math.max(1,...days.map(d=>d.posts));
+    /* 卡片 */
+    html+='<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:18px;">'+
+      '<div style="background:var(--bg-lighter);border:1px solid var(--border);border-radius:10px;padding:14px;text-align:center;"><div style="font-size:26px;font-weight:700;color:var(--primary);">'+users2.length+'</div><div style="font-size:12px;color:var(--text-light);margin-top:4px;">注册用户</div></div>'+
+      '<div style="background:var(--bg-lighter);border:1px solid var(--border);border-radius:10px;padding:14px;text-align:center;"><div style="font-size:26px;font-weight:700;color:var(--primary);">'+posts2.length+'</div><div style="font-size:12px;color:var(--text-light);margin-top:4px;">帖子总数</div></div>'+
+      '<div style="background:var(--bg-lighter);border:1px solid var(--border);border-radius:10px;padding:14px;text-align:center;"><div style="font-size:26px;font-weight:700;color:#e74c3c;">'+reports2.filter(r=>r.status==='pending').length+'</div><div style="font-size:12px;color:var(--text-light);margin-top:4px;">待处理举报</div></div>'+
+      '<div style="background:var(--bg-lighter);border:1px solid var(--border);border-radius:10px;padding:14px;text-align:center;"><div style="font-size:26px;font-weight:700;color:var(--primary);">'+DB.get('sessions',[]).length+'</div><div style="font-size:12px;color:var(--text-light);margin-top:4px;">活跃会话</div></div>'+
+      '</div>';
+    /* 近7天发帖柱状图 */
+    html+='<h4 style="margin:16px 0 10px;">📈 近7天发帖趋势</h4>'+
+      '<div style="display:flex;align-items:flex-end;gap:10px;height:140px;padding:10px;background:var(--bg-lighter);border:1px solid var(--border);border-radius:10px;">';
+    days.forEach(d=>{
+      const h=Math.round(d.posts/maxPosts*110);
+      html+='<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;">'+
+        '<div style="font-size:11px;font-weight:600;margin-bottom:2px;">'+(d.posts||'')+'</div>'+
+        '<div style="width:70%;background:var(--primary);border-radius:4px 4px 0 0;min-height:'+(h||2)+'px;opacity:.85;"></div>'+
+        '<div style="font-size:10px;color:var(--text-lighter);margin-top:4px;">'+d.label+'</div></div>';
+    });
+    html+='</div>';
+    /* 近7天活跃用户 */
+    html+='<h4 style="margin:16px 0 10px;">👥 近7天活跃用户（去重登录）</h4>'+
+      '<div style="display:flex;align-items:flex-end;gap:10px;height:100px;padding:10px;background:var(--bg-lighter);border:1px solid var(--border);border-radius:10px;">';
+    const maxUsers=Math.max(1,...days.map(d=>d.users.size));
+    days.forEach(d=>{
+      const h=Math.round(d.users.size/maxUsers*70);
+      html+='<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;">'+
+        '<div style="font-size:11px;font-weight:600;margin-bottom:2px;">'+d.users.size+'</div>'+
+        '<div style="width:70%;background:#7fb069;border-radius:4px 4px 0 0;min-height:'+(h||2)+'px;"></div>'+
+        '<div style="font-size:10px;color:var(--text-lighter);margin-top:4px;">'+d.label+'</div></div>';
+    });
+    html+='</div>';
+    /* 分区分布 */
+    html+='<h4 style="margin:16px 0 10px;">🗂 分区发帖分布</h4><div style="background:var(--bg-lighter);border:1px solid var(--border);border-radius:10px;padding:12px;">';
+    ZONES.forEach(z=>{
+      const n=posts2.filter(p=>p.zone===z.id).length;
+      const w=posts2.length?Math.round(n/posts2.length*100):0;
+      html+='<div style="margin-bottom:8px;"><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px;"><span>'+z.name+'</span><span>'+n+' 帖</span></div>'+
+        '<div style="height:8px;background:var(--border-light);border-radius:4px;overflow:hidden;"><div style="height:100%;width:'+w+'%;background:var(--primary);border-radius:4px;"></div></div></div>';
+    });
+    html+='</div>';
   }
   $('adminContent').innerHTML=html;
 }
@@ -4554,6 +4795,7 @@ function sendChatMessage(){
     toast('仅好友可私聊，请先添加 '+esc(u?u.nickname:'对方')+' 为好友','err');
     return;
   }
+  if(findHitWord(content,SENSITIVE_WORDS)){toast('消息包含敏感词，请修改后再发送','err');return;}
   /* 新消息解除会话删除状态 */
   let dc=DB.get('deletedChats',[]);
   const ndc=dc.filter(d=>!(d.u1===currentUser.id&&d.u2===currentChatUserId)&&!(d.u1===currentChatUserId&&d.u2===currentUser.id));
@@ -4942,6 +5184,8 @@ async function init(){
   if(_schoolChanged){_schoolChanged=false;cloudSave();}
   /* 启动私聊消息轮询（3秒一次，自动拉取新消息） */
   startChatPolling();
+  /* 启动会话校验轮询（30秒一次，支持被踢下线/退出其他设备） */
+  startSessionPolling();
   console.log('🏫 银川十八中贴吧已加载（云端同步已开启）');
 }
 init();

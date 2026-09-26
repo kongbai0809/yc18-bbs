@@ -1047,6 +1047,7 @@ main{max-width:1200px;margin:0 auto;padding:20px;}
     </div>
     <div class="modal-actions">
       <button class="btn btn-ghost" onclick="closeModal('editProfileModal')">取消</button>
+      <button class="btn btn-ghost" onclick="closeModal('editProfileModal');openChangePassword()" style="color:var(--primary);">🔑 修改密码</button>
       <button class="btn btn-primary" onclick="saveProfileEdit()">保存</button>
     </div>
   </div>
@@ -1128,6 +1129,35 @@ main{max-width:1200px;margin:0 auto;padding:20px;}
     <div class="modal-actions">
       <button class="btn btn-ghost" onclick="closeModal('reportModal')">取消</button>
       <button class="btn btn-danger" onclick="submitReport()">提交举报</button>
+    </div>
+  </div>
+</div>
+
+<!-- 忘记密码弹窗 -->
+<div class="modal-overlay" id="forgotModal">
+  <div class="modal-box" style="max-width:420px;">
+    <div class="modal-header"><h3>🔑 找回密码</h3><span class="modal-close" onclick="$('forgotModal').classList.remove('show')">×</span></div>
+    <div class="modal-body">
+      <p style="font-size:12px;color:var(--text-lighter);margin-bottom:16px;">通过真实姓名和学号验证身份后重置密码</p>
+      <div class="form-group"><label>用户名 <span class="req">*</span></label><input id="fpUsername" placeholder="请输入用户名"></div>
+      <div class="form-group"><label>真实姓名 <span class="req">*</span></label><input id="fpRealName" placeholder="注册时填写的真实姓名"></div>
+      <div class="form-group"><label>学号 <span class="req">*</span></label><input id="fpStudentId" placeholder="完整学号，如 20240001"></div>
+      <div class="form-group"><label>新密码 <span class="req">*</span></label><input type="password" id="fpNewPwd" placeholder="至少6位新密码"></div>
+      <div class="form-group"><label>确认新密码 <span class="req">*</span></label><input type="password" id="fpNewPwd2" placeholder="再次输入新密码"></div>
+      <button class="btn btn-primary" style="width:100%;padding:12px;margin-top:8px;" onclick="doResetPassword()">重置密码</button>
+    </div>
+  </div>
+</div>
+
+<!-- 修改密码弹窗 -->
+<div class="modal-overlay" id="changePwdModal">
+  <div class="modal-box" style="max-width:420px;">
+    <div class="modal-header"><h3>🔐 修改密码</h3><span class="modal-close" onclick="$('changePwdModal').classList.remove('show')">×</span></div>
+    <div class="modal-body">
+      <div class="form-group"><label>原密码 <span class="req">*</span></label><input type="password" id="cpOldPwd" placeholder="请输入原密码"></div>
+      <div class="form-group"><label>新密码 <span class="req">*</span></label><input type="password" id="cpNewPwd" placeholder="至少6位新密码"></div>
+      <div class="form-group"><label>确认新密码 <span class="req">*</span></label><input type="password" id="cpNewPwd2" placeholder="再次输入新密码"></div>
+      <button class="btn btn-primary" style="width:100%;padding:12px;margin-top:8px;" onclick="doChangePassword()">确认修改</button>
     </div>
   </div>
 </div>
@@ -1354,7 +1384,7 @@ function renderLoginForm(){
     '<div class="form-group"><label>密码 <span class="req">*</span></label>'+
     '<input type="password" id="loginPassword" placeholder="请输入密码" onkeydown="if(event.key===\'Enter\')doLogin()"></div>'+
     '<button class="btn btn-primary" style="width:100%;padding:12px;font-size:14px;margin-top:8px;" onclick="doLogin()">登 录</button>'+
-    '<div class="auth-switch">还没有账号？<a onclick="renderRegisterForm()">立即注册</a></div>';
+    '<div class="auth-switch">还没有账号？<a onclick="renderRegisterForm()">立即注册</a>　|　<a onclick="openForgotPassword()">忘记密码</a></div>';
 }
 function renderRegisterForm(){
   $('authRight').innerHTML=
@@ -1400,8 +1430,21 @@ function renderRegisterForm(){
     '<div class="auth-switch">已有账号？<a onclick="renderLoginForm()">去登录</a></div>';
 }
 
+/* ===== 密码 SHA-256 哈希 ===== */
+async function hashPassword(pwd){
+  const enc=new TextEncoder().encode(pwd);
+  const buf=await crypto.subtle.digest('SHA-256',enc);
+  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+async function verifyPassword(pwd,storedHash){
+  /* 兼容旧明文密码：如果存储的不是64位十六进制，视为明文，直接对比并自动迁移 */
+  if(!/^[a-f0-9]{64}$/.test(storedHash))return pwd===storedHash;
+  const h=await hashPassword(pwd);
+  return h===storedHash;
+}
+
 /* ===== 注册逻辑 ===== */
-function doRegister(){
+async function doRegister(){
   const nickname=$('regNickname').value.trim();
   const username=$('regUsername').value.trim();
   const password=$('regPassword').value;
@@ -1425,8 +1468,9 @@ function doRegister(){
 
   const isFirstUser = users.length === 0;
   const studentId=year+String(studentNum).padStart(4,'0');
+  const hashedPwd=await hashPassword(password);
   const newUser={
-    id:uid(),username,nickname,password,
+    id:uid(),username,nickname,password:hashedPwd,
     role:isFirstUser?'owner':(status==='毕业'?'graduate':'student'),
     status,className,
     realName:encrypt(realName),
@@ -1450,19 +1494,72 @@ function doRegister(){
 }
 
 /* ===== 登录逻辑 ===== */
-function doLogin(){
+async function doLogin(){
   const username=$('loginUsername').value.trim();
   const password=$('loginPassword').value;
   if(!username||!password){toast('请输入用户名和密码','err');return;}
   const users=DB.get('users',[]);
-  const u=users.find(x=>x.username===username&&x.password===password);
+  const u=users.find(x=>x.username===username);
   if(!u){toast('用户名或密码错误','err');return;}
+  const ok=await verifyPassword(password,u.password);
+  if(!ok){toast('用户名或密码错误','err');return;}
+  /* 自动迁移明文密码为哈希 */
+  if(!/^[a-f0-9]{64}$/.test(u.password)){
+    u.password=await hashPassword(password);
+    DB.set('users',users);
+  }
   currentUser={id:u.id,username:u.username,nickname:u.nickname,role:u.role,
     status:u.status,className:u.className,gender:u.gender,
     signature:u.signature,location:u.location,avatar:u.avatar,cover:u.cover};
   DB.set('currentUser',currentUser);
   toast('欢迎回来，'+u.nickname+'！','ok');
   enterApp();
+}
+/* ===== 忘记密码 ===== */
+function openForgotPassword(){$('forgotModal').classList.add('show');}
+async function doResetPassword(){
+  const username=$('fpUsername').value.trim();
+  const realName=$('fpRealName').value.trim();
+  const studentId=$('fpStudentId').value.trim();
+  const newPwd=$('fpNewPwd').value;
+  const newPwd2=$('fpNewPwd2').value;
+  if(!username||!realName||!studentId||!newPwd||!newPwd2){toast('请填写所有字段','err');return;}
+  if(newPwd.length<6){toast('新密码至少6位','err');return;}
+  if(newPwd!==newPwd2){toast('两次输入的新密码不一致','err');return;}
+  const users=DB.get('users',[]);
+  const u=users.find(x=>x.username===username);
+  if(!u){toast('用户不存在','err');return;}
+  /* 验证真实姓名和学号（解密后对比） */
+  if(decrypt(u.realName)!==realName){toast('真实姓名不匹配','err');return;}
+  if(decrypt(u.studentId)!==studentId){toast('学号不匹配','err');return;}
+  /* 重置密码 */
+  u.password=await hashPassword(newPwd);
+  DB.set('users',users);
+  $('forgotModal').classList.remove('show');
+  toast('密码重置成功，请用新密码登录','ok');
+}
+/* ===== 修改密码 ===== */
+function openChangePassword(){
+  if(!currentUser){toast('请先登录','err');return;}
+  $('cpOldPwd').value='';$('cpNewPwd').value='';$('cpNewPwd2').value='';
+  $('changePwdModal').classList.add('show');
+}
+async function doChangePassword(){
+  const oldPwd=$('cpOldPwd').value;
+  const newPwd=$('cpNewPwd').value;
+  const newPwd2=$('cpNewPwd2').value;
+  if(!oldPwd||!newPwd||!newPwd2){toast('请填写所有字段','err');return;}
+  if(newPwd.length<6){toast('新密码至少6位','err');return;}
+  if(newPwd!==newPwd2){toast('两次输入的新密码不一致','err');return;}
+  const users=DB.get('users',[]);
+  const u=users.find(x=>x.id===currentUser.id);
+  if(!u){toast('用户不存在','err');return;}
+  const ok=await verifyPassword(oldPwd,u.password);
+  if(!ok){toast('原密码错误','err');return;}
+  u.password=await hashPassword(newPwd);
+  DB.set('users',users);
+  $('changePwdModal').classList.remove('show');
+  toast('密码修改成功','ok');
 }
 function doLogout(){
   if(!confirm('确定退出登录吗？'))return;

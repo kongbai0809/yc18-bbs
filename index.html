@@ -1181,6 +1181,21 @@ main{max-width:1200px;margin:0 auto;padding:20px;}
   </div>
 </div>
 
+<!-- 学籍调整弹窗 -->
+<div class="modal-overlay" id="schoolModal">
+  <div class="modal-box" style="max-width:440px;">
+    <div class="modal-header"><h3>🎓 学籍调整</h3><span class="modal-close" onclick="$('schoolModal').classList.remove('show')">×</span></div>
+    <div class="modal-body">
+      <div id="saInfo"></div>
+      <div style="font-size:11.5px;color:var(--text-lighter);margin-bottom:10px;">💡 修改后需站长/管理员审核通过才生效；若入学满3年（毕业年9月1日起）系统会自动转为毕业生。</div>
+      <div class="modal-actions">
+        <button class="btn btn-ghost" onclick="$('schoolModal').classList.remove('show')">取消</button>
+        <button class="btn btn-primary" onclick="submitSchoolAdjust()">提交申请</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- 站内信面板 -->
 <div class="inbox-panel" id="inboxPanel">
   <div class="fp-header">
@@ -1334,6 +1349,120 @@ async function cloudLoad(){
   }
 }
 
+/* ===== 学籍系统：自动计算毕业时间 ===== */
+/* 入学时间默认 9月1日，3年后 9月1日 自动毕业 */
+function getEnrollYear(u){
+  if(u&&u.enrollYear)return parseInt(u.enrollYear);
+  /* 兼容旧用户：从学号前4位取入学年份 */
+  const id=u&&u.studentId?String(u.studentId):'';
+  if(/^\d{8}$/.test(id))return parseInt(id.slice(0,4));
+  return new Date().getFullYear();
+}
+function getGraduationDate(enrollYear){
+  return new Date(enrollYear+3,8,1); /* 9月1日 */
+}
+function getEnrollDate(enrollYear){
+  return new Date(enrollYear,8,1); /* 9月1日 */
+}
+function getSchoolStatus(u){
+  const yr=getEnrollYear(u);
+  const now=Date.now();
+  const inSchool=now<getGraduationDate(yr).getTime();
+  return {year:yr,graduated:!inSchool,enrollDate:getEnrollDate(yr),gradDate:getGraduationDate(yr)};
+}
+/* 扫描全部用户：入学满3年（过了毕业年9月1日）自动转为毕业生 */
+let _schoolChanged=false;
+function processAutoGraduation(){
+  const users=DB.get('users',[]);
+  let changed=false;
+  users.forEach(u=>{
+    if(u.role==='student'){
+      const st=getSchoolStatus(u);
+      if(st.graduated){
+        u.role='graduate';
+        u.status='毕业';
+        changed=true;
+      }
+    }
+  });
+  if(changed){
+    DB.set('users',users);
+    _schoolChanged=true;
+    /* 同步当前登录用户 */
+    if(currentUser){
+      const cu=users.find(x=>x.id===currentUser.id);
+      if(cu){currentUser.role=cu.role;currentUser.status=cu.status;DB.set('currentUser',currentUser);}
+    }
+    console.log('🎓 学籍自动更新：有在读学生已到期转为毕业生');
+  }
+}
+/* 提交学籍调整申请（修改入学年份/恢复在读），需站长或管理员审核 */
+function openSchoolAdjust(){
+  if(!currentUser){toast('请先登录','err');return;}
+  const users=DB.get('users',[]);
+  const u=users.find(x=>x.id===currentUser.id);
+  if(!u){toast('用户不存在','err');return;}
+  const st=getSchoolStatus(u);
+  const pending=u.pendingAdjust;
+  $('saInfo').innerHTML=
+    '<div style="background:var(--bg-primary);border-radius:8px;padding:12px;font-size:13px;line-height:1.9;margin-bottom:12px;">'+
+      '<div>📅 入学年份：<b>'+st.year+'年</b>（入学时间默认 9月1日）</div>'+
+      '<div>🎓 预计毕业：<b>'+st.year+' + 3 = '+(st.year+3)+'年9月1日</b></div>'+
+      '<div>当前状态：'+(st.graduated?'<b style="color:#e74c3c;">已毕业（'+st.year+'年9月1日起）</b>':'<b style="color:var(--primary);">在读</b>')+'</div>'+
+    '</div>'+
+    (pending?'<div style="background:#fff8e6;border:1px solid #f0c674;border-radius:8px;padding:10px;font-size:12.5px;color:#8a6d3b;margin-bottom:12px;">⏳ 你已提交申请等待审核：'+
+      (pending.type==='changeYear'?'修改入学年份为 <b>'+pending.newYear+'</b>年':(pending.type==='restore'?'申请恢复为在读学生':''))+
+      (pending.reason?'（理由：'+esc(pending.reason)+'）':'')+'<br><span style="font-size:11px;">提交时间：'+new Date(pending.date).toLocaleString('zh-CN')+'</span></div>':'')+
+    '<div class="form-group"><label>新入学年份 <span class="req">*</span></label>'+
+      '<input id="saYear" type="number" placeholder="如：'+(new Date().getFullYear())+'" min="2000" max="2032" value="'+(st.graduated?new Date().getFullYear():st.year)+'"></div>'+
+    '<div class="form-group"><label>申请理由 <span class="opt">（选填）</span></label>'+
+      '<textarea id="saReason" placeholder="如：留级/复读/信息填写错误等" maxlength="100" style="width:100%;min-height:60px;"></textarea></div>';
+  $('schoolModal').classList.add('show');
+}
+function submitSchoolAdjust(){
+  const u=$('saYear').value.trim();
+  const reason=$('saReason').value.trim();
+  if(!/^\d{4}$/.test(u)){toast('请输入正确的年份','err');return;}
+  const users=DB.get('users',[]);
+  const me=users.find(x=>x.id===currentUser.id);
+  if(!me){toast('用户不存在','err');return;}
+  const st=getSchoolStatus(me);
+  const yr=parseInt(u);
+  const type=st.graduated?'restore':'changeYear';
+  me.pendingAdjust={type,newYear:yr,reason,date:Date.now()};
+  DB.set('users',users);
+  $('schoolModal').classList.remove('show');
+  toast('申请已提交，等待站长/管理员审核','ok');
+}
+/* 审核：批准学籍调整 */
+function approveSchoolAdjust(userId){
+  const users=DB.get('users',[]);
+  const u=users.find(x=>x.id===userId);
+  if(!u||!u.pendingAdjust){toast('该申请不存在','err');return;}
+  const req=u.pendingAdjust;
+  if(req.type==='changeYear'||req.type==='restore'){
+    u.enrollYear=req.newYear;
+    /* 若新年份下仍未毕业则恢复在读，否则保持毕业 */
+    const st=getSchoolStatus(u);
+    if(st.graduated){u.role='graduate';u.status='毕业';}
+    else{u.role='student';u.status='在读';}
+  }
+  u.pendingAdjust=null;
+  DB.set('users',users);
+  toast('已批准学籍调整','ok');
+  renderAdminContent('school');
+}
+/* 审核：拒绝学籍调整 */
+function rejectSchoolAdjust(userId){
+  const users=DB.get('users',[]);
+  const u=users.find(x=>x.id===userId);
+  if(!u||!u.pendingAdjust){toast('该申请不存在','err');return;}
+  u.pendingAdjust=null;
+  DB.set('users',users);
+  toast('已拒绝该申请','ok');
+  renderAdminContent('school');
+}
+
 /* ===== 私聊消息轮询：定时从云端拉取新消息，无需刷新 ===== */
 let _chatPollTimer=null;
 let _chatPollVisible=true;
@@ -1417,6 +1546,9 @@ const ZONES=[
   {id:'general',name:'综合讨论区',icon:'💬',desc:'畅所欲言，分享生活'},
   {id:'campus',name:'校园墙',icon:'🏫',desc:'校园趣事、表白、吐槽（毕业用户只读）',graduateReadonly:true},
   {id:'study',name:'学习交流区',icon:'📚',desc:'学习方法、作业讨论、资料分享'},
+  {id:'grade7',name:'七年级专区',icon:'🌱',desc:'七年级同学专属交流区（毕业用户只读）',graduateReadonly:true},
+  {id:'grade8',name:'八年级专区',icon:'🌿',desc:'八年级同学专属交流区（毕业用户只读）',graduateReadonly:true},
+  {id:'grade9',name:'九年级专区',icon:'🌳',desc:'九年级同学专属交流区（毕业用户只读）',graduateReadonly:true},
   {id:'hobby',name:'兴趣爱好区',icon:'🎮',desc:'游戏、音乐、运动、动漫等'},
   {id:'graduate',name:'毕业纪念区',icon:'🎓',desc:'毕业生专属，回忆青春岁月'}
 ];
@@ -1580,6 +1712,7 @@ async function doRegister(){
     kuaishou:$('regKuaishou').value.trim(),
     signature:isFirstUser?'银川十八中贴吧站长，有问题随时联系~':'',
     location:'宁夏银川',
+    enrollYear:year,
     avatar:'',cover:'',
     regDate:Date.now()
   };
@@ -2323,7 +2456,7 @@ function submitPost(){
   const title=$('postTitle').value.trim();
   const content=$('postContent').value.trim();
   const zoneInfo=ZONES.find(z=>z.id===zone);
-  if(zoneInfo&&zoneInfo.graduateReadonly&&currentUser.role==='graduate'){toast('毕业生不能在校园墙发帖','err');return;}
+  if(zoneInfo&&zoneInfo.graduateReadonly&&currentUser.role==='graduate'){toast('该专区对毕业生只读，无法发帖','err');return;}
   if(!title||!content){toast('请填写标题和内容','err');return;}
   if(title.length<5){toast('标题至少5个字','err');return;}
   const posts=DB.get('posts',[]);
@@ -2528,7 +2661,8 @@ function renderProfilePage(u){
             '<div class="username">@'+esc(u.username)+' · '+esc(u.status||'')+' · '+esc(u.className||'')+'</div>'+
             '<div class="profile-badges">'+
               '<span class="profile-badge">📅 注册于 '+new Date(u.regDate).toLocaleDateString('zh-CN')+'</span>'+
-              '<span class="profile-badge">🎓 '+esc(u.status||'在读')+'</span>'+
+              '<span class="profile-badge">🎓 '+esc(u.status||'在读')+' · '+getEnrollYear(u)+'级</span>'+
+              (isOwner?'<span class="profile-badge" style="cursor:pointer;color:var(--primary);border:1px dashed var(--primary);" onclick="openSchoolAdjust()" title="点击调整入学年份/恢复在读，需管理员审核">⚙ 调整学籍</span>':'')+
             '</div>'+
             (u.signature?'<div class="profile-signature">「'+esc(u.signature)+'」</div>':'')+
             (u.location?'<div class="profile-location">📍 '+esc(u.location)+'</div>':'')+
@@ -2654,6 +2788,7 @@ function renderAdminContent(tab){
     '<button class="btn btn-sm '+(tab==='comments'?'btn-primary':'btn-ghost')+'" onclick="renderAdminContent(\'comments\')">💬 评论管理</button>'+
     '<button class="btn btn-sm '+(tab==='reports'?'btn-primary':'btn-ghost')+'" onclick="renderAdminContent(\'reports\')">🚨 举报'+(pendingCount>0?' ('+pendingCount+')':'')+'</button>'+
     '<button class="btn btn-sm '+(tab==='bans'?'btn-primary':'btn-ghost')+'" onclick="renderAdminContent(\'bans\')">🔒 封号管理</button>'+
+    '<button class="btn btn-sm '+(tab==='school'?'btn-primary':'btn-ghost')+'" onclick="renderAdminContent(\'school\')">🎓 学籍审核</button>'+
     '<button class="btn btn-sm '+(tab==='roles'?'btn-primary':'btn-ghost')+'" onclick="renderAdminContent(\'roles\')">🛡 权限说明</button>'+
     '</div>';
   if(tab==='users'){
@@ -2755,12 +2890,44 @@ function renderAdminContent(tab){
       });
       html+='</tbody></table>';
     }
+  }else if(tab==='school'){
+    const pendingUsers=users.filter(u=>u.pendingAdjust).sort((a,b)=>b.pendingAdjust.date-a.pendingAdjust.date);
+    if(pendingUsers.length===0){
+      html+='<div style="text-align:center;padding:40px;color:var(--text-lighter);"><div style="font-size:40px;margin-bottom:10px;">🎓</div>暂无学籍调整申请</div>';
+    }else{
+      pendingUsers.forEach(u=>{
+        const req=u.pendingAdjust;
+        const curSt=getSchoolStatus(u);
+        const desc=req.type==='restore'?
+          ('<b>申请恢复为在读学生</b>（入学年份改为 '+req.newYear+'年）'):
+          ('<b>申请修改入学年份</b>：'+curSt.year+'年 → '+req.newYear+'年');
+        html+='<div style="background:var(--bg-lighter);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:10px;">'+
+          '<div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px;">'+
+            '<div style="flex:1;min-width:200px;">'+
+              '<div style="font-size:13px;font-weight:600;margin-bottom:4px;">'+esc(u.nickname)+' '+getRoleBadge(u.role)+'</div>'+
+              '<div style="font-size:12px;color:var(--text-light);line-height:1.7;">'+
+                '@'+esc(u.username)+' · 当前状态：'+(curSt.graduated?'已毕业':'在读')+' · 入学年份 '+curSt.year+'<br>'+
+                desc+(req.reason?'<br>理由：'+esc(req.reason):'')+
+                '<br><span style="color:var(--text-lighter);font-size:11px;">申请时间：'+new Date(req.date).toLocaleString('zh-CN')+'</span>'+
+              '</div>'+
+            '</div>'+
+            '<div style="display:flex;gap:6px;">'+
+              '<button class="btn btn-primary btn-sm" onclick="approveSchoolAdjust(\''+u.id+'\')">✅ 批准</button>'+
+              '<button class="btn btn-ghost btn-sm" onclick="rejectSchoolAdjust(\''+u.id+'\')">✖ 拒绝</button>'+
+            '</div>'+
+          '</div></div>';
+      });
+    }
   }else if(tab==='roles'){
     html+='<div style="background:var(--bg-primary);padding:14px;border-radius:8px;margin-bottom:14px;font-size:12.5px;line-height:1.8;">'+
       '<b>👑 站长</b>：最高权限，可管理所有用户、帖子、评论，不可被删除或降级<br>'+
       '<b>🛡 管理员</b>：可删除帖子和评论，可管理普通用户，可由站长设置<br>'+
       '<b>🎓 在读学生</b>：正常发帖评论权限<br>'+
-      '<b>🎓 毕业生</b>：校园墙专区只读，其他分区正常<br><br>'+
+      '<b>🎓 毕业生</b>：校园墙、七/八/九年级专区只读，其他分区正常<br><br>'+
+      '<b>📅 学籍规则：</b><br>'+
+      '• 入学时间默认 9月1日，3年后（毕业年9月1日）自动转为毕业生<br>'+
+      '• 在个人主页点击"调整学籍"可申请修改入学年份/恢复在读，需站长或管理员审核<br>'+
+      '• 毕业用户在年级专区只能阅读，不能发帖<br><br>'+
       '<b>🔒 封号档次：</b><br>'+
       '⚠️ 警告 — 仅发出警告，不限制使用<br>'+
       '🚫 封禁1天/3天/7天 — 期间无法发帖、评论、私聊<br>'+
@@ -3360,6 +3527,8 @@ function checkBanStatus(){
 async function init(){
   /* 先从云端加载最新数据 */
   await cloudLoad();
+  /* 学籍自动检查：满3年自动转毕业生 */
+  processAutoGraduation();
   /* 云端无数据时用默认数据填充（避免空站） */
   initDefaultData();
   /* 重新读取当前用户（云端数据可能更新了） */
@@ -3393,6 +3562,8 @@ async function init(){
   });
   /* 初始化完成，启用云端同步 */
   _cloudSyncEnabled=true;
+  /* 学籍自动毕业有变化时，同步到云端 */
+  if(_schoolChanged){_schoolChanged=false;cloudSave();}
   /* 启动私聊消息轮询（3秒一次，自动拉取新消息） */
   startChatPolling();
   console.log('🏫 银川十八中贴吧已加载（云端同步已开启）');

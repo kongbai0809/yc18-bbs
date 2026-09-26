@@ -64,6 +64,90 @@ nav a{
 nav a:hover{background:var(--bg-primary);color:var(--primary);}
 nav a.active{background:var(--primary);color:#fff;}
 .nav-right{display:flex;align-items:center;gap:10px;flex-shrink:0;}
+/* 顶部搜索框（桌面端） */
+.search-box{
+  position:relative;flex-shrink:0;
+}
+.search-box input{
+  width:190px;padding:7px 12px 7px 32px;border:1px solid var(--border);
+  border-radius:20px;background:var(--bg-lighter);font-size:13px;
+  outline:none;transition:all .2s;
+}
+.search-box input:focus{width:230px;border-color:var(--primary);background:#fff;}
+.search-box::before{
+  content:'🔍';position:absolute;left:10px;top:50%;transform:translateY(-50%);
+  font-size:12px;opacity:.6;
+}
+/* 移动端搜索栏 */
+.mobile-search{
+  padding:8px 12px;background:var(--bg-white);
+  border-bottom:1px solid var(--border);
+}
+.mobile-search input{
+  width:100%;padding:9px 14px 9px 36px;border:1px solid var(--border);
+  border-radius:20px;background:var(--bg-lighter);font-size:13.5px;outline:none;
+}
+.mobile-search{position:relative;}
+.mobile-search::before{
+  content:'🔍';position:absolute;left:24px;top:50%;transform:translateY(-50%);font-size:13px;opacity:.6;z-index:1;
+}
+/* 搜索结果样式 */
+.search-summary{
+  display:flex;align-items:center;gap:10px;padding:10px 0 6px;
+  font-size:13px;color:var(--text-light);flex-wrap:wrap;
+}
+.search-summary b{color:var(--primary);}
+.search-zone-chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;}
+.search-zone-chip{
+  padding:6px 14px;border-radius:16px;background:var(--bg-lighter);
+  border:1px solid var(--border);font-size:12.5px;cursor:pointer;
+}
+.search-zone-chip:hover{border-color:var(--primary);color:var(--primary);}
+.user-result{
+  display:flex;align-items:center;gap:12px;padding:12px 14px;
+  background:var(--bg-white);border:1px solid var(--border);border-radius:12px;
+  margin-bottom:10px;cursor:pointer;transition:all .2s;
+}
+.user-result:hover{border-color:var(--primary);box-shadow:var(--shadow-sm);}
+.user-result .ur-avatar{
+  width:44px;height:44px;border-radius:50%;background:var(--bg-primary);color:#fff;
+  display:flex;align-items:center;justify-content:center;font-size:18px;overflow:hidden;flex-shrink:0;
+}
+.user-result .ur-avatar img{width:100%;height:100%;object-fit:cover;}
+.user-result .ur-info{flex:1;min-width:0;}
+.user-result .ur-name{font-size:14px;font-weight:600;}
+.user-result .ur-sub{font-size:12px;color:var(--text-lighter);}
+.comment-result{
+  padding:11px 14px;background:var(--bg-white);border:1px solid var(--border);
+  border-radius:10px;margin-bottom:8px;cursor:pointer;transition:all .2s;font-size:13px;
+}
+.comment-result:hover{border-color:var(--primary);}
+.comment-result .cr-head{display:flex;gap:8px;align-items:center;margin-bottom:4px;flex-wrap:wrap;}
+.comment-result .cr-author{font-weight:600;font-size:12.5px;}
+.comment-result .cr-zone{font-size:11px;color:var(--text-lighter);}
+.comment-result .cr-time{font-size:11px;color:var(--text-lighter);margin-left:auto;}
+/* 加载更多 */
+.load-more-btn{
+  display:block;width:100%;padding:11px;margin:14px 0;
+  background:var(--bg-lighter);border:1px dashed var(--border);
+  border-radius:10px;color:var(--text-light);font-size:13px;cursor:pointer;
+  transition:all .2s;
+}
+.load-more-btn:hover{border-color:var(--primary);color:var(--primary);background:var(--bg-white);}
+/* 草稿提示条 */
+.draft-tip-bar{
+  display:flex;align-items:center;justify-content:space-between;gap:8px;
+  background:#fff8e6;border:1px solid #f0c674;border-radius:8px;
+  padding:8px 12px;font-size:12.5px;color:#8a6d3b;margin-bottom:12px;
+}
+.draft-tip-bar .dt-actions{display:flex;gap:6px;flex-shrink:0;}
+.draft-tip-bar button{
+  border:none;background:transparent;color:#c07d00;cursor:pointer;
+  font-size:12px;text-decoration:underline;padding:2px 4px;
+}
+/* 编辑标记 */
+.edited-mark{color:var(--text-lighter);font-size:11px;margin-left:6px;}
+.pd-edited{font-size:11.5px;color:var(--text-lighter);margin-top:2px;}
 .btn{
   padding:8px 18px;border-radius:var(--radius-sm);font-size:13px;font-weight:600;
   transition:.15s;display:inline-flex;align-items:center;gap:5px;
@@ -455,6 +539,9 @@ main{max-width:1200px;margin:0 auto;padding:20px;}
   .profile-avatar-wrap{flex-wrap:nowrap;align-items:center;margin-top:-60px;}
   .profile-name-area{min-width:0;}
   .profile-actions{flex-wrap:wrap;}
+  /* 移动端搜索栏 */
+  .mobile-search{display:block;}
+  .search-box{display:none;}
   /* 移动端分区横滑栏 */
   .mobile-zones{
     display:flex!important;gap:8px;padding:10px 12px;overflow-x:auto;
@@ -903,9 +990,19 @@ main{max-width:1200px;margin:0 auto;padding:20px;}
       <a onclick="navigateZone('all')">📋 全部帖子</a>
       <a onclick="goDiary()">📖 日记</a>
     </nav>
+    <div class="search-box" id="desktopSearch">
+      <input id="searchInput" placeholder="🔍 搜帖子/用户/评论..." autocomplete="off"
+        onkeydown="if(event.key==='Enter')doSearch()">
+    </div>
     <div class="nav-right" id="navRight"></div>
   </div>
 </header>
+
+<!-- 移动端搜索栏 -->
+<div class="mobile-search" id="mobileSearch" style="display:none;">
+  <input id="searchInputM" placeholder="🔍 搜帖子/用户/评论..." autocomplete="off"
+    onkeydown="if(event.key==='Enter')doSearch()">
+</div>
 
 <!-- 移动端分区横滑栏 -->
 <div class="mobile-zones" id="mobileZones" style="display:none;"></div>
@@ -947,7 +1044,8 @@ main{max-width:1200px;margin:0 auto;padding:20px;}
 <div class="modal-overlay" id="postModal">
   <div class="modal-box" style="max-width:560px;">
     <span class="close-x" onclick="closeModal('postModal')">×</span>
-    <h3>✏ 发布新帖</h3>
+    <h3 id="postModalTitle">✏ 发布新帖</h3>
+    <div id="draftTip" style="display:none;"></div>
     <div class="form-group">
       <label>选择分区 <span class="req">*</span></label>
       <select id="postZone"></select>
@@ -982,7 +1080,7 @@ main{max-width:1200px;margin:0 auto;padding:20px;}
     </div>
     <div class="modal-actions">
       <button class="btn btn-ghost" onclick="closeModal('postModal')">取消</button>
-      <button class="btn btn-primary" onclick="submitPost()">发布</button>
+      <button class="btn btn-primary" id="postSubmitBtn" onclick="submitPost()">发布</button>
     </div>
   </div>
 </div>
@@ -1601,6 +1699,14 @@ let currentUser=DB.get('currentUser',null);
 let currentZone='all';
 let currentPostId=null;
 let currentProfileId=null;
+/* 分页与搜索状态 */
+let postPage=1;        /* 帖子列表已加载页数 */
+let commentsPage=1;    /* 评论已加载页数 */
+let searchPage=1;      /* 搜索结果已加载页数 */
+let searchKeyword='';  /* 当前搜索关键词 */
+let editingPostId=null;/* 正在编辑的帖子ID */
+const PAGE_SIZE=10;    /* 帖子/搜索每页条数 */
+const COMMENT_PAGE=20; /* 评论每页条数 */
 
 /* ===== 登录/注册表单渲染 ===== */
 function renderLoginForm(){
@@ -1797,6 +1903,7 @@ function doLogout(){
   $('mainHeader').style.display='none';
   $('mainContent').style.display='none';
   $('profilePage').style.display='none';
+  $('mobileSearch').style.display='none';
   $('authPage').style.display='flex';
   renderLoginForm();
   toast('已退出登录');
@@ -1812,9 +1919,11 @@ function enterApp(){
   if(window.innerWidth<=960){
     $('mobileNav').style.display='flex';
     $('mobileZones').style.display='flex';
+    $('mobileSearch').style.display='block';
   }else{
     $('mobileNav').style.display='none';
     $('mobileZones').style.display='none';
+    $('mobileSearch').style.display='none';
   }
   renderNavRight();
   renderZones();
@@ -1900,6 +2009,8 @@ function getZonePostCount(zoneId){
 function navigateZone(zoneId){
   currentZone=zoneId;
   currentPostId=null;
+  postPage=1;
+  commentsPage=1;
   $('profilePage').style.display='none';
   $('mainContent').style.display='block';
   renderZones();
@@ -1932,11 +2043,108 @@ function renderHotPosts(){
   ).join('');
 }
 
+/* ===== 全局搜索：帖子/用户/评论/分区 ===== */
+function doSearch(){
+  const el=window.innerWidth<=960?$('searchInputM'):$('searchInput');
+  const kw=(el?el.value:'').trim();
+  if(!kw){toast('请输入搜索关键词','err');return;}
+  searchKeyword=kw;
+  searchPage=1;
+  currentView='search';
+  $('profilePage').style.display='none';
+  $('mainContent').style.display='block';
+  renderSearchResults();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function renderSearchResults(){
+  const kw=searchKeyword.toLowerCase();
+  const posts=DB.get('posts',[]);
+  const users=DB.get('users',[]);
+  const comments=DB.get('comments',[]);
+  /* 帖子：标题/内容匹配 */
+  const postHits=posts.filter(p=>
+    p.title.toLowerCase().includes(kw)||p.content.toLowerCase().includes(kw)
+  ).sort((a,b)=>b.date-a.date);
+  /* 用户：昵称/用户名匹配 */
+  const userHits=users.filter(u=>
+    (u.nickname&&u.nickname.toLowerCase().includes(kw))||
+    (u.username&&u.username.toLowerCase().includes(kw))
+  );
+  /* 评论：内容匹配，关联到帖子标题 */
+  const commentHits=comments.filter(c=>c.content.toLowerCase().includes(kw)).sort((a,b)=>b.date-a.date);
+  /* 分区：名称/描述匹配 */
+  const zoneHits=ZONES.filter(z=>z.name.includes(searchKeyword)||(z.desc&&z.desc.includes(searchKeyword)));
+  const total=postHits.length+userHits.length+commentHits.length;
+  /* 帖子分页 */
+  const shownPosts=postHits.slice(0,searchPage*PAGE_SIZE);
+  const hasMorePosts=postHits.length>shownPosts.length;
+  /* 评论分页 */
+  const shownComments=commentHits.slice(0,searchPage*PAGE_SIZE);
+  const hasMoreComments=commentHits.length>shownComments.length;
+
+  let html='<div class="search-results">';
+  /* 返回按钮+统计 */
+  html+='<div class="back-btn" onclick="goHome()">← 返回首页</div>'+
+    '<div class="search-summary">找到 <b>'+total+'</b> 条与「<b style="color:#e74c3c;">'+esc(searchKeyword)+'</b>」相关的结果'+
+    (postHits.length?' · 帖子 <b>'+postHits.length+'</b>':'')+
+    (userHits.length?' · 用户 <b>'+userHits.length+'</b>':'')+
+    (commentHits.length?' · 评论 <b>'+commentHits.length+'</b>':'')+
+    '</div>';
+  /* 分区命中：快捷入口 */
+  if(zoneHits.length){
+    html+='<div class="search-zone-chips">'+zoneHits.map(z=>
+      '<span class="search-zone-chip" onclick="navigateZone(\''+z.id+'\')">'+z.icon+' '+z.name+'</span>'
+    ).join('')+'</div>';
+  }
+  if(total===0){
+    html+='<div class="empty-state"><div class="icon">🔍</div><p>没有找到相关内容，换个关键词试试吧</p></div>';
+  }
+  /* 用户结果 */
+  if(userHits.length){
+    html+='<h4 style="margin:14px 0 10px;">👤 用户</h4>';
+    html+=userHits.map(u=>{
+      const ban=isUserBanned(u.id);
+      return '<div class="user-result" onclick="viewProfile(\''+u.id+'\')">'+
+        '<div class="ur-avatar">'+(u.avatar?'<img src="'+u.avatar+'">':(u.nickname[0]||'👤'))+'</div>'+
+        '<div class="ur-info">'+
+          '<div class="ur-name">'+esc(u.nickname)+' '+getRoleBadge(u.role)+'</div>'+
+          '<div class="ur-sub">@'+esc(u.username)+' · '+(ban?'<span style="color:#e74c3c;">已封禁</span>':'在线')+' · '+(u.status||'在读')+(u.className?' · '+esc(u.className):'')+'</div>'+
+        '</div>'+
+      '</div>';
+    }).join('');
+  }
+  /* 帖子结果 */
+  if(postHits.length){
+    html+='<h4 style="margin:14px 0 10px;">📝 帖子</h4>';
+    html+=shownPosts.map(postCardHTML).join('');
+    if(hasMorePosts)html+='<button class="load-more-btn" onclick="searchPage++;renderSearchResults();">加载更多帖子（还有 '+(postHits.length-shownPosts.length)+' 条）↓</button>';
+  }
+  /* 评论结果 */
+  if(commentHits.length){
+    html+='<h4 style="margin:14px 0 10px;">💬 评论</h4>';
+    html+=shownComments.map(c=>{
+      const post=posts.find(p=>p.id===c.postId);
+      return '<div class="comment-result" onclick="viewPost(\''+c.postId+'\')">'+
+        '<div class="cr-head"><span class="cr-author">'+esc(c.authorName)+'</span>'+
+        '<span class="cr-zone">评论于「'+esc(post?post.title:'已删除帖子')+'」</span>'+
+        '<span class="cr-time">'+timeAgo(c.date)+'</span></div>'+
+        '<div style="color:var(--text-light);line-height:1.6;">'+esc(c.content)+'</div>'+
+      '</div>';
+    }).join('');
+    if(hasMoreComments)html+='<button class="load-more-btn" onclick="searchPage++;renderSearchResults();">加载更多评论（还有 '+(commentHits.length-shownComments.length)+' 条）↓</button>';
+  }
+  html+='</div>';
+  $('contentArea').innerHTML=html;
+  document.querySelectorAll('#mainNav a').forEach(a=>a.classList.remove('active'));
+}
+
 /* ===== 帖子列表 ===== */
 function goHome(){
   currentZone='all';
   currentPostId=null;
   currentView='posts';
+  postPage=1;
+  commentsPage=1;
   $('profilePage').style.display='none';
   $('mainContent').style.display='block';
   renderZones();
@@ -1951,19 +2159,24 @@ function renderPostList(){
   filtered=filtered.sort((a,b)=>b.date-a.date);
   const zoneInfo=ZONES.find(z=>z.id===currentZone);
   const readonly=zoneInfo&&zoneInfo.graduateReadonly&&currentUser&&currentUser.role==='graduate';
+  /* 分页截取 */
+  const shown=filtered.slice(0,postPage*PAGE_SIZE);
+  const hasMore=filtered.length>shown.length;
   let html='';
   if(readonly){
-    html+='<div class="auth-tip" style="margin-bottom:14px;">🔒 您是毕业生身份，校园墙专区仅支持浏览，不能发帖和评论</div>';
+    html+='<div class="auth-tip" style="margin-bottom:14px;">🔒 您是毕业生身份，该专区仅支持浏览，不能发帖和评论</div>';
   }
   html+='<div class="post-bar" onclick="'+(readonly?'':'openPostModal()')+'" style="cursor:'+(readonly?'not-allowed':'pointer')+';">'+
     '<div class="pb-avatar">'+(currentUser&&currentUser.avatar?'<img src="'+currentUser.avatar+'" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">':(currentUser?currentUser.nickname[0]:'👤'))+'</div>'+
-    '<input placeholder="'+(readonly?'毕业生在校园墙仅可浏览':'说点什么吧...')+'" readonly>'+
+    '<input placeholder="'+(readonly?'毕业生在该专区仅可浏览':'说点什么吧...')+'" readonly>'+
     '<button class="btn btn-primary btn-sm" '+(readonly?'disabled style="opacity:.5;"':'')+'>✏ 发帖</button>'+
     '</div>';
   if(filtered.length===0){
     html+='<div class="empty-state"><div class="icon">📭</div><p>暂无帖子，快来发布第一条吧！</p></div>';
   }else{
-    html+=filtered.map(postCardHTML).join('');
+    html+=shown.map(postCardHTML).join('');
+    if(hasMore)html+='<button class="load-more-btn" onclick="postPage++;renderPostList();">加载更多（还有 '+(filtered.length-shown.length)+' 帖）↓</button>';
+    else if(postPage>1)html+='<div style="text-align:center;color:var(--text-lighter);font-size:12px;padding:10px;">— 已加载全部 '+filtered.length+' 篇帖子 —</div>';
   }
   $('contentArea').innerHTML=html;
 }
@@ -1976,7 +2189,7 @@ function postCardHTML(p){
       '<div class="pc-avatar">'+(p.authorAvatar?'<img src="'+p.authorAvatar+'" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">':(p.authorAvatar||'👤'))+'</div>'+
       '<div class="pc-meta">'+
         '<div class="name">'+esc(p.authorName)+' '+getRoleBadge(p.authorRole)+'</div>'+
-        '<div class="time">'+timeAgo(p.date)+'</div>'+
+        '<div class="time">'+timeAgo(p.date)+(p.edited?'<span class="edited-mark">· 已编辑</span>':'')+'</div>'+
       '</div>'+
       '<span class="pc-zone">'+(zone?zone.icon+' '+zone.name:'')+'</span>'+
     '</div>'+
@@ -1987,7 +2200,9 @@ function postCardHTML(p){
     '<div class="pc-actions">'+
       '<button class="'+(liked?'liked':'')+'" onclick="event.stopPropagation();togglePostLike(\''+p.id+'\')">👍 '+(p.likes||0)+'</button>'+
       '<button onclick="event.stopPropagation();viewPost(\''+p.id+'\')">💬 '+comments+'</button>'+
-      '<button style="margin-left:auto;">👁 '+(p.views||0)+'</button>'+
+      (currentUser&&currentUser.id===p.authorId?
+        '<button style="margin-left:auto;" onclick="event.stopPropagation();openEditPost(\''+p.id+'\')">✏ 编辑</button>':
+        '<button style="margin-left:auto;">👁 '+(p.views||0)+'</button>')+
     '</div>'+
   '</div>';
 }
@@ -1995,6 +2210,7 @@ function postCardHTML(p){
 /* ===== 帖子详情 ===== */
 function viewPost(postId){
   currentPostId=postId;
+  commentsPage=1;
   const posts=DB.get('posts',[]);
   const p=posts.find(x=>x.id===postId);
   if(!p)return;
@@ -2011,9 +2227,12 @@ function renderPostDetail(){
   if(!p){$('contentArea').innerHTML='<div class="empty-state"><div class="icon">❌</div><p>帖子不存在</p></div>';return;}
   const zone=ZONES.find(z=>z.id===p.zone);
   const readonly=zone&&zone.graduateReadonly&&currentUser&&currentUser.role==='graduate';
-  const comments=DB.get('comments',[]).filter(c=>c.postId===p.id).sort((a,b)=>b.date-a.date);
+  const allComments=DB.get('comments',[]).filter(c=>c.postId===p.id).sort((a,b)=>b.date-a.date);
+  const shownComments=allComments.slice(0,commentsPage*COMMENT_PAGE);
+  const hasMoreComments=allComments.length>shownComments.length;
   const liked=currentUser&&isPostLiked(p.id);
   const canDelete=currentUser&&(currentUser.role==='owner'||currentUser.role==='admin'||currentUser.id===p.authorId);
+  const canEdit=currentUser&&currentUser.id===p.authorId;
   $('contentArea').innerHTML=
     '<div class="post-detail">'+
       '<div class="back-btn" onclick="goHome()">← 返回列表</div>'+
@@ -2021,7 +2240,9 @@ function renderPostDetail(){
       '<div class="pd-meta">'+
         '<div class="avatar">'+(p.authorAvatar?'<img src="'+p.authorAvatar+'" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">':(p.authorAvatar||'👤'))+'</div>'+
         '<div class="info"><div class="name">'+esc(p.authorName)+' '+getRoleBadge(p.authorRole)+'</div>'+
-        '<div class="time">'+new Date(p.date).toLocaleString('zh-CN')+' · 👁 '+(p.views||0)+' 次浏览</div></div>'+
+        '<div class="time">'+new Date(p.date).toLocaleString('zh-CN')+' · 👁 '+(p.views||0)+' 次浏览'+(p.edited?'<span class="edited-mark">· 已编辑</span>':'')+'</div>'+
+        (p.edited&&p.editedAt?'<div class="pd-edited">✏ 最后编辑于 '+new Date(p.editedAt).toLocaleString('zh-CN')+'</div>':'')+
+        '</div>'+
         '<span class="pc-zone">'+(zone?zone.icon+' '+zone.name:'')+'</span>'+
       '</div>'+
       '<div class="pd-content">'+esc(p.content).replace(/\n/g,'<br>')+'</div>'+
@@ -2030,11 +2251,12 @@ function renderPostDetail(){
       '<div class="pd-actions">'+
         '<button class="'+(liked?'liked':'')+'" onclick="togglePostLike(\''+p.id+'\')">👍 点赞 ('+(p.likes||0)+')</button>'+
         '<button onclick="sharePost(\''+p.id+'\')">🔗 分享</button>'+
+        (canEdit?'<button onclick="openEditPost(\''+p.id+'\')">✏ 编辑</button>':'')+
         (canDelete?'<button style="margin-left:auto;color:#e74c3c;" onclick="deletePost(\''+p.id+'\')">🗑 删除</button>':'')+
       '</div>'+
       '<div class="comments">'+
-        '<h3>💬 评论 ('+comments.length+')</h3>'+
-        (readonly?'<div class="auth-tip">🔒 毕业生在校园墙专区仅可浏览，不能评论</div>':
+        '<h3>💬 评论 ('+allComments.length+')</h3>'+
+        (readonly?'<div class="auth-tip">🔒 毕业生在该专区仅可浏览，不能评论</div>':
         '<div class="comment-form">'+
           '<div class="cf-avatar">'+(currentUser&&currentUser.avatar?'<img src="'+currentUser.avatar+'" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">':(currentUser?currentUser.nickname[0]:'👤'))+'</div>'+
           '<div class="cf-body">'+
@@ -2042,7 +2264,8 @@ function renderPostDetail(){
             '<div class="cf-submit"><button class="btn btn-primary btn-sm" onclick="submitComment(\''+p.id+'\')" '+(currentUser?'':'disabled')+'>发表评论</button></div>'+
           '</div></div>')+
         '<div style="margin-top:16px;">'+
-          (comments.length?comments.map(commentItemHTML).join(''):'<div class="empty-state" style="padding:30px;"><div class="icon">💬</div><p>暂无评论，来抢沙发吧~</p></div>')+
+          (allComments.length?shownComments.map(commentItemHTML).join(''):'<div class="empty-state" style="padding:30px;"><div class="icon">💬</div><p>暂无评论，来抢沙发吧~</p></div>')+
+          (hasMoreComments?'<button class="load-more-btn" onclick="commentsPage++;renderPostDetail();">加载更多评论（还有 '+(allComments.length-shownComments.length)+' 条）↓</button>':'')+
         '</div>'+
       '</div>'+
     '</div>';
@@ -2088,7 +2311,10 @@ function initPostMediaUpload(){
           canvas.getContext('2d').drawImage(img,0,0,w,h);
           postImages.push(canvas.toDataURL('image/jpeg',0.85));
           processed++;
-          if(processed>=toProcess.length){renderPostImagePreview();updateAddImageBtn();}
+          if(processed>=toProcess.length){
+            renderPostImagePreview();updateAddImageBtn();
+            if(!editingPostId)savePostDraft();
+          }
         };
         img.onerror=function(){processed++;};
         img.src=ev.target.result;
@@ -2106,7 +2332,10 @@ function renderPostImagePreview(){
     '<span class="remove-img" onclick="removePostImage('+i+')">×</span></div>'
   ).join('');
 }
-function removePostImage(index){postImages.splice(index,1);renderPostImagePreview();updateAddImageBtn();}
+function removePostImage(index){
+  postImages.splice(index,1);renderPostImagePreview();updateAddImageBtn();
+  if(!editingPostId)savePostDraft();
+}
 function updateAddImageBtn(){
   const btn=$('addImageBtn');if(!btn)return;
   btn.style.display=postImages.length>=9?'none':'flex';
@@ -2118,8 +2347,11 @@ function addPostAudio(){
   if(!/^https?:\/\//i.test(url)){toast('请输入有效的 http/https 链接','err');return;}
   if(postAudios.length>=3){toast('最多只能添加3个音频','err');return;}
   postAudios.push(url);input.value='';renderPostAudioList();
+  if(!editingPostId)savePostDraft();
 }
-function removePostAudio(index){postAudios.splice(index,1);renderPostAudioList();}
+function removePostAudio(index){postAudios.splice(index,1);renderPostAudioList();
+  if(!editingPostId)savePostDraft();
+}
 function renderPostAudioList(){
   const el=$('postAudioList');if(!el)return;
   el.innerHTML=postAudios.map((url,i)=>
@@ -2437,16 +2669,91 @@ function deleteDiaryComment(commentId){
 }
 
 /* ===== 发帖 ===== */
+/* 草稿箱：自动保存发帖内容 */
+function savePostDraft(){
+  if(editingPostId)return; /* 编辑模式不写草稿 */
+  const title=$('postTitle').value;
+  const content=$('postContent').value;
+  const zone=$('postZone').value;
+  if(!title&&!content&&postImages.length===0&&postAudios.length===0){
+    clearPostDraft();return;
+  }
+  const draft={zone,title,content,images:[...postImages],audios:[...postAudios],time:Date.now()};
+  let str=JSON.stringify(draft);
+  /* localStorage 有 5MB 上限，图片太多时只存文字，避免写入失败 */
+  if(str.length>3500000){draft.images=[];str=JSON.stringify(draft);}
+  try{localStorage.setItem('bbs_post_draft',str);}catch(e){}
+}
+function clearPostDraft(){try{localStorage.removeItem('bbs_post_draft');}catch(e){}}
+function loadPostDraft(){
+  try{const s=localStorage.getItem('bbs_post_draft');return s?JSON.parse(s):null;}catch(e){return null;}
+}
+let _draftTimer=null;
+function bindDraftAutoSave(){
+  ['postTitle','postContent'].forEach(id=>{
+    const el=$(id);
+    if(el)el.addEventListener('input',function(){
+      clearTimeout(_draftTimer);
+      _draftTimer=setTimeout(savePostDraft,800);
+    });
+  });
+  const z=$('postZone');
+  if(z)z.addEventListener('change',savePostDraft);
+}
+function clearDraftAndReload(){
+  clearPostDraft();
+  toast('草稿已清除');
+  openPostModal();
+}
 function openPostModal(){
   if(!currentUser){toast('请先登录','err');return;}
+  editingPostId=null;
   const zone=ZONES.find(z=>z.id===currentZone&&z.id!=='all');
   $('postZone').innerHTML=ZONES.filter(z=>z.id!=='all').map(z=>
     '<option value="'+z.id+'" '+(zone&&zone.id===z.id?'selected':'')+'>'+z.icon+' '+z.name+(z.graduateReadonly?'（毕业只读）':'')+'</option>'
   ).join('');
-  $('postTitle').value='';
-  $('postContent').value='';
-  postImages=[];postAudios=[];
+  /* 恢复上次草稿 */
+  const draft=loadPostDraft();
+  if(draft&&(draft.title||draft.content||(draft.images&&draft.images.length)||(draft.audios&&draft.audios.length))){
+    $('postTitle').value=draft.title||'';
+    $('postContent').value=draft.content||'';
+    if(draft.zone&&ZONES.find(z=>z.id===draft.zone))$('postZone').value=draft.zone;
+    postImages=draft.images?[...draft.images]:[];
+    postAudios=draft.audios?[...draft.audios]:[];
+    const tip=$('draftTip');
+    tip.style.display='block';
+    tip.innerHTML='<div class="draft-tip-bar">📝 已自动恢复上次草稿（'+new Date(draft.time).toLocaleString('zh-CN')+'）'+
+      '<span class="dt-actions"><button onclick="clearDraftAndReload()">🗑 丢弃草稿</button></span></div>';
+  }else{
+    $('postTitle').value='';
+    $('postContent').value='';
+    postImages=[];postAudios=[];
+    $('draftTip').style.display='none';
+  }
   renderPostImagePreview();renderPostAudioList();updateAddImageBtn();
+  $('postModalTitle').textContent='✏ 发布新帖';
+  $('postSubmitBtn').textContent='发布';
+  showModal('postModal');
+}
+/* 编辑帖子：作者本人可修改自己的帖子 */
+function openEditPost(postId){
+  if(!currentUser){toast('请先登录','err');return;}
+  const posts=DB.get('posts',[]);
+  const p=posts.find(x=>x.id===postId);
+  if(!p){toast('帖子不存在','err');return;}
+  if(p.authorId!==currentUser.id){toast('只能编辑自己的帖子','err');return;}
+  editingPostId=postId;
+  $('postZone').innerHTML=ZONES.filter(z=>z.id!=='all').map(z=>
+    '<option value="'+z.id+'" '+(p.zone===z.id?'selected':'')+'>'+z.icon+' '+z.name+(z.graduateReadonly?'（毕业只读）':'')+'</option>'
+  ).join('');
+  $('postTitle').value=p.title;
+  $('postContent').value=p.content;
+  postImages=p.images?[...p.images]:[];
+  postAudios=p.audios?[...p.audios]:[];
+  $('draftTip').style.display='none';
+  renderPostImagePreview();renderPostAudioList();updateAddImageBtn();
+  $('postModalTitle').textContent='✏ 编辑帖子';
+  $('postSubmitBtn').textContent='保存修改';
   showModal('postModal');
 }
 function submitPost(){
@@ -2460,6 +2767,27 @@ function submitPost(){
   if(!title||!content){toast('请填写标题和内容','err');return;}
   if(title.length<5){toast('标题至少5个字','err');return;}
   const posts=DB.get('posts',[]);
+  /* 编辑模式：更新现有帖子 */
+  if(editingPostId){
+    const p=posts.find(x=>x.id===editingPostId);
+    if(!p){toast('帖子不存在','err');return;}
+    if(p.authorId!==currentUser.id){toast('只能编辑自己的帖子','err');return;}
+    /* 记录编辑历史（保留最近20条） */
+    if(!p.editHistory)p.editHistory=[];
+    p.editHistory.push({at:Date.now(),oldTitle:p.title,oldContent:p.content});
+    if(p.editHistory.length>20)p.editHistory=p.editHistory.slice(-20);
+    p.title=title;p.content=content;p.zone=zone;
+    p.images=postImages.length>0?[...postImages]:[];
+    p.audios=postAudios.length>0?[...postAudios]:[];
+    p.edited=true;p.editedAt=Date.now();
+    DB.set('posts',posts);
+    closeModal('postModal');
+    editingPostId=null;
+    toast('帖子已更新','ok');
+    renderPostDetail();
+    return;
+  }
+  /* 发帖模式 */
   posts.unshift({
     id:uid(),zone,title,content,
     images:postImages.length>0?[...postImages]:[],
@@ -2469,12 +2797,14 @@ function submitPost(){
     date:Date.now(),views:0,likes:0,comments:0
   });
   DB.set('posts',posts);
+  clearPostDraft();
   closeModal('postModal');
   toast('发布成功！','ok');
   renderStats();
   renderHotPosts();
   currentZone=zone;
   renderZones();
+  postPage=1;
   renderPostList();
 }
 function deletePost(postId){
@@ -3544,6 +3874,8 @@ async function init(){
   initPostMediaUpload();
   /* 初始化日记图片上传 */
   initDiaryMediaUpload();
+  /* 绑定发帖草稿自动保存 */
+  bindDraftAutoSave();
 
   if(currentUser){
     /* 检查封号状态 */

@@ -1051,6 +1051,7 @@ main{max-width:1200px;margin:0 auto;padding:20px;}
   <div style="width:48px;height:48px;border:4px solid #c8e6c9;border-top-color:#0d6b3d;border-radius:50%;animation:spin 1s linear infinite;"></div>
   <div style="margin-top:16px;color:#0d6b3d;font-size:14px;letter-spacing:1px;">银川十八中贴吧 · 加载中…</div>
   <div id="loadingHint" style="margin-top:8px;color:#888;font-size:12px;">正在连接云端数据</div>
+  <button id="forceEnterBtn" onclick="var lo=document.getElementById('loadingOverlay');if(lo){lo.style.opacity='0';setTimeout(function(){if(lo.parentNode)lo.remove();},400);}try{if(typeof DB!=='undefined'&&DB.get('currentUser',null)){enterApp();}else{renderLoginForm();}}catch(e){}" style="display:none;margin-top:20px;padding:8px 24px;background:#0d6b3d;color:#fff;border:none;border-radius:20px;font-size:13px;cursor:pointer;">加载太慢？点此强制进入</button>
 </div>
 <style>@keyframes spin{to{transform:rotate(360deg)}}</style>
 <script>
@@ -1059,6 +1060,11 @@ setTimeout(function(){
   var h=document.getElementById('loadingHint');
   if(h)h.textContent='网络较慢，正在降级使用本地数据…';
 },5000);
+/* 10秒还没好，显示强制进入按钮 */
+setTimeout(function(){
+  var b=document.getElementById('forceEnterBtn');
+  if(b)b.style.display='block';
+},10000);
 </script>
 
 <!-- 注册/登录页 -->
@@ -5332,6 +5338,7 @@ if('serviceWorker' in navigator){
   });
 }
 async function init(){
+  try{
   /* 先从云端加载最新数据 */
   await cloudLoad();
   /* 学籍自动检查：满3年自动转毕业生 */
@@ -5349,10 +5356,10 @@ async function init(){
   /* 重新读取当前用户（云端数据可能更新了） */
   currentUser=DB.get('currentUser',null);
   /* 绑定图片上传（label原生触发，兼容手机端） */
-  $('avatarInput').addEventListener('change',function(e){
+  var ai=$('avatarInput'); if(ai)ai.addEventListener('change',function(e){
     handleImageUpload(e,400,0.88,function(d){updateAvatar(d);});
   });
-  $('coverInput').addEventListener('change',function(e){
+  var ci=$('coverInput'); if(ci)ci.addEventListener('change',function(e){
     handleImageUpload(e,1200,0.85,function(d){updateCover(d);});
   });
   /* 初始化发帖图片上传 */
@@ -5388,10 +5395,23 @@ async function init(){
   /* 启动轻量云端刷新（60秒一次，拉取最新users/settings，让学籍审批等跨设备实时生效） */
   startCloudRefresh();
   console.log('🏫 银川十八中贴吧已加载（云端同步已开启）');
-  /* 隐藏加载遮罩 */
-  const lo=document.getElementById('loadingOverlay');
-  if(lo){lo.style.opacity='0';setTimeout(()=>lo.remove(),400);}
+  }catch(err){
+    console.error('❌ init 出错，降级渲染:',err);
+    /* 出错也尽量渲染页面，不让用户卡死在加载页 */
+    try{
+      currentUser=DB.get('currentUser',null);
+      if(currentUser){enterApp();}else{renderLoginForm();}
+    }catch(e2){console.error('降级渲染也失败:',e2);}
+  }
+  /* 隐藏加载遮罩（无论成功失败都隐藏） */
+  var lo=document.getElementById('loadingOverlay');
+  if(lo){lo.style.opacity='0';setTimeout(function(){if(lo.parentNode)lo.remove();},400);}
 }
+/* 全局错误兜底：任何未捕获错误都隐藏加载遮罩 */
+window.addEventListener('error',function(){
+  var lo=document.getElementById('loadingOverlay');
+  if(lo){lo.style.opacity='0';setTimeout(function(){if(lo.parentNode)lo.remove();},400);}
+});
 init();
 </script>
 </body>

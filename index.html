@@ -621,7 +621,7 @@ main{max-width:1200px;margin:0 auto;padding:20px;}
   .auth-page{align-items:flex-start;overflow-y:auto;padding:10px;}
   .auth-left{display:none;}
   .profile-stats{gap:20px;}
-  .profile-avatar-wrap{flex-wrap:nowrap;align-items:center;margin-top:-60px;}
+  .profile-avatar-wrap{flex-wrap:nowrap;align-items:flex-start;margin-top:-60px;}
   .profile-name-area{min-width:0;}
   .profile-actions{flex-wrap:wrap;}
   /* 移动端搜索栏 */
@@ -2099,13 +2099,15 @@ function highlightMentions(text){
 /* ---------- 新手引导 ---------- */
 function maybeShowOnboarding(){
   if(!currentUser)return;
+  /* 用 localStorage 直接存设备级标记，不依赖云端同步，最可靠 */
+  if(localStorage.getItem('yc18_onboarded')==='1')return;
+  localStorage.setItem('yc18_onboarded','1');
+  /* 同时也写云端，跨设备也不再弹 */
   const users=DB.get('users',[]);
   const u=users.find(x=>x.id===currentUser.id);
-  const s=DB.get('settings',{});
-  if(!u||u.onboarded||s.onboarded)return;
-  u.onboarded=true;s.onboarded=true;
-  DB.set('users',users);DB.set('settings',s);
-  cloudSave(); /* 立即强制同步到云端，不防抖 */
+  if(u){u.onboarded=true;DB.set('users',users);}
+  const s=DB.get('settings',{});s.onboarded=true;DB.set('settings',s);
+  cloudSave();
   const steps=[
     {icon:'🏠',title:'欢迎来到银川十八中贴吧！',desc:'这里是银川市第十八中学的校园社区，发帖、交友、记录校园生活。'},
     {icon:'📂',title:'分区发帖',desc:'左侧/顶部有六大分区和三个年级专区，校园墙、学习交流、毕业纪念……找到你的圈子。'},
@@ -2273,6 +2275,7 @@ function openSettings(){
 }
 function resetOnboarding(){
   if(!currentUser)return;
+  localStorage.removeItem('yc18_onboarded');
   const users=DB.get('users',[]);
   const u=users.find(x=>x.id===currentUser.id);
   if(u)u.onboarded=false;
